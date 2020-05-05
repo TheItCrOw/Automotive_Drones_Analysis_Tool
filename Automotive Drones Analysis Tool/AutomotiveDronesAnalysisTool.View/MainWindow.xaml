@@ -1,0 +1,68 @@
+﻿<Window x:Class="AutomotiveDronesAnalysisTool.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AutomotiveDronesAnalysisTool.View"
+        xmlns:views="clr-namespace:AutomotiveDronesAnalysisTool.View.Views"
+        mc:Ignorable="d"        
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Width="1050"
+        Height="850"
+        Title="Automotive Drone Analysis Tool">
+    <Grid>
+
+        <!--The frame content can be changed according to the desired view-->
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden">
+            <Frame.Content>
+                <Grid>
+                    <!--This is a transition that switches between: StartView and LoginView-->
+                    <materialDesign:Transitioner SelectedIndex="0" AutoApplyTransitionOrigins="True">
+                        <Grid>
+                            <!--Start View-->
+                            <views:StartView/>
+                        </Grid>
+
+                        <!--Transition LoginView-->
+                        <materialDesign:TransitionerSlide OpeningEffect="{materialDesign:TransitionEffect ExpandIn}">
+                            <materialDesign:TransitionerSlide.BackwardWipe>
+                                <materialDesign:CircleWipe />
+                            </materialDesign:TransitionerSlide.BackwardWipe>
+                            <views:HomeView/>
+                        </materialDesign:TransitionerSlide>
+
+                        <!--Transition RegisterView-->
+                        <!--<materialDesign:TransitionerSlide OpeningEffect="{materialDesign:TransitionEffect ExpandIn}">
+                            <materialDesign:TransitionerSlide.BackwardWipe>
+                                <materialDesign:CircleWipe />
+                            </materialDesign:TransitionerSlide.BackwardWipe>
+                            <local:RegisterView/>
+                        </materialDesign:TransitionerSlide>-->
+
+                        <!--Transition Enter the fortress-->
+                        <!--<materialDesign:TransitionerSlide>
+                            <materialDesign:TransitionerSlide.OpeningEffects>
+                                <materialDesign:TransitionEffect
+                        Kind="FadeIn"
+                        Duration="0:0:4" />
+                            </materialDesign:TransitionerSlide.OpeningEffects>
+                            <mainViews:HomeView/>
+                        </materialDesign:TransitionerSlide>-->
+
+
+                    </materialDesign:Transitioner>
+
+                </Grid>
+            </Frame.Content>
+        </Frame>
+
+
+    </Grid>
+</Window>
