@@ -21,7 +21,7 @@
         </Grid.Background>
         
         <Grid.RowDefinitions>
-            <RowDefinition Height="200"/>
+            <RowDefinition Height="170"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -29,7 +29,7 @@
         <materialDesign:Card materialDesign:ShadowAssist.ShadowDepth="Depth5">
             <DockPanel LastChildFill="False" >
                 <!--logo-->
-                <Image Source="pack://application:,,,/Ressources/IAV-Icon.png" Margin="-10"/>
+                <Image Source="pack://application:,,,/Ressources/IAV-Icon.png" Margin="10 -10 10 -10"/>
                 <!--title text-->
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Margin="5" Text="Automotive Drone Analysis Tool" 
