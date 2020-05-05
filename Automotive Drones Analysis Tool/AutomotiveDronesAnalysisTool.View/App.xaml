@@ -31,7 +31,6 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
 
-<<<<<<< HEAD
             <!--A Textblock for tex titles-->
             <Style TargetType="{x:Type TextBlock}" x:Key="TextTitleTextblockStyle">
                 <Setter Property="FontSize" Value="22" />
@@ -50,8 +49,6 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
 
-=======
->>>>>>> parent of 8e09274... Automotive AI data
         </ResourceDictionary>
     </Application.Resources>
 </Application>

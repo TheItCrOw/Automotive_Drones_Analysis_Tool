@@ -31,16 +31,16 @@ namespace AutomotiveDronesAnalysisTool.View
 
             // Testing
             // Get the EXIF metadata
-            var list = new StringBuilder();
-            var directories = ImageMetadataReader.ReadMetadata("E:\\WPF Projects\\Automotive Drones Analysis Tool\\Daten_automatisches_Fahren\\Situation_1_Auswahl\\Situation_1_nah.JPG");
-            foreach (var directory in directories)
-                foreach (var tag in directory.Tags)
-                    list.AppendLine($"{directory.Name} - {tag.Name} = {tag.Description}");
+            //var list = new StringBuilder();
+            //var directories = ImageMetadataReader.ReadMetadata("E:\\WPF Projects\\Automotive Drones Analysis Tool\\Daten_automatisches_Fahren\\Situation_1_Auswahl\\Situation_1_nah.JPG");
+            //foreach (var directory in directories)
+            //    foreach (var tag in directory.Tags)
+            //        list.AppendLine($"{directory.Name} - {tag.Name} = {tag.Description}");
 
-            // Get the XMP meta data
-            var xmpProps = directories.OfType<XmpDirectory>().FirstOrDefault().GetXmpProperties();
-            foreach (var pair in xmpProps)
-                list.AppendLine($"{pair.Key} - {pair.Value}");
+            //// Get the XMP meta data
+            //var xmpProps = directories.OfType<XmpDirectory>().FirstOrDefault().GetXmpProperties();
+            //foreach (var pair in xmpProps)
+            //    list.AppendLine($"{pair.Key} - {pair.Value}");
 
             //File.WriteAllText("E:\\WPF Projects\\Automotive Drones Analysis Tool\\Daten_automatisches_Fahren\\Situation_1_Auswahl\\Situation_1_nah_metadata.txt", list.ToString());
         }
