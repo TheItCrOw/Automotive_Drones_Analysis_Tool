@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutomotiveDronesAnalysisTool.Model\AutomotiveDronesAnalysisTool.Model.csproj" />
+    <ProjectReference Include="..\AutomotiveDronesAnalysisTool.Utility\AutomotiveDronesAnalysisTool.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

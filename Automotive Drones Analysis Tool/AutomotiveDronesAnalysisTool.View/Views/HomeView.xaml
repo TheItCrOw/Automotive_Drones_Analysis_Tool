@@ -79,30 +79,30 @@
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Start new analysis"/>
                     </Button>
                     <Image Source="pack://application:,,,/Ressources/Situation_1_nah_analysiert.jpg" Margin="5 10"/>
-                    <materialDesign:ColorZone Mode="PrimaryDark">
+                    <Border BorderThickness="0 0 0 01" BorderBrush="SteelBlue">
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="How it works:"/>
-                    </materialDesign:ColorZone>
+                    </Border>
                     <!--upload-->
                     <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="Upload" Height="60" Width="60" Foreground="SteelBlue"/>
+                        <materialDesign:PackIcon Kind="Upload" Height="45" Width="45" Foreground="SteelBlue"/>
                         <TextBlock Text="Upload an image, a sequence or a video which needs to be analysed." 
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                     </DockPanel>
                     <!--meta data-->
                     <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="DataUsage" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <materialDesign:PackIcon Kind="DataUsage" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
                         <TextBlock Text="Extend the metadata of these by adding more information to them." 
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                     </DockPanel>
                     <!--analyse-->
                     <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="GoogleAnalytics" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <materialDesign:PackIcon Kind="GoogleAnalytics" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
                         <TextBlock Text="Start the analysis. When finished, a report will be generated." HorizontalAlignment="Stretch"
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
                     </DockPanel>
                     <!--Finish-->
                     <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="FileReport" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <materialDesign:PackIcon Kind="FileReport" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
                         <TextBlock Text="Analyse the report, save it and export it." HorizontalAlignment="Stretch"
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
                     </DockPanel>
@@ -112,6 +112,7 @@
 
         </Grid>
         
+        <!--logout button-->
         <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
                 ToolTip="Logout" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5"
                 materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="2" Height="30" Width="30"

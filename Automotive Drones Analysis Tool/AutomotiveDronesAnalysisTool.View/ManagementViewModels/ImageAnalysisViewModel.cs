@@ -1,5 +1,7 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.View.ViewModels;
+using AutomotiveDronesAnalysisTool.View.Views.Modal;
+using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +13,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     {
         private AnalysableImageModel _projectModel;
         private AnalysableImageViewModel _viewModel;
+
+        /// <summary>
+        /// Adds new information to the InformationDictionary
+        /// </summary>
+        public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -33,6 +40,25 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             {
                 // TODO: Change messagebox.
                 MessageBox.Show($"Couldn´t init the project: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Add information to the metadata
+        /// </summary>
+        private void AddInformation()
+        {
+            if (ViewModel == null)
+                throw new NullReferenceException("AnalysableViewModel is null. Can't add information.");
+
+            try
+            {
+                ViewModel.AddInformation();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace messagebox
+                MessageBox.Show($"Couldn't add new information: {ex}");
             }
         }
     }
