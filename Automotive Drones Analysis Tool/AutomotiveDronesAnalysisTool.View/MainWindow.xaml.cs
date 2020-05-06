@@ -1,4 +1,6 @@
-﻿using MetadataExtractor;
+﻿using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using AutomotiveDronesAnalysisTool.View.Views;
+using MetadataExtractor;
 using MetadataExtractor.Formats.Xmp;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace AutomotiveDronesAnalysisTool.View
         public MainWindow()
         {
             InitializeComponent();
-
+            ViewService.RegisterMainFrame(MainFrame);
             // Testing
             // Get the EXIF metadata
             //var list = new StringBuilder();
@@ -44,5 +46,6 @@ namespace AutomotiveDronesAnalysisTool.View
 
             //File.WriteAllText("E:\\WPF Projects\\Automotive Drones Analysis Tool\\Daten_automatisches_Fahren\\Situation_1_Auswahl\\Situation_1_nah_metadata.txt", list.ToString());
         }
+
     }
 }

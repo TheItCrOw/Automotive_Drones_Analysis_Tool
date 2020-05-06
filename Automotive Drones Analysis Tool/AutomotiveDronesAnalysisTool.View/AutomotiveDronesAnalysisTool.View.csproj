@@ -10,6 +10,7 @@
     <None Remove="Ressources\IAV-Icon.png" />
     <None Remove="Ressources\IAV-Standort.jpg" />
     <None Remove="Ressources\Situation_1_nah.JPG" />
+    <None Remove="Ressources\Situation_1_nah_analysiert.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.4.0" />
+    <PackageReference Include="Prism.Core" Version="7.2.0.1422" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
 
@@ -34,6 +36,7 @@
     <Resource Include="Ressources\IAV-Icon.png" />
     <Resource Include="Ressources\IAV-Standort.jpg" />
     <Resource Include="Ressources\Situation_1_nah.JPG" />
+    <Resource Include="Ressources\Situation_1_nah_analysiert.jpg" />
   </ItemGroup>
 
 </Project>

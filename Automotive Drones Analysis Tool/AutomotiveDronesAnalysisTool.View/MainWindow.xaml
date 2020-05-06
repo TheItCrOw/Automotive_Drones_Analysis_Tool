@@ -31,11 +31,12 @@
                         </Grid>
 
                         <!--Transition LoginView-->
-                        <materialDesign:TransitionerSlide OpeningEffect="{materialDesign:TransitionEffect ExpandIn}">
+                        <materialDesign:TransitionerSlide x:Name="HomeViewTransitioner"
+                                                          OpeningEffect="{materialDesign:TransitionEffect ExpandIn}">
                             <materialDesign:TransitionerSlide.BackwardWipe>
                                 <materialDesign:CircleWipe />
                             </materialDesign:TransitionerSlide.BackwardWipe>
-                            <views:HomeView/>
+                            <views:LoginView/>
                         </materialDesign:TransitionerSlide>
 
                         <!--Transition RegisterView-->

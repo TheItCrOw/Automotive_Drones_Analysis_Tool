@@ -40,7 +40,7 @@
             </DockPanel>
         </materialDesign:Card>
 
-        <Button Grid.Row="1" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
+        <Button x:Name="Start_Button" Grid.Row="1" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
                 ToolTip="Start" materialDesign:ShadowAssist.ShadowDepth="Depth5"
                 Command="{x:Static materialDesign:Transitioner.MoveNextCommand}"
                 Height="125" Width="125">

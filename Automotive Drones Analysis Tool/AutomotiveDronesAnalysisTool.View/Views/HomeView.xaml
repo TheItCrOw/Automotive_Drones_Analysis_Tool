@@ -13,7 +13,8 @@
              TextOptions.TextRenderingMode="Auto"
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             d:DesignHeight="900" d:DesignWidth="1100">
+             d:DesignHeight="900" d:DesignWidth="1100"
+             >
     <Grid>
 
         <Grid.RowDefinitions>
@@ -27,7 +28,7 @@
             <DockPanel LastChildFill="True" Margin="5 0 5 0">
                 <!--Home button-->
                 <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="100" 
-                        ToolTip="Home" Height="35">
+                        ToolTip="Home" Height="35" Command="{Binding NavigateHomeCommand}">
                     <materialDesign:PackIcon Kind="Home" Height="25" Width="25"/>
                 </Button>
 
@@ -48,7 +49,7 @@
             <materialDesign:Card VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="0 0 5 0">
                 <StackPanel Margin="5 10">
                     <!--name-->
-                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" ToolTip="Home">
+                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" ToolTip="Home" Cursor="Hand">
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Resume last analysis"/>
                     </Button>
                     <Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>
@@ -73,12 +74,38 @@
             <!--Create new analysis-->
             <materialDesign:Card Margin="5 0 0 0" Grid.Column="2" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5">
                 <StackPanel Margin="5 10">
-                    <!--name-->
-                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" ToolTip="Home">
+                    <!--start new project button-->
+                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" Command="{Binding StartNewProjectCommand}">
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Start new analysis"/>
                     </Button>
-                    <Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>
-                    <TextBlock Text="Created: 05/05/2020" Style="{StaticResource TextTextblockStyle}"/>
+                    <Image Source="pack://application:,,,/Ressources/Situation_1_nah_analysiert.jpg" Margin="5 10"/>
+                    <materialDesign:ColorZone Mode="PrimaryDark">
+                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="How it works:"/>
+                    </materialDesign:ColorZone>
+                    <!--upload-->
+                    <DockPanel Margin="0 10">
+                        <materialDesign:PackIcon Kind="Upload" Height="60" Width="60" Foreground="SteelBlue"/>
+                        <TextBlock Text="Upload an image, a sequence or a video which needs to be analysed." 
+                               Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <!--meta data-->
+                    <DockPanel Margin="0 10">
+                        <materialDesign:PackIcon Kind="DataUsage" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <TextBlock Text="Extend the metadata of these by adding more information to them." 
+                               Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+                    <!--analyse-->
+                    <DockPanel Margin="0 10">
+                        <materialDesign:PackIcon Kind="GoogleAnalytics" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <TextBlock Text="Start the analysis. When finished, a report will be generated." HorizontalAlignment="Stretch"
+                               Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <!--Finish-->
+                    <DockPanel Margin="0 10">
+                        <materialDesign:PackIcon Kind="FileReport" Height="60" Width="60" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                        <TextBlock Text="Analyse the report, save it and export it." HorizontalAlignment="Stretch"
+                               Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
+                    </DockPanel>
 
                 </StackPanel>
             </materialDesign:Card>
@@ -87,9 +114,8 @@
         
         <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
                 ToolTip="Back" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5"
-                Command="{x:Static materialDesign:Transitioner.MovePreviousCommand}" 
                 materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="2" Height="30" Width="30">
-                <materialDesign:PackIcon Kind="ArrowLeft" Height="24" Width="24" />
+                <materialDesign:PackIcon Kind="Logout" Height="20" Width="20" />
         </Button>
 
 
