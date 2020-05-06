@@ -16,9 +16,9 @@
              d:DesignHeight="900" d:DesignWidth="1100"
              >
     <Grid>
-        <!--<Grid.Background>
-            <ImageBrush ImageSource="pack://application:,,,/Ressources/IAV-Standort.jpg"/>
-        </Grid.Background>-->
+        <Grid.Background>
+            <ImageBrush ImageSource="pack://application:,,,/Ressources/IAV-Standort-2.jpg"/>
+        </Grid.Background>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="170"/>
@@ -40,10 +40,19 @@
             </DockPanel>
         </materialDesign:Card>
 
+        <!--login button-->
         <Button x:Name="Login_Button" Grid.Row="1" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
-                ToolTip="Start" materialDesign:ShadowAssist.ShadowDepth="Depth5"
-                Height="125" Width="125" Click="Login_Button_Click">
-            <materialDesign:PackIcon Kind="Login" Height="80" Width="80" />
+                ToolTip="Login" materialDesign:ShadowAssist.ShadowDepth="Depth5"
+                Height="100" Width="100" Click="Login_Button_Click">
+            <materialDesign:PackIcon Kind="Login" Height="65" Width="65" />
+        </Button>
+
+        <!--go back-->
+        <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
+                ToolTip="Go back" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5"
+                materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="2" Height="30" Width="30"
+                Command="{x:Static materialDesign:Transitioner.MovePreviousCommand}">
+            <materialDesign:PackIcon Kind="ArrowLeft" Height="20" Width="20" />
         </Button>
 
     </Grid>

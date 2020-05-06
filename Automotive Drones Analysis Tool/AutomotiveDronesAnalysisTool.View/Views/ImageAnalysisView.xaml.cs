@@ -1,5 +1,4 @@
-﻿using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -15,20 +14,13 @@ using System.Windows.Shapes;
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
     /// <summary>
-    /// Interaktionslogik für LoginView.xaml
+    /// Interaktionslogik für ImageAnalysisView.xaml
     /// </summary>
-    public partial class LoginView : UserControl
+    public partial class ImageAnalysisView : UserControl
     {
-        public LoginView()
+        public ImageAnalysisView()
         {
             InitializeComponent();
-        }
-
-        private void Login_Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Init a Viewservice and navigate to home
-            var viewService = new ViewService();
-            viewService.Show<HomeView, HomeViewModel>();
         }
     }
 }

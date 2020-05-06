@@ -11,7 +11,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <summary>
         /// Command that starts a new analysing project.
         /// </summary>
+        /// 
         public DelegateCommand StartNewProjectCommand => new DelegateCommand(StartNewProject);
+        public DelegateCommand LogoutCommand => new DelegateCommand(Logout);
 
         /// <summary>
         /// Init gets called when the view is shown.
@@ -22,5 +24,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         private void StartNewProject() => ViewService.Show<StartNewProjectView, StartNewProjectViewModel>();
+        private void Logout() => ViewService.Logout();
     }
 }

@@ -113,8 +113,9 @@
         </Grid>
         
         <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
-                ToolTip="Back" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5"
-                materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="2" Height="30" Width="30">
+                ToolTip="Logout" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5"
+                materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="2" Height="30" Width="30"
+                Command="{Binding LogoutCommand}">
                 <materialDesign:PackIcon Kind="Logout" Height="20" Width="20" />
         </Button>
 

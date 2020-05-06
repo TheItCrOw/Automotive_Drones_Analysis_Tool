@@ -48,6 +48,15 @@
                 <Setter Property="FontFamily" Value="Microsoft YaHei Light"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
+            
+            <!--Textboxes-->
+
+            <!--A textbox for Input-->
+            <Style TargetType="{x:Type TextBox}" x:Key="InputTextBoxStyle">
+                <Setter Property="FontSize" Value="17" />
+                <Setter Property="FontFamily" Value="Microsoft YaHei Light"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+            </Style>
 
         </ResourceDictionary>
     </Application.Resources>
