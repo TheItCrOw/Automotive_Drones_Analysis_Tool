@@ -1,4 +1,5 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Models;
+using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.Views;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Xmp;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
@@ -17,6 +19,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     {
         #region Properties
         private string _projectName;
+        private bool _isLoading;
 
         public DelegateCommand UploadImageCommand => new DelegateCommand(UploadImage);
 
@@ -32,12 +35,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         #endregion
 
         #region Methods
-        public override void Initiliaze(ViewService viewService)
+        public override void Initiliaze()
         {
-            ViewService = viewService;
         }
 
-        private void UploadImage()
+        private async void UploadImage()
         {
             try
             {
@@ -56,35 +58,15 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                 if (op.ShowDialog() == true)
                 {
-                    var imageAnalyseModel = new AnalysableImageModel()
+                    var imageAnalyseModel = new AnalysableImageModel();
+
+                    // Await the model creation and switch the view
+                    await Task.Run(() =>
                     {
-                        Id = new Guid(),
-                        Projectname = this.ProjectName,
-                        Image = new Bitmap(op.FileName)
-                    };
-                    imageAnalyseModel.MetaData = new Dictionary<string, string>();
-
-                    // Load the Exif metadata
-                    var directories = ImageMetadataReader.ReadMetadata(op.FileName);
-                    foreach (var directory in directories)
-                        foreach (var tag in directory.Tags)
-                            if (!imageAnalyseModel.MetaData.ContainsKey(tag.Name))
-                                imageAnalyseModel.MetaData.Add(tag.Name, tag.Description);
-
-                    // Load XMP metadata
-                    var xmpDirectory = directories.OfType<XmpDirectory>().FirstOrDefault();
-
-                    // Not every picture has XMP data.
-                    if (xmpDirectory != default(XmpDirectory))
-                    {
-                        var xmpProps = xmpDirectory.GetXmpProperties();
-                        foreach (var pair in xmpProps)
-                            if (!imageAnalyseModel.MetaData.ContainsKey(pair.Key)) // Check if key already exists
-                                imageAnalyseModel.MetaData.Add(pair.Key, pair.Value);
-                    }
-
-                    // Switch the views.
-                    ViewService.Show<ImageAnalysisView, ImageAnalysisViewModel>(imageAnalyseModel);
+                        imageAnalyseModel = GenerateImageAnalysisViewModel(op.FileName);
+                        // Switch the views. Need to do it from the dispatcher tho, since he renders the UI only.
+                        ServiceContainer.GetService<ViewService>().Show<ImageAnalysisView, ImageAnalysisViewModel>(imageAnalyseModel);
+                    });
                 }
             }
             catch (Exception ex)
@@ -92,6 +74,42 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 // TODO: Change that messagebox
                 MessageBox.Show("Couldn't upload image: " + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Generates an analysable image model out of the given path
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns></returns>
+        private AnalysableImageModel GenerateImageAnalysisViewModel(string imagePath)
+        {
+            var imageAnalyseModel = new AnalysableImageModel()
+            {
+                Id = new Guid(),
+                Projectname = this.ProjectName,
+                Image = new Bitmap(imagePath)
+            };
+            imageAnalyseModel.MetaData = new Dictionary<string, string>();
+
+            // Load the Exif metadata
+            var directories = ImageMetadataReader.ReadMetadata(imagePath);
+            foreach (var directory in directories)
+                foreach (var tag in directory.Tags)
+                    if (!imageAnalyseModel.MetaData.ContainsKey(tag.Name))
+                        imageAnalyseModel.MetaData.Add(tag.Name, tag.Description);
+
+            // Load XMP metadata
+            var xmpDirectory = directories.OfType<XmpDirectory>().FirstOrDefault();
+
+            // Not every picture has XMP data.
+            if (xmpDirectory != default(XmpDirectory))
+            {
+                var xmpProps = xmpDirectory.GetXmpProperties();
+                foreach (var pair in xmpProps)
+                    if (!imageAnalyseModel.MetaData.ContainsKey(pair.Key)) // Check if key already exists
+                        imageAnalyseModel.MetaData.Add(pair.Key, pair.Value);
+            }
+            return imageAnalyseModel;
         }
 
         #endregion

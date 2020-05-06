@@ -1,4 +1,5 @@
 ﻿using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.Views;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Xmp;
@@ -30,6 +31,7 @@ namespace AutomotiveDronesAnalysisTool.View
         public MainWindow()
         {
             InitializeComponent();
+
             ViewService.RegisterMainFrame(MainFrame);
             // Testing
             // Get the EXIF metadata

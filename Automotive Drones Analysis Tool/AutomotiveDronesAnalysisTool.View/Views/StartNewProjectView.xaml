@@ -79,5 +79,8 @@
             </Button>
         </Grid>
 
+        <!--Progress bar when loading-->
+        <ProgressBar Grid.Row="2" IsIndeterminate="{Binding IsLoading}" Height="6"/>
+
     </Grid>
 </UserControl>

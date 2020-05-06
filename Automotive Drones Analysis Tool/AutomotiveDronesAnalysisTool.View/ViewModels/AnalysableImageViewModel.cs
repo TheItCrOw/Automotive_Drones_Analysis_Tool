@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 namespace AutomotiveDronesAnalysisTool.View.ViewModels
@@ -14,7 +16,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
     {
         private string _projectName;
         private BitmapImage _image;
-        private Dictionary<string, string> _additionalInformation;
 
         public string Projectname
         {
@@ -54,6 +55,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
         }
+
 
         /// <summary>
         /// Adds a new information to the meta data

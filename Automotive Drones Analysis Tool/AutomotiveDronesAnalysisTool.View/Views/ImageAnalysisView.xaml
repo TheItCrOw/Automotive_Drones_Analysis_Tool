@@ -49,7 +49,21 @@
             
             <!--image here-->
             <materialDesign:Card Margin="0 0 10 10" materialDesign:ShadowAssist.ShadowDepth="Depth4">
-                <Image Source="{Binding ViewModel.Image}" Margin="5"/>
+                <Image Source="{Binding ViewModel.Image}" Margin="5">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
             </materialDesign:Card>
             
             <!--metadata here-->
@@ -139,6 +153,8 @@
 
         </Grid>
 
+        <!--Progress bar when loading-->
+        <ProgressBar Grid.Row="2" IsIndeterminate="{Binding IsLoading}" Height="6"/>
 
     </Grid>
 </UserControl>

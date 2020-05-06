@@ -1,4 +1,5 @@
 ﻿using AutomotiveDronesAnalysisTool.View.Views;
+using AutomotiveDronesAnalysisTool.View.Services;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
@@ -18,12 +19,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <summary>
         /// Init gets called when the view is shown.
         /// </summary>
-        public override void Initiliaze(ViewService viewService)
+        public override void Initiliaze()
         {
-            ViewService = viewService;
         }
 
-        private void StartNewProject() => ViewService.Show<StartNewProjectView, StartNewProjectViewModel>();
-        private void Logout() => ViewService.Logout();
+        private void StartNewProject() => ServiceContainer.GetService<ViewService>().Show<StartNewProjectView, StartNewProjectViewModel>();
+        private void Logout() => ServiceContainer.GetService<ViewService>().Logout();
     }
 }

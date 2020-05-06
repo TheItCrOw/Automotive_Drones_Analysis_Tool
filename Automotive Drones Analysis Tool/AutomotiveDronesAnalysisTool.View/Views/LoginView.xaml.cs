@@ -1,4 +1,5 @@
 ﻿using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using AutomotiveDronesAnalysisTool.View.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,6 +29,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             // Init a Viewservice and navigate to home
             var viewService = new ViewService();
+
+            ServiceContainer.CreateContainer();
+            ServiceContainer.RegisterService<ViewService>(viewService);
+
             viewService.Show<HomeView, HomeViewModel>();
         }
     }

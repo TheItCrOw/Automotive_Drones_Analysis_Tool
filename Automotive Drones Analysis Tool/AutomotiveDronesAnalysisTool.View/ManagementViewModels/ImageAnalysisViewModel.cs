@@ -1,11 +1,14 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.View.ViewModels;
 using AutomotiveDronesAnalysisTool.View.Views.Modal;
+using AutomotiveDronesAnalysisTool.View.Services;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
@@ -28,13 +31,18 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             set => SetProperty(ref _viewModel, value);
         }
 
-        public override void Initiliaze(ViewService viewService)
+        public async override void Initiliaze()
         {
             try
             {
-                ViewService = viewService;
-                _projectModel = (AnalysableImageModel)Model;
-                ViewModel = new AnalysableImageViewModel(_projectModel);
+                IsLoading = true;
+                await Task.Run(() =>
+                {
+                    _projectModel = (AnalysableImageModel)Model;
+                    ViewModel = new AnalysableImageViewModel(_projectModel);
+                    Thread.Sleep(1000);
+                });
+                IsLoading = false;
             }
             catch (Exception ex)
             {
