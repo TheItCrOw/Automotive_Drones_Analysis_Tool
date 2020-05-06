@@ -37,7 +37,7 @@
         </materialDesign:Card>
 
         <!--main content-->
-        <Grid Grid.Row="1" Margin="10 5">
+        <Grid Grid.Row="1" Margin="10 5" Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -134,14 +134,27 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <!--Name of property-->
                                         <TextBlock Text="{Binding Path=Key}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left"
                                                TextWrapping="Wrap"/>
-
                                         <!--value of property-->
                                         <TextBlock Text="{Binding Path=Value}" FontSize="15" TextWrapping="Wrap"
                                                Grid.Column="1" HorizontalAlignment="Left"/>
+                                        
+                                        <!--buttons-->
+                                        <DockPanel Grid.Column="2">
+                                            <!--edit-->
+                                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Margin="0 0 5 0"
+                                                    Width="20" Height="20" ToolTip="Edit">
+                                                <materialDesign:PackIcon Kind="Edit" Height="15" Width="15" />
+                                            </Button>
+                                            <!--delete-->
+                                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="20" Height="20" ToolTip="Edit">
+                                                <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
+                                            </Button>
+                                        </DockPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -154,7 +167,7 @@
         </Grid>
 
         <!--Progress bar when loading-->
-        <ProgressBar Grid.Row="2" IsIndeterminate="{Binding IsLoading}" Height="6"/>
+        <ProgressBar Grid.Row="2" IsIndeterminate="{Binding IsLoading}" Height="8" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
 
     </Grid>
 </UserControl>
