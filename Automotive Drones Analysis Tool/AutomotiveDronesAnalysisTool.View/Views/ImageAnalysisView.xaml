@@ -137,21 +137,28 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <!--Name of property-->
-                                        <TextBlock Text="{Binding Path=Key}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left"
+                                        <TextBlock Text="{Binding Path=Item1}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left"
                                                TextWrapping="Wrap"/>
                                         <!--value of property-->
-                                        <TextBlock Text="{Binding Path=Value}" FontSize="15" TextWrapping="Wrap"
+                                        <TextBlock Text="{Binding Path=Item2}" FontSize="15" TextWrapping="Wrap"
                                                Grid.Column="1" HorizontalAlignment="Left"/>
                                         
                                         <!--buttons-->
                                         <DockPanel Grid.Column="2">
-                                            <!--edit-->
-                                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Margin="0 0 5 0"
-                                                    Width="20" Height="20" ToolTip="Edit">
+                                            <!--edit. Get the ancestor datacontext for executing command-->
+                                            <Button x:Name="Edit_Button" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                                                    Margin="0 0 5 0" Width="20" Height="20" ToolTip="Edit" 
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.EditInformationCommand}"
+                                                    CommandParameter="{Binding Path=Item1}"
+                                                    >
                                                 <materialDesign:PackIcon Kind="Edit" Height="15" Width="15" />
                                             </Button>
-                                            <!--delete-->
-                                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Width="20" Height="20" ToolTip="Edit">
+                                            <!--delete. Get the ancestor datacontext for executing command-->
+                                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
+                                                    Width="20" Height="20" ToolTip="Edit" x:Name="Delete_Button"
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteInformationCommand}"
+                                                    CommandParameter="{Binding Path=Item1}"
+                                                    >
                                                 <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
                                             </Button>
                                         </DockPanel>

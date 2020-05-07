@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,12 +21,19 @@ namespace AutomotiveDronesAnalysisTool.View.Views.Modal
         /// <summary>
         /// The valuepair that will be added as a new information
         /// </summary>
-        public KeyValuePair<string,string> NewInformation { get; private set; }
+        public Tuple<string,string> NewInformation { get; private set; }
         private HashSet<string> _alreadyAddedList;
-        public AddInformationView(HashSet<string> alreadyAddedList)
+        public AddInformationView(HashSet<string> alreadyAddedList, 
+            Tuple<string,string> currentPair = null)
         {
             InitializeComponent();
             _alreadyAddedList = alreadyAddedList;
+
+            if(currentPair != null)
+            {
+                Name_Textbox.Text = currentPair.Item1;
+                Value_Textbox.Text = currentPair.Item2;
+            }
         }
 
         private void Confirm_Button_Click(object sender, RoutedEventArgs e)
@@ -46,7 +54,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.Modal
                 return;
             }
 
-            NewInformation = new KeyValuePair<string, string>(Name_Textbox.Text, Value_Textbox.Text);
+            NewInformation = Tuple.Create(Name_Textbox.Text, Value_Textbox.Text);
             DialogResult = true;
             Close();
         }

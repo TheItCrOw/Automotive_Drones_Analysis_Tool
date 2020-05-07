@@ -30,8 +30,8 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
 
         [DataMember]
         /// <summary>
-        /// The information provided by the user.
+        /// The information provided by the user. Item1 = name, Item2 = value
         /// </summary>
-        public Dictionary<string, string> AdditionalInformation { get; set; }
+        public List<Tuple<string,string>> AdditionalInformation { get; set; }
     }
 }

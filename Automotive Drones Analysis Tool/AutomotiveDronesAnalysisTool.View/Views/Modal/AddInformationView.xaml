@@ -29,11 +29,11 @@
         </materialDesign:Card>
 
         <!--add name-->
-        <TextBox Text="{Binding ProjectName}" Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="1" 
+        <TextBox Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="1" 
                          materialDesign:HintAssist.Hint="Name" materialDesign:HintAssist.IsFloating="True" x:Name="Name_Textbox"/>
         
         <!--add value-->
-        <TextBox Text="{Binding ProjectName}" Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="2" 
+        <TextBox Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="2" 
                          materialDesign:HintAssist.Hint="Value" materialDesign:HintAssist.IsFloating="True" x:Name="Value_Textbox"/>
 
         <!--error message-->

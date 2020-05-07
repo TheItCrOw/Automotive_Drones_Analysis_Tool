@@ -21,6 +21,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// Adds new information to the InformationDictionary
         /// </summary>
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
+        public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
+        public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
+
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -79,12 +82,52 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
             try
             {
-                ViewModel.AddInformation();
+                ViewModel.AddInformationCommand?.Execute();
             }
             catch (Exception ex)
             {
                 // TODO: Replace messagebox
                 MessageBox.Show($"Couldn't add new information: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Edit information
+        /// </summary>
+        /// <param name="key"></param>
+        private void EditInformation(string key)
+        {
+            if (ViewModel == null)
+                throw new NullReferenceException("AnalysableViewModel is null. Can't edit information.");
+
+            try
+            {
+                ViewModel.EditInformationCommand?.Execute(key);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace messagebox
+                MessageBox.Show($"Couldn't edit information: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Delete information
+        /// </summary>
+        /// <param name="key"></param>
+        private void DeleteInformation(string key)
+        {
+            if (ViewModel == null)
+                throw new NullReferenceException("AnalysableViewModel is null. Can't delete information.");
+
+            try
+            {
+                ViewModel.DeleteInformationCommand?.Execute(key);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace messagebox
+                MessageBox.Show($"Couldn't delete information: {ex}");
             }
         }
     }
