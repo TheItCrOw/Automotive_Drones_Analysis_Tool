@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 namespace AutomotiveDronesAnalysisTool.Utility
@@ -31,6 +32,20 @@ namespace AutomotiveDronesAnalysisTool.Utility
 
                 return bitmapImage;
             }
+        }
+
+        /// <summary>
+        /// Converts the given bitmap into a bitmap source
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static BitmapSource BitmapToBitmapSource(Bitmap source)
+        {
+            return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                          source.GetHbitmap(),
+                          IntPtr.Zero,
+                          Int32Rect.Empty,
+                          BitmapSizeOptions.FromEmptyOptions());
         }
     }
 }

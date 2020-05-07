@@ -19,7 +19,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     {
         #region Properties
         private string _projectName;
-        private bool _isLoading;
 
         public DelegateCommand UploadImageCommand => new DelegateCommand(UploadImage);
 
@@ -37,6 +36,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         #region Methods
         public override void Initiliaze()
         {
+        }
+
+        public override void Dispose()
+        {
+            ProjectName = null;
         }
 
         private async void UploadImage()
@@ -64,7 +68,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     await Task.Run(() =>
                     {
                         imageAnalyseModel = GenerateImageAnalysisViewModel(op.FileName);
-                        // Switch the views. Need to do it from the dispatcher tho, since he renders the UI only.
+                        // Switch the views.
                         ServiceContainer.GetService<ViewService>().Show<ImageAnalysisView, ImageAnalysisViewModel>(imageAnalyseModel);
                     });
                 }

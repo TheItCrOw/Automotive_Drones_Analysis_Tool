@@ -31,7 +31,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _image;
             set => SetProperty(ref _image, value);
         }
-
+        
         /// <summary>
         /// Metadata of the image
         /// </summary>
@@ -71,6 +71,5 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 AdditionalInformation.Add(addInfoView.NewInformation.Key, addInfoView.NewInformation.Value);
             }
         }
-
     }
 }

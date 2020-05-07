@@ -13,6 +13,11 @@ namespace AutomotiveDronesAnalysisTool.View.Services
     public class ViewService : ServiceBase
     {
         /// <summary>
+        /// The lastly visited view. Item1 = View, Item2 = ViewModel
+        /// </summary>
+        private Tuple<UserControl, ManagementViewModelBase> _lastView;
+
+        /// <summary>
         /// The frame that holds all the views.
         /// </summary>
         public static Frame MainFrame { get; private set; }
@@ -49,7 +54,16 @@ namespace AutomotiveDronesAnalysisTool.View.Services
                     viewModel.Model = model;
 
                 viewModel.Initiliaze();
-                MainFrame.Content = view;
+
+                // Dispose the last view before switching
+                if (_lastView != null)
+                    _lastView.Item2.Dispose();
+
+                // Super important to handle navigation of Frame right! Delete the history,
+                // otherwise we stack up references of images of the views which cluster the memory.
+                MainFrame.NavigationService.RemoveBackEntry();
+                MainFrame.Navigate(view);
+                _lastView = Tuple.Create<UserControl, ManagementViewModelBase>(view, viewModel);
             });
         }
 

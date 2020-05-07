@@ -52,6 +52,24 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
+        /// Release the ressources used in this view
+        /// </summary>
+        public override void Dispose()
+        {
+            // If the init is still loading, we want to wait before doing any action.
+            // If we dispose before the data is loaded, we do not release any ressources.
+            if (IsLoading)
+                Dispose();
+
+            _projectModel.Image.Dispose(); // Clear image from model
+            _projectModel = null;
+            ViewModel.Image?.StreamSource.Dispose(); // Clear the stream
+            ViewModel.Image = null; // Clear the image
+            ViewModel = null;
+            GC.Collect();
+        }
+
+        /// <summary>
         /// Add information to the metadata
         /// </summary>
         private void AddInformation()

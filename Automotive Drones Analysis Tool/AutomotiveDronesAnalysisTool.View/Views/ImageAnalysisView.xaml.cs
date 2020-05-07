@@ -22,5 +22,12 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             InitializeComponent();
         }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Analyse_Image.Source = null;
+            UpdateLayout();
+            GC.Collect();
+        }
     }
 }

@@ -13,7 +13,7 @@
              TextOptions.TextRenderingMode="Auto"
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             d:DesignHeight="900" d:DesignWidth="1100">
+             d:DesignHeight="900" d:DesignWidth="1100" Unloaded="UserControl_Unloaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,7 +49,7 @@
             
             <!--image here-->
             <materialDesign:Card Margin="0 0 10 10" materialDesign:ShadowAssist.ShadowDepth="Depth4">
-                <Image Source="{Binding ViewModel.Image}" Margin="5">
+                <Image x:Name="Analyse_Image" Source="{Binding ViewModel.Image}" Margin="5">
                     <Image.Style>
                         <Style TargetType="Image">
                             <Style.Triggers>

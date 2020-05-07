@@ -23,6 +23,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         {
         }
 
+        public override void Dispose()
+        {
+        }
+
         private void StartNewProject() => ServiceContainer.GetService<ViewService>().Show<StartNewProjectView, StartNewProjectViewModel>();
         private void Logout() => ServiceContainer.GetService<ViewService>().Logout();
     }

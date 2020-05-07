@@ -10,7 +10,7 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
-    public abstract class ManagementViewModelBase : BindableBase
+    public abstract class ManagementViewModelBase : BindableBase, IDisposable
     {
         private bool _isLoading;
 
@@ -23,5 +23,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand NavigateHomeCommand => new DelegateCommand(NavigateHome);
         private void NavigateHome() => ServiceContainer.GetService<ViewService>().Show<HomeView, HomeViewModel>();
         public abstract void Initiliaze();
+        public abstract void Dispose();
     }
 }
