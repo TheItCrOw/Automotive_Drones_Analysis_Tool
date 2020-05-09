@@ -2,6 +2,7 @@
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 using AForge.Math.Geometry;
+using Alturos.Yolo;
 using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Extensions;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,59 +69,94 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
 
             // Testing =>
-            //Pen blackPen = new Pen(Color.Black, 3);
 
-            //using(var graphics = Graphics.FromImage(model.Image))
-            //{
-            //    graphics.DrawLine(blackPen, 0, 0, 5472, 3648);
 
-            //}
 
-            //GOOD HERE
-            // First prepare the image and make the background black
+            // <=
+
+            //model.Image = TestShapeDetection(model.Image);
+            YoloTest(model.Image);
+            Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
+        }
+
+        private void YoloTest(Bitmap image)
+        {
+            var configurationDetector = new ConfigurationDetector();
+            var config = configurationDetector.Detect();
+
+            var cfgPath = "E:\\WPF Projects\\Automotive_Drones_Analysis_Tool\\LearnedDatasets\\yolov3.cfg";
+            var weightsPath = "E:\\WPF Projects\\Automotive_Drones_Analysis_Tool\\LearnedDatasets\\yolov3.weights";
+            var namesPath = "E:\\WPF Projects\\Automotive_Drones_Analysis_Tool\\LearnedDatasets\\coco.names";
+
+            using(var yoloWrapper = new YoloWrapper(cfgPath, weightsPath, namesPath))
+            {
+                using(var memStream = new MemoryStream())
+                {
+                    image.Save(memStream, ImageFormat.Png);
+                    var items = yoloWrapper.Detect(memStream.ToArray());
+
+                    foreach(var foundItem in items)
+                    {
+                        using(var g = Graphics.FromImage(image))
+                        {
+                            var pen = new Pen(Color.White, 10);
+                            g.DrawRectangle(pen, foundItem.X, foundItem.Y, foundItem.Width, foundItem.Height);
+                            var font = new Font(FontFamily.GenericMonospace, 150.0F, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
+                            g.DrawString(foundItem.Type.ToString(), font, Brushes.Red, new PointF(foundItem.X, foundItem.Y));
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TensorTest(Bitmap image)
+        {
+            var weightsPath = "E:\\WPF Projects\\Automotive_Drones_Analysis_Tool\\LearnedDatasets\\trained_weights_final.h5";
+
+        }
+
+        private Bitmap TestShapeDetection(Bitmap image)
+        {
+            // step 1 - turn background to black
             // create filter
-            //HSLFiltering filter = new HSLFiltering();
+            HSLFiltering filter = new HSLFiltering();
+            // set color ranges to keep
+            filter.Hue = new IntRange(30, 225);
+            filter.Saturation = new AForge.Range(0, 1f);
+            filter.Luminance = new AForge.Range(0.50f, 1);
+            // apply the filter
+            filter.ApplyInPlace(image);
+
+            // create filter
+            //YCbCrFiltering filter = new YCbCrFiltering();
             //// set color ranges to keep
-            //filter.Hue = new IntRange(160, 200);
-            //filter.Saturation = new AForge.Range(0, 1);
-            //filter.Luminance = new AForge.Range(0, 1);
+            //filter.Y = new AForge.Range(0.5f, 1);
+            //filter.Cb = new AForge.Range(-0.2f, 0.5f);
+            //filter.Cr = new AForge.Range(-0.2f, 0.5f);
             //// apply the filter
             //filter.ApplyInPlace(model.Image);
 
-
-
-
-
             // lock image
-            var bitmapData = model.Image.LockBits(
-                new Rectangle(0, 0, model.Image.Width, model.Image.Height),
-                ImageLockMode.ReadWrite, model.Image.PixelFormat);
-
-            // step 1 - turn background to black
-            ColorFiltering colorFilter = new ColorFiltering();
-
-            colorFilter.Red = new IntRange(0, 170);
-            colorFilter.Green = new IntRange(0, 170);
-            colorFilter.Blue = new IntRange(0, 170);
-            colorFilter.FillOutsideRange = false;
-
-            colorFilter.ApplyInPlace(bitmapData);
+            var bitmapCopy = image;
+            var bitmapData = image.LockBits(
+                new Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.ReadWrite, image.PixelFormat);
 
             // step 2 - locating objects
             BlobCounter blobCounter = new BlobCounter();
 
             blobCounter.FilterBlobs = true;
-            blobCounter.MinHeight = 50;
-            blobCounter.MinWidth = 50;
+            blobCounter.MinHeight = 30;
+            blobCounter.MinWidth = 30;
 
             blobCounter.ProcessImage(bitmapData);
             Blob[] blobs = blobCounter.GetObjectsInformation();
-            model.Image.UnlockBits(bitmapData);
+            image.UnlockBits(bitmapData);
 
             // step 3 - check objects' type and highlight
             SimpleShapeChecker shapeChecker = new SimpleShapeChecker();
 
-            Graphics g = Graphics.FromImage(model.Image);
+            Graphics g = Graphics.FromImage(bitmapCopy);
             Pen redPen = new Pen(Color.Red, 10);
             Pen yellowPen = new Pen(Color.Yellow, 2);
             Pen greenPen = new Pen(Color.Green, 2);
@@ -168,40 +205,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             bluePen.Dispose();
             yellowPen.Dispose();
             g.Dispose();
-
-
-
-
-
-
-            // locate objects using blob counter
-            //BlobCounter blobCounter = new BlobCounter();
-            //blobCounter.ProcessImage(model.Image);
-            //Blob[] blobs = blobCounter.GetObjectsInformation();
-            //// create Graphics object to draw on the image and a pen
-            //Graphics g = Graphics.FromImage(model.Image);
-            //Pen bluePen = new Pen(Color.Blue, 2);
-            //// check each object and draw circle around objects, which
-            //// are recognized as circles
-            //for (int i = 0, n = blobs.Length -2; i < n; i++)
-            //{
-            //    List<IntPoint> edgePoints = blobCounter.GetBlobsEdgePoints(blobs[i]);
-            //    if (edgePoints.Count < 2)
-            //        continue;
-            //    List<IntPoint> corners = PointsCloud.FindQuadrilateralCorners(edgePoints);
-
-            //    g.DrawPolygon(bluePen, ToPointsArray(corners));
-            //}
-
-            //bluePen.Dispose();
-            //g.Dispose();
-
-
-
-            // <=
-
-
-            Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
+            return image;
         }
 
         private System.Drawing.Point[] ToPointsArray(List<IntPoint> points)

@@ -26,6 +26,8 @@
   <ItemGroup>
     <PackageReference Include="AForge" Version="2.2.5" />
     <PackageReference Include="AForge.Imaging" Version="2.2.5" />
+    <PackageReference Include="Alturos.Yolo" Version="2.6.4" />
+    <PackageReference Include="Alturos.YoloV2TinyVocData" Version="1.0.0" />
     <PackageReference Include="MetadataExtractor" Version="2.4.0" />
     <PackageReference Include="Prism.Core" Version="7.2.0.1422" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
