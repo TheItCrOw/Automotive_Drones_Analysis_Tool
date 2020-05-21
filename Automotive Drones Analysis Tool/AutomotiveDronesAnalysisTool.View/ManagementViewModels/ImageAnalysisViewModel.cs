@@ -16,6 +16,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     {
         private AnalysableImageModel _projectModel;
         private AnalysableImageViewModel _viewModel;
+        private bool _imageEditModeActivated;
 
         /// <summary>
         /// Adds new information to the InformationDictionary
@@ -23,7 +24,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
-
+        public DelegateCommand StartImageAnalysisCommand => new DelegateCommand(StartImageAnalysis);
+        public DelegateCommand SwitchViewModesCommand => new DelegateCommand(SwitchViewModes);
+        public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectItem);
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -32,6 +35,15 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         {
             get => _viewModel;
             set => SetProperty(ref _viewModel, value);
+        }
+
+        /// <summary>
+        /// True if image edit mode is activated.
+        /// </summary>
+        public bool ImageEditModeActivated
+        {
+            get => _imageEditModeActivated;
+            set => SetProperty(ref _imageEditModeActivated, value);
         }
 
         public async override void Initiliaze()
@@ -43,14 +55,13 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 {
                     _projectModel = (AnalysableImageModel)Model;
                     ViewModel = new AnalysableImageViewModel(_projectModel);
-                    Thread.Sleep(1000);
                 });
                 IsLoading = false;
             }
             catch (Exception ex)
             {
-                // TODO: Change messagebox.
-                MessageBox.Show($"Couldn´t init the project: {ex}");
+                // TODO: Change messagebox. and log error
+                MessageBox.Show($"Project creation was cancelled.");
             }
         }
 
@@ -62,12 +73,56 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             // If the init is still loading, we want to wait before doing any action.
             // If we dispose before the data is loaded, we do not release any ressources.
 
-            _projectModel.Image.Dispose(); // Clear image from model
+            _projectModel?.Image.Dispose(); // Clear image from model
+            _projectModel?.ImageCopy.Dispose(); // Clear copy
             _projectModel = null;
-            ViewModel.Image?.StreamSource.Dispose(); // Clear the stream
-            ViewModel.Image = null; // Clear the image
+            ViewModel?.Image?.StreamSource.Dispose(); // Clear the stream
+            ViewModel?.ImageCopy?.StreamSource.Dispose(); // Clear copy stream
             ViewModel = null;
             GC.Collect();
+        }
+
+        /// <summary>
+        /// Deletes the detected item by it's type
+        /// </summary>
+        private void DeleteDetectItem(string key)
+        {
+            if (ViewModel == null)
+                throw new NullReferenceException("AnalysableViewModel is null. Can't delete item.");
+
+            try
+            {
+                ViewModel.DeleteDetectedItem(key);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace messagebox
+                MessageBox.Show($"Couldn't delete item: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Switches between default view and image edit view
+        /// </summary>
+        private void SwitchViewModes() => ImageEditModeActivated = ImageEditModeActivated ? false : true;
+
+        /// <summary>
+        /// Starts the image analysis
+        /// </summary>
+        private async void StartImageAnalysis()
+        {
+            try
+            {
+                IsLoading = true;
+                await Task.Run(() => ViewModel.AnalyseImageCommand?.Execute());
+                IsLoading = false;
+                SwitchViewModesCommand?.Execute();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log error
+                MessageBox.Show("Cancelled image analysis.");
+            }
         }
 
         /// <summary>

@@ -27,11 +27,17 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
         private void Login_Button_Click(object sender, RoutedEventArgs e)
         {
-            // Init a Viewservice and navigate to home
+            // Init the services and navigate to home
             var viewService = new ViewService();
+            var globalEnviromentService = new GlobalEnviromentService();
+            var yoloCommunicationService = new YOLOCommunicationService();
+            var dialogService = new DialogService();
 
             ServiceContainer.CreateContainer();
             ServiceContainer.RegisterService<ViewService>(viewService);
+            ServiceContainer.RegisterService<GlobalEnviromentService>(globalEnviromentService);
+            ServiceContainer.RegisterService<YOLOCommunicationService>(yoloCommunicationService);
+            ServiceContainer.RegisterService<DialogService>(dialogService);
 
             viewService.Show<HomeView, HomeViewModel>();
         }

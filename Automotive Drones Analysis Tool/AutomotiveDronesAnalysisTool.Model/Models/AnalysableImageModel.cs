@@ -24,6 +24,12 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
 
         [DataMember]
         /// <summary>
+        /// The copy of the actual image that is to be analysed
+        /// </summary>
+        public Bitmap ImageCopy { get; set; }
+
+        [DataMember]
+        /// <summary>
         /// The dictionary which contains the Exif and XMP metadata of the model.
         /// </summary>
         public Dictionary<string, string> MetaData { get; set; }

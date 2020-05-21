@@ -43,6 +43,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             ProjectName = null;
         }
 
+        /// <summary>
+        /// Upload a image to be analysed. Loads the EXIF and XMP data
+        /// </summary>
         private async void UploadImage()
         {
             try
@@ -67,7 +70,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     // Await the model creation and switch the view
                     await Task.Run(() =>
                     {
-                        imageAnalyseModel = GenerateImageAnalysisViewModel(op.FileName);
+                        imageAnalyseModel = GenerateImageAnalysisModel(op.FileName);
                         // Switch the views.
                         ServiceContainer.GetService<ViewService>().Show<ImageAnalysisView, ImageAnalysisViewModel>(imageAnalyseModel);
                     });
@@ -85,13 +88,14 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// </summary>
         /// <param name="imagePath"></param>
         /// <returns></returns>
-        private AnalysableImageModel GenerateImageAnalysisViewModel(string imagePath)
+        private AnalysableImageModel GenerateImageAnalysisModel(string imagePath)
         {
             var imageAnalyseModel = new AnalysableImageModel()
             {
                 Id = new Guid(),
                 Projectname = this.ProjectName,
-                Image = new Bitmap(imagePath)
+                Image = new Bitmap(imagePath),
+                ImageCopy = new Bitmap(imagePath)
             };
             imageAnalyseModel.MetaData = new Dictionary<string, string>();
 
