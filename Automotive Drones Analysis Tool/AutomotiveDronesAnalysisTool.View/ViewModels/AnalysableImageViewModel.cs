@@ -142,10 +142,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Image?.StreamSource.Dispose(); // Clear the stream
             ImageCopy?.StreamSource.Dispose(); // Clear copy stream
             foreach (var item in DetectedObjects) // Clear detected items.
-            {
-                item.Image.StreamSource.Dispose();
-                item.Model.Image.Dispose();
-            }
+                item?.Image?.StreamSource?.Dispose();
         }
 
         /// <summary>
@@ -203,7 +200,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 using (var g = Graphics.FromImage(image))
                 {
                     // TODO: Place that into a user config? 
-                    var penWidth = image.Width * 0.005f;
+                    var penWidth = image.Width * 0.0025f;
                     var fontSize = image.Width * 0.025f;
                     var pen = new Pen(Color.White, penWidth);
 
@@ -232,8 +229,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     new Rectangle(item.X, item.Y, item.Width, item.Height), // source bitmap. define the part to crop out.
                     GraphicsUnit.Pixel);
             }
-            var shapeDetectedImage = TestShapeDetection(currentImage);
-            item.Image = BitmapHelper.ConvertBitmapToBitmapImage(shapeDetectedImage);
+            //var shapeDetectedImage = TestShapeDetection(currentImage);
+            item.Image = BitmapHelper.ConvertBitmapToBitmapImage(currentImage);
         }
 
         /// <summary>
@@ -313,7 +310,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             // set color ranges to keep
             filter.Hue = new IntRange(0, 359);
             filter.Saturation = new AForge.Range(0, 1f);
-            filter.Luminance = new AForge.Range(0.55f, 1);
+            filter.Luminance = new AForge.Range(0.45f, 1);
             // apply the filter
             filter.ApplyInPlace(image);
 

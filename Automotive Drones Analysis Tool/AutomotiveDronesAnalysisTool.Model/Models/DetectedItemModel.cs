@@ -22,7 +22,5 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
         public int Height { get; set; }
         [DataMember]
         public string Name { get; set; }
-        [DataMember]
-        public Bitmap Image { get; set; }
     }
 }

@@ -18,12 +18,15 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 {
     /// <summary>
     /// Interaktionslogik für ImageAnalysisView.xaml
+    /// We
     /// </summary>
     public partial class ImageAnalysisView : UserControl
     {
         Point _currentPoint = new Point();
         Point _startPoint = new Point();
+        ShapePallet _currentPallet = ShapePallet.Rectangle;
         Rectangle _lastlyDrawnRectangle = new Rectangle();
+        Line _lastlyDrawnLine = new Line();
 
         public ImageAnalysisView()
         {
@@ -55,11 +58,21 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 _currentPoint = e.GetPosition(ViewModelImage_Canvas);
 
-                var rectangle = DrawRectangle(_startPoint, _currentPoint, out var x, out var y);
-
-                if (_lastlyDrawnRectangle != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnRectangle);
-
-                _lastlyDrawnRectangle = rectangle;
+                switch (_currentPallet)
+                {
+                    case ShapePallet.Rectangle:
+                        var rectangle = DrawRectangle(_startPoint, _currentPoint, out var x, out var y);
+                        if (_lastlyDrawnRectangle != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnRectangle);
+                        _lastlyDrawnRectangle = rectangle;
+                        break;
+                    case ShapePallet.Line:
+                        var line = DrawLine(_startPoint, _currentPoint);
+                        if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
+                        _lastlyDrawnLine = line;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -82,6 +95,28 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             // After we added the new object, we can savely delete all rectangle children of the canvas. We dont need them
             ViewModelImage_Canvas.Children.Clear();
+        }
+
+        /// <summary>
+        /// Draws a line with the given points
+        /// </summary>
+        /// <param name="startPoint"></param>
+        /// <param name="endPoint"></param>
+        /// <returns></returns>
+        private Line DrawLine(Point startPoint, Point endPoint)
+        {
+            var line = new Line();
+            line.Stroke = Brushes.Blue;
+            line.StrokeThickness = 3;
+            line.X1 = startPoint.X;
+            line.X2 = endPoint.X;
+            line.Y1 = startPoint.Y;
+            line.Y2 = endPoint.Y;
+            line.IsHitTestVisible = false;
+
+            ViewModelImage_Canvas.Children.Add(line);
+
+            return line;
         }
 
         /// <summary>
@@ -119,5 +154,21 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             return rectangle;
         }
+
+        private void ChooseRectangle_Button_Click(object sender, RoutedEventArgs e)
+        {
+            _currentPallet = ShapePallet.Rectangle;
+        }
+
+        private void ChooseLine_Button_Click(object sender, RoutedEventArgs e)
+        {
+            _currentPallet = ShapePallet.Line;
+        }
+    }
+
+    public enum ShapePallet
+    {
+        Rectangle,
+        Line
     }
 }

@@ -58,8 +58,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public DetectedItemViewModel(DetectedItemModel model)
         {
             Model = model;
-            if (model.Image != null)
-                Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
             Name = model.Name;
             X = model.X;
             Y = model.Y;
