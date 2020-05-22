@@ -9,6 +9,10 @@ using System.Text;
 using System.Windows;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Drawing;
+using Alturos.Yolo.Model;
+using AutomotiveDronesAnalysisTool.Utility;
+using AutomotiveDronesAnalysisTool.Model.Arguments;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
@@ -27,6 +31,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand StartImageAnalysisCommand => new DelegateCommand(StartImageAnalysis);
         public DelegateCommand SwitchViewModesCommand => new DelegateCommand(SwitchViewModes);
         public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectItem);
+        public DelegateCommand<DetectedItemArguments> AddDetectedItemFromCanvasCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItemFromCanvas);
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -80,6 +85,44 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             ViewModel?.ImageCopy?.StreamSource.Dispose(); // Clear copy stream
             ViewModel = null;
             GC.Collect();
+        }
+
+        /// <summary>
+        /// Adds a new detected item
+        /// </summary>
+        private void AddDetectedItemFromCanvas(DetectedItemArguments newItem)
+        {
+            if (ViewModel == null)
+                throw new NullReferenceException("AnalysableViewModel is null. Can't delete item.");
+            try
+            {
+
+                // First we need to transform the coordiantes to match with the different image size
+                var canvasWidth = newItem.CanvasSize.X;
+                var canvasHeight = newItem.CanvasSize.Y;
+
+                var imageWidth = _projectModel.Image.Width;
+                var imageHeight = _projectModel.Image.Height;
+
+                double widthRatio = (double)imageWidth / (double)canvasWidth;
+                double heightRatio = (double)imageHeight / (double)canvasHeight;
+
+                var yoloItem = new YoloItem()
+                {
+                    Type = "Test",
+                    X = (int)(newItem.X * widthRatio),
+                    Y = (int)(newItem.Y * heightRatio),
+                    Width = (int)(newItem.Width * widthRatio),
+                    Height = (int)(newItem.Height * heightRatio)
+                };
+
+                ViewModel.AddDetectedItemCommand?.Execute(yoloItem);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log here
+                MessageBox.Show("Couldn't add the new item.");
+            }
         }
 
         /// <summary>

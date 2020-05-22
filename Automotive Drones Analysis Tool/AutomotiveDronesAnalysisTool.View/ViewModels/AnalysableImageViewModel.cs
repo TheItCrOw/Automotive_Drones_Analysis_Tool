@@ -35,6 +35,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand AnalyseImageCommand => new DelegateCommand(AnalyseImage);
+        public DelegateCommand<YoloItem> AddDetectedItemCommand => new DelegateCommand<YoloItem>(AddDetectedItem);
 
         public string Projectname
         {
@@ -143,6 +144,17 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
             Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
+        }
+
+        /// <summary>
+        /// Adds a new yoloItem and draws it onto the picture.
+        /// </summary>
+        /// <param name="yoloItem"></param>
+        private void AddDetectedItem(YoloItem yoloItem)
+        {
+            DetectedObjects.Add(yoloItem);
+            var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
+            Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
         }
 
         /// <summary>
