@@ -4,6 +4,7 @@ using AForge.Imaging.Filters;
 using AForge.Math.Geometry;
 using Alturos.Yolo;
 using Alturos.Yolo.Model;
+using AutomotiveDronesAnalysisTool.Model.Arguments;
 using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Extensions;
@@ -35,7 +36,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand AnalyseImageCommand => new DelegateCommand(AnalyseImage);
-        public DelegateCommand<YoloItem> AddDetectedItemCommand => new DelegateCommand<YoloItem>(AddDetectedItem);
+        public DelegateCommand<DetectedItemArguments> AddDetectedItemCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItem);
 
         public string Projectname
         {
@@ -74,13 +75,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <summary>
         /// List of found objects by YOLO
         /// </summary>
-        public ObservableCollection<YoloItem> DetectedObjects { get; set; }
+        public ObservableCollection<DetectedItemViewModel> DetectedObjects { get; set; }
+
 
         public AnalysableImageViewModel(AnalysableImageModel model)
         {
-            Model = model;
             AdditionalInformation = new ObservableCollection<Tuple<string, string>>();
-            DetectedObjects = new ObservableCollection<YoloItem>();
+            DetectedObjects = new ObservableCollection<DetectedItemViewModel>();
+
+            Model = model;
             Id = new Guid();
             Projectname = model.Projectname;
             Metadata = model.MetaData;
@@ -90,33 +93,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 foreach (var pair in model.AdditionalInformation)
                     AdditionalInformation.Add(Tuple.Create(pair.Item1, pair.Item2));
 
-            // Calculate the current widthHeight and set it into the YOLo config.
-            var yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(model);
-
-            if (yoloWidthHeight == 0)
-            {
-                if (ServiceContainer.GetService<DialogService>()
-                    .AskForInteger(
-                    "Missing altitude",
-                    "We couldn't find the absolute altitude in the metadata of the image from where the picture was taken. " +
-                    "If you do know the altitude of the given picture, please add the value of it now and press the confirm button. This helps analysing the image. " +
-                    "Please only enter a value if you can ensure the correctness. Typically it varies from 450 to 470. " +
-                    "If the altitude is not known, please press the cancel button. A default value will then be chosen to analyse the image.",
-                    out var result))
-                {
-                    // Add the result as "AdditionalInformation"
-                    AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString()));
-                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(model, result);
-                }
-                else
-                {
-                    // if the user does not input the altitude, we assume the deafult altitude
-                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(model, 453);
-                }
-            }
-
-            // Update the YOLO config with the given widthHeight
-            ServiceContainer.GetService<YOLOCommunicationService>().SetWidthHeight(yoloWidthHeight);
+            SetupYOLOConfig();
         }
 
         /// <summary>
@@ -125,7 +102,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <param name="key"></param>
         public void DeleteDetectedItem(string key)
         {
-            DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Type == key));
+            DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Name == key));
             var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
             Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
         }
@@ -140,19 +117,77 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             // First detect all the opjects in the image.
             foreach (var item in ServiceContainer.GetService<YOLOCommunicationService>().DetectItemsInBitmap(Model.Image))
-                Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(item));
+            {
+                var detectedItemArgs = new DetectedItemArguments()
+                {
+                    X = item.X,
+                    Y = item.Y,
+                    Width = item.Width,
+                    Height = item.Height,
+                    CanvasSize = new System.Drawing.Point(Model.Image.Width, Model.Image.Height)
+                };
+
+                AddDetectedItem(detectedItemArgs);
+            }
 
             var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
             Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
         }
 
         /// <summary>
+        /// Dispose the viewmodel
+        /// </summary>
+        public void Dispose()
+        {
+            Image?.StreamSource.Dispose(); // Clear the stream
+            ImageCopy?.StreamSource.Dispose(); // Clear copy stream
+            foreach (var item in DetectedObjects) // Clear detected items.
+            {
+                item.Image.StreamSource.Dispose();
+                item.Model.Image.Dispose();
+            }
+        }
+
+        /// <summary>
         /// Adds a new yoloItem and draws it onto the picture.
         /// </summary>
         /// <param name="yoloItem"></param>
-        private void AddDetectedItem(YoloItem yoloItem)
+        private void AddDetectedItem(DetectedItemArguments detectedItemArgs)
         {
-            DetectedObjects.Add(yoloItem);
+            // First we need to transform the coordiantes to match with the different image size
+            var canvasWidth = detectedItemArgs.CanvasSize.X;
+            var canvasHeight = detectedItemArgs.CanvasSize.Y;
+
+            var imageWidth = Model.Image.Width;
+            var imageHeight = Model.Image.Height;
+
+            double widthRatio = (double)imageWidth / (double)canvasWidth;
+            double heightRatio = (double)imageHeight / (double)canvasHeight;
+
+            // We dont want identical names
+            var itemName = "object #0";
+            int i = 0;
+            while (DetectedObjects.Any(o => o.Name == itemName))
+            {
+                i++;
+                itemName = $"object #{i}";
+            }
+
+            var detectedItem = new DetectedItemModel()
+            {
+                Id = new Guid(),
+                AnalysableImageModelId = Id,
+                Name = itemName,
+                X = (int)(detectedItemArgs.X * widthRatio),
+                Y = (int)(detectedItemArgs.Y * heightRatio),
+                Width = (int)(detectedItemArgs.Width * widthRatio),
+                Height = (int)(detectedItemArgs.Height * heightRatio)
+            };
+            var detectedItemViewModel = new DetectedItemViewModel(detectedItem);
+
+            AnalyseItem(detectedItemViewModel);
+            Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
+
             var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
             Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
         }
@@ -161,7 +196,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// Draws the given items onto the Image.
         /// </summary>
         /// <param name="items"></param>
-        private Bitmap DrawObjectsOntoImage(IEnumerable<YoloItem> items, Bitmap image)
+        private Bitmap DrawObjectsOntoImage(IEnumerable<DetectedItemViewModel> items, Bitmap image)
         {
             foreach (var item in items)
             {
@@ -176,10 +211,29 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     g.DrawRectangle(pen, item.X, item.Y, item.Width, item.Height);
 
                     var font = new Font(FontFamily.GenericSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-                    g.DrawString(item.Type, font, Brushes.Red, new PointF(item.X, item.Y));
+                    g.DrawString(item.Name, font, Brushes.Red, new PointF(item.X, item.Y));
                 }
             }
             return image;
+        }
+
+        /// <summary>
+        /// Splits the image into its objects and analyses them individually
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="image"></param>
+        private void AnalyseItem(DetectedItemViewModel item)
+        {
+            var currentImage = new Bitmap(item.Width, item.Height);
+            using (var g = Graphics.FromImage(currentImage))
+            {
+                g.DrawImage(Model.Image,
+                    new Rectangle(0, 0, currentImage.Width, currentImage.Height), // target bitmap
+                    new Rectangle(item.X, item.Y, item.Width, item.Height), // source bitmap. define the part to crop out.
+                    GraphicsUnit.Pixel);
+            }
+            var shapeDetectedImage = TestShapeDetection(currentImage);
+            item.Image = BitmapHelper.ConvertBitmapToBitmapImage(shapeDetectedImage);
         }
 
         /// <summary>
@@ -200,10 +254,16 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     if (pair.Key.ToLower().Contains("absolutealtitude"))
                     {
                         var trimmedString = pair.Value;
-                        if (trimmedString.StartsWith("-"))
+                        if (trimmedString.StartsWith("-") || trimmedString.StartsWith("+"))
                             trimmedString = pair.Value.Substring(1, pair.Value.Length - 1); // Get rid of the "+" at the start of string
 
-                        altitude = (int)float.Parse(trimmedString) / 100; // Get the altitude. We divide by 100 to normalize the "." in the string
+                        if (trimmedString.Contains("."))
+                        {
+                            var index = trimmedString.IndexOf(".");
+                            trimmedString = trimmedString.Substring(0, index);
+                        }
+
+                        altitude = (int)float.Parse(trimmedString); // Get the altitude.
                     }
 
                 if (altitude == 0) return 0;
@@ -276,8 +336,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             BlobCounter blobCounter = new BlobCounter();
 
             blobCounter.FilterBlobs = true;
-            blobCounter.MinHeight = 60;
-            blobCounter.MinWidth = 60;
+            blobCounter.MinHeight = 50;
+            blobCounter.MinWidth = 50;
 
             blobCounter.ProcessImage(bitmapData);
             Blob[] blobs = blobCounter.GetObjectsInformation();
@@ -344,6 +404,40 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Sets up the YOLO config correctly.
+        /// </summary>
+        private void SetupYOLOConfig()
+        {
+            // Calculate the current widthHeight and set it into the YOLo config.
+            var yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model);
+
+            if (yoloWidthHeight == 0)
+            {
+                if (ServiceContainer.GetService<DialogService>()
+                    .AskForInteger(
+                    "Missing altitude",
+                    "We couldn't find the absolute altitude in the metadata of the image from where the picture was taken. " +
+                    "If you do know the altitude of the given picture, please add the value of it now and press the confirm button. This helps analysing the image. " +
+                    "Please only enter a value if you can ensure the correctness. Typically it varies from 450 to 470. " +
+                    "If the altitude is not known or simply doesn't exist, please press the cancel button. A default value will then be chosen to analyse the image.",
+                    out var result))
+                {
+                    // Add the result as "AdditionalInformation"
+                    AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString()));
+                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, result);
+                }
+                else
+                {
+                    // if the user does not input the altitude, we assume the deafult altitude
+                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453);
+                }
+            }
+
+            // Update the YOLO config with the given widthHeight
+            ServiceContainer.GetService<YOLOCommunicationService>().SetWidthHeight(yoloWidthHeight);
+        }
+
+        /// <summary>
         /// Adds a new information to the meta data
         /// </summary>
         private void AddInformation()
@@ -396,5 +490,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         /// <param name="key"></param>
         private void DeleteInformation(string key) => AdditionalInformation?.Remove(AdditionalInformation.FirstOrDefault(t => t.Item1 == key));
+
     }
 }

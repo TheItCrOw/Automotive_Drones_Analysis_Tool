@@ -215,10 +215,11 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="0.5*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!--button ribbon-->
@@ -243,7 +244,7 @@
             </materialDesign:Card>
 
 
-            <!--testing canvas right here-->
+            <!--drawing canvas right here-->
             <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Margin="15" 
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
@@ -257,10 +258,32 @@
                     </Canvas.Background>
                 </Canvas>
             </Border>
+            
+            <!--grid splitter-->
+            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="Gray" Margin="10 0 10 0"/>
+
+            <!--analysed objects images-->
+            <ScrollViewer Grid.Row="3" Margin="0 10 0 0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}" x:Name="AnalysedImages_ItemsControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <materialDesign:Card Margin="10 0 10 20" materialDesign:ShadowAssist.ShadowDepth="Depth5">
+                                <Image Source="{Binding Image}"/>
+                            </materialDesign:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
 
 
             <!--list of found items-->            
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" Margin="0 5 10 10" Width="300" >
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1" Grid.Row="1" Visibility="Collapsed" 
+                          VerticalAlignment="Stretch" Margin="0 5 10 10" Width="300" Grid.RowSpan="3">
                 <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -268,7 +291,7 @@
                                 <StackPanel Margin="5 0 5 0">
                                     <!--name and buttons-->
                                     <Grid Margin="0 3 0 0">
-                                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="{Binding Type}" Foreground="SteelBlue"/>
+                                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="{Binding Name}" Foreground="SteelBlue"/>
                                         <DockPanel LastChildFill="False" HorizontalAlignment="Right">
                                             <!--edit button-->
                                             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Edit"
@@ -279,7 +302,7 @@
                                             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Delete"
                                                     Height="25" Width="25"
                                                     Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteDetectedItemCommand}"
-                                                    CommandParameter="{Binding Path=Type}"
+                                                    CommandParameter="{Binding Path=Name}"
                                                         >
                                                 <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
                                             </Button>

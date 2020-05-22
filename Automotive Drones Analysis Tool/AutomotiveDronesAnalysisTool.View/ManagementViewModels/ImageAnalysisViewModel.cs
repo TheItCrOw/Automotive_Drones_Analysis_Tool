@@ -13,6 +13,7 @@ using System.Drawing;
 using Alturos.Yolo.Model;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.Model.Arguments;
+using System.Linq;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
@@ -30,7 +31,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand StartImageAnalysisCommand => new DelegateCommand(StartImageAnalysis);
         public DelegateCommand SwitchViewModesCommand => new DelegateCommand(SwitchViewModes);
-        public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectItem);
+        public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectedItem);
         public DelegateCommand<DetectedItemArguments> AddDetectedItemFromCanvasCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItemFromCanvas);
 
         /// <summary>
@@ -75,17 +76,14 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// </summary>
         public override void Dispose()
         {
-            // If the init is still loading, we want to wait before doing any action.
-            // If we dispose before the data is loaded, we do not release any ressources.
-
             _projectModel?.Image.Dispose(); // Clear image from model
             _projectModel?.ImageCopy.Dispose(); // Clear copy
             _projectModel = null;
-            ViewModel?.Image?.StreamSource.Dispose(); // Clear the stream
-            ViewModel?.ImageCopy?.StreamSource.Dispose(); // Clear copy stream
+            ViewModel?.Dispose();
             ViewModel = null;
             GC.Collect();
         }
+
 
         /// <summary>
         /// Adds a new detected item
@@ -96,39 +94,19 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 throw new NullReferenceException("AnalysableViewModel is null. Can't delete item.");
             try
             {
-
-                // First we need to transform the coordiantes to match with the different image size
-                var canvasWidth = newItem.CanvasSize.X;
-                var canvasHeight = newItem.CanvasSize.Y;
-
-                var imageWidth = _projectModel.Image.Width;
-                var imageHeight = _projectModel.Image.Height;
-
-                double widthRatio = (double)imageWidth / (double)canvasWidth;
-                double heightRatio = (double)imageHeight / (double)canvasHeight;
-
-                var yoloItem = new YoloItem()
-                {
-                    Type = "Test",
-                    X = (int)(newItem.X * widthRatio),
-                    Y = (int)(newItem.Y * heightRatio),
-                    Width = (int)(newItem.Width * widthRatio),
-                    Height = (int)(newItem.Height * heightRatio)
-                };
-
-                ViewModel.AddDetectedItemCommand?.Execute(yoloItem);
+                ViewModel.AddDetectedItemCommand?.Execute(newItem);
             }
             catch (Exception ex)
             {
                 // TODO: Log here
-                MessageBox.Show("Couldn't add the new item.");
+                MessageBox.Show($"Couldn't add the new item: {ex}");
             }
         }
 
         /// <summary>
         /// Deletes the detected item by it's type
         /// </summary>
-        private void DeleteDetectItem(string key)
+        private void DeleteDetectedItem(string key)
         {
             if (ViewModel == null)
                 throw new NullReferenceException("AnalysableViewModel is null. Can't delete item.");
