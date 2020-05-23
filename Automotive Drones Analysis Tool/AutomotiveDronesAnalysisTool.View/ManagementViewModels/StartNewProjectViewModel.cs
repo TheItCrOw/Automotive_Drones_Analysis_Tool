@@ -72,7 +72,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     {
                         imageAnalyseModel = GenerateImageAnalysisModel(op.FileName);
                         // Switch the views.
-                        ServiceContainer.GetService<ViewService>().Show<ImageAnalysisView, ImageAnalysisViewModel>(imageAnalyseModel);
+                        ServiceContainer.GetService<ViewService>().Show<PrepareImageAnalysisView, PrepareImageAnalysisViewModel>(imageAnalyseModel);
                     });
                 }
             }

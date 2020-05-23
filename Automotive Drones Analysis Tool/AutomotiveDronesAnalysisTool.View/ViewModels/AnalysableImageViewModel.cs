@@ -148,6 +148,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             ImageCopy?.StreamSource.Dispose(); // Clear copy stream
             foreach (var item in DetectedObjects) // Clear detected items.
                 item?.Image?.StreamSource?.Dispose();
+            DetectedObjects?.Clear();
         }
 
         /// <summary>

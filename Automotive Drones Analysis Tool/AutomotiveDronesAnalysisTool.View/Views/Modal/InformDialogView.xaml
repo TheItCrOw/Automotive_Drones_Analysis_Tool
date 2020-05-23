@@ -29,7 +29,7 @@
         
         <!--text-->
         <ScrollViewer Grid.Row="1">
-            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" FontSize="15" x:Name="Text_Textbox" Margin="5"/>
+            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" FontSize="15" x:Name="Text_Textbox" Margin="5" VerticalAlignment="Center"/>
         </ScrollViewer>
         
         <!--Buttons-->

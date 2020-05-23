@@ -68,13 +68,16 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         /// </summary>
         /// <param name="title"></param>
         /// <param name="message"></param>
-        public void InformUser(string title, string message)
+        public bool InformUser(string title, string message)
         {
+            bool result = false;
             Application.Current?.Dispatcher?.Invoke(() =>
             {
                 var informView = new InformDialogView(title, message);
                 informView.ShowDialog();
+                result = informView.DialogResult.Value;
             });
+            return result;
         }
 
     }

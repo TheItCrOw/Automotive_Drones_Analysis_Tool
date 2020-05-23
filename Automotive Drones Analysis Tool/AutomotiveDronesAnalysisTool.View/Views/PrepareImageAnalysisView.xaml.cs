@@ -20,7 +20,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
     /// Interaktionslogik für ImageAnalysisView.xaml
     /// Since this would be overcomplicated to wrap this logic into the MVVM pattern, we do it in code behind.
     /// </summary>
-    public partial class ImageAnalysisView : UserControl
+    public partial class PrepareImageAnalysisView : UserControl
     {
         Point _currentPoint = new Point();
         Point _startPoint = new Point();
@@ -30,7 +30,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         Brush _switchShapesButtonBrush;
         Button[] _palletButtons;
 
-        public ImageAnalysisView()
+        public PrepareImageAnalysisView()
         {
             InitializeComponent();
             _palletButtons = new Button[] 
@@ -139,7 +139,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 Shape = _currentShape
             };
 
-            ((ImageAnalysisViewModel)this.DataContext).AddDetectedItemFromCanvasCommand.Execute(detectedItemArgs);
+            ((PrepareImageAnalysisViewModel)this.DataContext).AddDetectedItemFromCanvasCommand.Execute(detectedItemArgs);
 
             // After we added the new object, we can savely delete all rectangle children of the canvas. We dont need them
             ViewModelImage_Canvas.Children.Clear();

@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
-    public class ImageAnalysisViewModel : ManagementViewModelBase
+    public class PrepareImageAnalysisViewModel : ManagementViewModelBase
     {
         private AnalysableImageModel _projectModel;
         private AnalysableImageViewModel _viewModel;
@@ -33,6 +33,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand SwitchViewModesCommand => new DelegateCommand(SwitchViewModes);
         public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectedItem);
         public DelegateCommand<DetectedItemArguments> AddDetectedItemFromCanvasCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItemFromCanvas);
+        public DelegateCommand GenerateReportCommand => new DelegateCommand(GenerateReport);
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -66,8 +67,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Change messagebox. and log error
-                MessageBox.Show($"Project creation was cancelled.");
+                ServiceContainer.GetService<DialogService>().InformUser("Info", $"Project creation was cancelled.");
             }
         }
 
@@ -84,6 +84,28 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             GC.Collect();
         }
 
+        /// <summary>
+        /// Takes in the image preparation of this view and starts the report generation.
+        /// </summary>
+        private void GenerateReport()
+        {
+            // Ask the user for confirmation
+            if (!ServiceContainer.GetService<DialogService>()
+                .InformUser("Continue?", "Before you continue, please confirm that you have read and implemented the checknotes."))
+                return;
+
+            // Check if a reference line exists
+            if(!ViewModel.DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
+            {
+                ServiceContainer.GetService<DialogService>()
+                    .InformUser("Info", "Reference line is missing. Please refer to checklist point 3 and draw the reference line first.");
+                return;
+            }
+
+
+
+            //ServiceContainer.GetService<DialogService>().InformUser();
+        }
 
         /// <summary>
         /// Adds a new detected item
@@ -98,8 +120,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Log here
-                MessageBox.Show($"Couldn't add the new item: {ex}");
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't add the new item: {ex}");
             }
         }
 
@@ -117,8 +138,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Replace messagebox
-                MessageBox.Show($"Couldn't delete item: {ex}");
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't delete item: {ex}");
             }
         }
 
@@ -141,8 +161,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Log error
-                MessageBox.Show("Cancelled image analysis.");
+                ServiceContainer.GetService<DialogService>().InformUser("Info", "Cancelled image analysis.");
             }
         }
 
@@ -160,8 +179,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Replace messagebox
-                MessageBox.Show($"Couldn't add new information: {ex}");
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't add new information: {ex}");
             }
         }
 
@@ -180,8 +198,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Replace messagebox
-                MessageBox.Show($"Couldn't edit information: {ex}");
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't edit new information: {ex}");
             }
         }
 
@@ -200,8 +217,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Replace messagebox
-                MessageBox.Show($"Couldn't delete information: {ex}");
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't delete information: {ex}");
             }
         }
     }
