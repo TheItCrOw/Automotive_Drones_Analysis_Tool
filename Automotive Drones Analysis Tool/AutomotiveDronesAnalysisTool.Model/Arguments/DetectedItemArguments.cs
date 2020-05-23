@@ -14,7 +14,14 @@ namespace AutomotiveDronesAnalysisTool.Model.Arguments
         public int Y { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-
         public Point CanvasSize { get; set; }
+        public DrawingShape Shape { get; set; }
+    }
+
+    public enum DrawingShape
+    {
+        Rectangle,
+        Line,
+        ReferenceLine
     }
 }

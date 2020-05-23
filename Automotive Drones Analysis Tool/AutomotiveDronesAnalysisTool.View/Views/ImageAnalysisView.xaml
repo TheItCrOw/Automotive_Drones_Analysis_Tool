@@ -325,6 +325,11 @@
                                     HorizontalAlignment="Right" Margin="0 0 5 0" ToolTip="Line" Click="ChooseLine_Button_Click">
                                 <materialDesign:PackIcon Kind="VectorLine" Height="25" Width="25"/>
                             </Button>
+                            <!--Line-->
+                            <Button x:Name="ChooseReferenceLine_Button" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Height="30" Width="30" 
+                                    HorizontalAlignment="Right" Margin="0 0 5 0" ToolTip="Reference" Click="ChooseReferenceLine_Button_Click">
+                                <materialDesign:PackIcon Kind="MeasuringTape" Height="25" Width="25"/>
+                            </Button>
                         </DockPanel>
                     </StackPanel>
                 </materialDesign:Card>
@@ -334,7 +339,7 @@
             <!--grid splitter-->
             <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="Gray" Margin="10 0 10 0" Grid.ColumnSpan="2"/>
 
-            <!--analysed objects images-->
+            <!--analysed objects -->
             <ScrollViewer Grid.Row="3" Margin="5 0 0 0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Grid.ColumnSpan="2">
                 <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}" x:Name="AnalysedImages_ItemsControl">
                     <ItemsControl.ItemsPanel>
@@ -345,7 +350,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <materialDesign:Card Margin="5" materialDesign:ShadowAssist.ShadowDepth="Depth5" VerticalAlignment="Stretch"
-                                                 MinWidth="250" MaxWidth="550">
+                                                 MinWidth="200" MaxWidth="550">
                                 <Grid Margin="5">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -410,8 +415,7 @@
                                             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Delete"
                                                     Height="25" Width="25"
                                                     Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteDetectedItemCommand}"
-                                                    CommandParameter="{Binding Path=Name}"
-                                                        >
+                                                    CommandParameter="{Binding Path=Name}">
                                                 <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
                                             </Button>
                                         </DockPanel>

@@ -18,19 +18,29 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 {
     /// <summary>
     /// Interaktionslogik für ImageAnalysisView.xaml
-    /// We
+    /// Since this would be overcomplicated to wrap this logic into the MVVM pattern, we do it in code behind.
     /// </summary>
     public partial class ImageAnalysisView : UserControl
     {
         Point _currentPoint = new Point();
         Point _startPoint = new Point();
-        ShapePallet _currentPallet = ShapePallet.Rectangle;
+        DrawingShape _currentShape = DrawingShape.Rectangle;
         Rectangle _lastlyDrawnRectangle = new Rectangle();
         Line _lastlyDrawnLine = new Line();
+        Brush _switchShapesButtonBrush;
+        Button[] _palletButtons;
 
         public ImageAnalysisView()
         {
             InitializeComponent();
+            _palletButtons = new Button[] 
+            { 
+                ChooseRectangle_Button, 
+                ChooseLine_Button, 
+                ChooseReferenceLine_Button 
+            };
+            _switchShapesButtonBrush = ChooseRectangle_Button.Background;
+            ChooseRectangle_Button_Click(ChooseRectangle_Button, new RoutedEventArgs());
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
@@ -58,14 +68,14 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 _currentPoint = e.GetPosition(ViewModelImage_Canvas);
 
-                switch (_currentPallet)
+                switch (_currentShape)
                 {
-                    case ShapePallet.Rectangle:
+                    case DrawingShape.Rectangle:
                         var rectangle = DrawRectangle(_startPoint, _currentPoint, out var x, out var y);
                         if (_lastlyDrawnRectangle != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnRectangle);
                         _lastlyDrawnRectangle = rectangle;
                         break;
-                    case ShapePallet.Line:
+                    case DrawingShape.Line:
                         var line = DrawLine(_startPoint, _currentPoint);
                         if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
                         _lastlyDrawnLine = line;
@@ -76,19 +86,45 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             }
         }
 
+        /// <summary>
+        /// When the drawing finishes, add the drawing onto the detectedobjects
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ViewModelImage_Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // Draw a rectangle around the pos of the mouse while its being pressed down.
-            var rectangle = DrawRectangle(_startPoint, _currentPoint, out var x, out var y);
+            double x = 0;
+            double y = 0;
+            double height = 0;
+            double width = 0;
+            switch (_currentShape)
+            {
+                case DrawingShape.Rectangle:
+                    var rectangle = DrawRectangle(_startPoint, _currentPoint, out x, out y);
+                    height = rectangle.Height;
+                    width = rectangle.Width;
+                    break;
+                case DrawingShape.Line:
+                    var line = DrawLine(_startPoint, _currentPoint);
+                    x = line.X1;
+                    y = line.Y1;
+                    height = line.Y2;
+                    width = line.X2;
+                    break;
+                default:
+                    break;
+            }
 
             // Inform the viewmodel that a new object has been added.
             var detectedItemArgs = new DetectedItemArguments()
             {
                 X = (int)x,
                 Y = (int)y,
-                Height = (int)rectangle.Height,
-                Width = (int)rectangle.Width,
-                CanvasSize = new System.Drawing.Point((int)ViewModelImage_Canvas.Width, (int)ViewModelImage_Canvas.Height)
+                Height = (int)height,
+                Width = (int)width,
+                CanvasSize = new System.Drawing.Point((int)ViewModelImage_Canvas.Width, (int)ViewModelImage_Canvas.Height),
+                Shape = _currentShape
             };
 
             ((ImageAnalysisViewModel)this.DataContext).AddDetectedItemFromCanvasCommand.Execute(detectedItemArgs);
@@ -157,18 +193,40 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
         private void ChooseRectangle_Button_Click(object sender, RoutedEventArgs e)
         {
-            _currentPallet = ShapePallet.Rectangle;
+
+            _currentShape = DrawingShape.Rectangle;
+            UpdateButtonUI((Button)sender);
         }
 
         private void ChooseLine_Button_Click(object sender, RoutedEventArgs e)
         {
-            _currentPallet = ShapePallet.Line;
+            _currentShape = DrawingShape.Line;
+            UpdateButtonUI((Button)sender);
+        }
+
+        private void ChooseReferenceLine_Button_Click(object sender, RoutedEventArgs e)
+        {
+            _currentShape = DrawingShape.ReferenceLine;
+            UpdateButtonUI((Button)sender);
+        }
+
+        private void UpdateButtonUI(Button currentButton)
+        {
+            foreach (var button in _palletButtons)
+            {
+                if (button.Name == currentButton.Name)
+                {
+                    button.Background = _switchShapesButtonBrush;
+                    button.BorderBrush = _switchShapesButtonBrush;
+                }
+                else
+                {
+                    button.Background = Brushes.Gray;
+                    button.BorderBrush = Brushes.Gray;
+                }
+            }
         }
     }
 
-    public enum ShapePallet
-    {
-        Rectangle,
-        Line
-    }
+
 }

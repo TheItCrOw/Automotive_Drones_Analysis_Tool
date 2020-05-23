@@ -1,4 +1,5 @@
-﻿using AutomotiveDronesAnalysisTool.Model.Bases;
+﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
+using AutomotiveDronesAnalysisTool.Model.Bases;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,5 +23,7 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
         public int Height { get; set; }
         [DataMember]
         public string Name { get; set; }
+        [DataMember]
+        public DrawingShape Shape { get; set; }
     }
 }

@@ -178,11 +178,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 X = (int)(detectedItemArgs.X * widthRatio),
                 Y = (int)(detectedItemArgs.Y * heightRatio),
                 Width = (int)(detectedItemArgs.Width * widthRatio),
-                Height = (int)(detectedItemArgs.Height * heightRatio)
+                Height = (int)(detectedItemArgs.Height * heightRatio),
+                Shape = detectedItemArgs.Shape
             };
             var detectedItemViewModel = new DetectedItemViewModel(detectedItem);
 
-            AnalyseItem(detectedItemViewModel);
+            // We only want to analyse the items that have been cropped out via rectangle
+            if (detectedItem.Shape == DrawingShape.Rectangle)
+                AnalyseItem(detectedItemViewModel);
+
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
 
             var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
@@ -204,8 +208,20 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     var fontSize = image.Width * 0.025f;
                     var pen = new Pen(Color.White, penWidth);
 
-                    // Draw around the object
-                    g.DrawRectangle(pen, item.X, item.Y, item.Width, item.Height);
+                    // Draw the shape of the object
+                    switch (item.Shape)
+                    {
+                        case DrawingShape.Rectangle:
+                            g.DrawRectangle(pen, item.X, item.Y, item.Width, item.Height);
+                            break;
+                        case DrawingShape.Line:
+                            penWidth = image.Width * 0.005f;
+                            pen = new Pen(Color.Blue, penWidth);
+                            g.DrawLine(pen, item.X, item.Y, item.Width, item.Height);
+                            break;
+                        default:
+                            break;
+                    }
 
                     var font = new Font(FontFamily.GenericSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
                     g.DrawString(item.Name, font, Brushes.Red, new PointF(item.X, item.Y));

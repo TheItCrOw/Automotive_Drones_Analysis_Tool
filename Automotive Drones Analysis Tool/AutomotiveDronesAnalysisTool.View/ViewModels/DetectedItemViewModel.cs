@@ -1,4 +1,5 @@
-﻿using AutomotiveDronesAnalysisTool.Model.Models;
+﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
+using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.Utility;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private int _y;
         private int _width;
         private int _height;
+        private DrawingShape _shape;
 
         /// <summary>
         /// The image that is being analysed.
@@ -33,7 +35,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _name;
             set => SetProperty(ref _name, value);
         }
-
         public int X
         {
             get => _x;
@@ -54,6 +55,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _height;
             set => SetProperty(ref _height, value);
         }
+        public DrawingShape Shape
+        {
+            get => _shape;
+            set => SetProperty(ref _shape, value);
+        }
         #endregion
         public DetectedItemViewModel(DetectedItemModel model)
         {
@@ -63,6 +69,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Y = model.Y;
             Width = model.Width;
             Height = model.Height;
+            Shape = model.Shape;
         }
     }
 }
