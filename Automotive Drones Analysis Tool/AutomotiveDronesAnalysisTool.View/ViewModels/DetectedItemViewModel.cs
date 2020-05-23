@@ -18,6 +18,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private int _width;
         private int _height;
         private DrawingShape _shape;
+        private float _actualLength;
 
         /// <summary>
         /// The image that is being analysed.
@@ -55,6 +56,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _height;
             set => SetProperty(ref _height, value);
         }
+        public float ActualLength
+        {
+            get => _actualLength;
+            set => SetProperty(ref _actualLength, value);
+        }
         public DrawingShape Shape
         {
             get => _shape;
@@ -70,6 +76,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Width = model.Width;
             Height = model.Height;
             Shape = model.Shape;
+            ActualLength = model.ActualLength;
         }
     }
 }

@@ -151,6 +151,13 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <param name="yoloItem"></param>
         private void AddDetectedItem(DetectedItemArguments detectedItemArgs)
         {
+            // If the new item is the reference line - handle it exclusivly.
+            if(detectedItemArgs.Shape == DrawingShape.ReferenceLine)
+            {
+                AddReferenceLine(detectedItemArgs);
+                return;
+            }
+
             // First we need to transform the coordiantes to match with the different image size
             var canvasWidth = detectedItemArgs.CanvasSize.X;
             var canvasHeight = detectedItemArgs.CanvasSize.Y;
@@ -194,6 +201,56 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Handles the specific case of the new item being the reference line. There may only exist one reference line.
+        /// </summary>
+        /// <param name="detectedItemArgs"></param>
+        private void AddReferenceLine(DetectedItemArguments detectedItemArgs)
+        {
+            // We only want one reference line
+            if(DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
+            {
+                ServiceContainer.GetService<DialogService>()
+                    .InformUser("Reference line already added",
+                                "A reference line has already been added. You can only draw one. If you wish to change the current " +
+                                "reference line, delete it and draw it again.");
+                return;
+            }
+
+            if(ServiceContainer.GetService<DialogService>()
+                .AskForFloat("Actual length", "Please enter the actual length of the reference line in meters.", out var actualLength))
+            {
+                // Calculate the correct pos and length according to the images pixels
+                var canvasWidth = detectedItemArgs.CanvasSize.X;
+                var canvasHeight = detectedItemArgs.CanvasSize.Y;
+
+                var imageWidth = Model.Image.Width;
+                var imageHeight = Model.Image.Height;
+
+                double widthRatio = (double)imageWidth / (double)canvasWidth;
+                double heightRatio = (double)imageHeight / (double)canvasHeight;
+
+                var detectedItem = new DetectedItemModel()
+                {
+                    Id = new Guid(),
+                    AnalysableImageModelId = Id,
+                    Name = "Reference-line",
+                    X = (int)(detectedItemArgs.X * widthRatio),
+                    Y = (int)(detectedItemArgs.Y * heightRatio),
+                    Width = (int)(detectedItemArgs.Width * widthRatio),
+                    Height = (int)(detectedItemArgs.Height * heightRatio),
+                    Shape = detectedItemArgs.Shape,
+                    ActualLength = actualLength
+                };
+                var detectedItemViewModel = new DetectedItemViewModel(detectedItem);
+
+                Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
+
+                var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
+                Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
+            }
+        }
+
+        /// <summary>
         /// Draws the given items onto the Image.
         /// </summary>
         /// <param name="items"></param>
@@ -205,7 +262,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 {
                     // TODO: Place that into a user config? 
                     var penWidth = image.Width * 0.0025f;
-                    var fontSize = image.Width * 0.025f;
+                    var fontSize = image.Width * 0.02f;
                     var pen = new Pen(Color.White, penWidth);
 
                     // Draw the shape of the object
@@ -215,15 +272,21 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                             g.DrawRectangle(pen, item.X, item.Y, item.Width, item.Height);
                             break;
                         case DrawingShape.Line:
-                            penWidth = image.Width * 0.005f;
+                            penWidth = image.Width * 0.0025f;
                             pen = new Pen(Color.Blue, penWidth);
+                            g.DrawLine(pen, item.X, item.Y, item.Width, item.Height);
+                            break;
+                        case DrawingShape.ReferenceLine:
+                            penWidth = image.Width * 0.0025f;
+                            pen = new Pen(Color.Lime, penWidth);
+                            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
                             g.DrawLine(pen, item.X, item.Y, item.Width, item.Height);
                             break;
                         default:
                             break;
                     }
 
-                    var font = new Font(FontFamily.GenericSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
+                    var font = new Font(FontFamily.GenericSansSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
                     g.DrawString(item.Name, font, Brushes.Red, new PointF(item.X, item.Y));
                 }
             }

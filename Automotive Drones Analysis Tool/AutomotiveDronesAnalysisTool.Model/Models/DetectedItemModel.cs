@@ -25,5 +25,11 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
         public string Name { get; set; }
         [DataMember]
         public DrawingShape Shape { get; set; }
+
+        /// <summary>
+        /// The actual reallife length in meter of this object. Only has a value if the DrawingShape is ReferenceLine
+        /// </summary>
+        [DataMember]
+        public float ActualLength { get; set; }
     }
 }

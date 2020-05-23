@@ -80,6 +80,11 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                         if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
                         _lastlyDrawnLine = line;
                         break;
+                    case DrawingShape.ReferenceLine:
+                        var refLine = DrawLine(_startPoint, _currentPoint, true);
+                        if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
+                        _lastlyDrawnLine = refLine;
+                        break;
                     default:
                         break;
                 }
@@ -112,6 +117,13 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                     height = line.Y2;
                     width = line.X2;
                     break;
+                case DrawingShape.ReferenceLine:
+                    var refLine = DrawLine(_startPoint, _currentPoint, true);
+                    x = refLine.X1;
+                    y = refLine.Y1;
+                    height = refLine.Y2;
+                    width = refLine.X2;
+                    break;
                 default:
                     break;
             }
@@ -139,7 +151,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// <param name="startPoint"></param>
         /// <param name="endPoint"></param>
         /// <returns></returns>
-        private Line DrawLine(Point startPoint, Point endPoint)
+        private Line DrawLine(Point startPoint, Point endPoint, bool dashed = false)
         {
             var line = new Line();
             line.Stroke = Brushes.Blue;
@@ -149,6 +161,11 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             line.Y1 = startPoint.Y;
             line.Y2 = endPoint.Y;
             line.IsHitTestVisible = false;
+            if (dashed)
+            {
+                line.StrokeDashOffset = 2;
+                line.Stroke = Brushes.Lime;
+            }
 
             ViewModelImage_Canvas.Children.Add(line);
 

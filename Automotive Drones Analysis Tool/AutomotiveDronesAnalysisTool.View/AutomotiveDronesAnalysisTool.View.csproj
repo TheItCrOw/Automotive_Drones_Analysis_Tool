@@ -47,4 +47,22 @@
     <Resource Include="Ressources\Situation_1_nah_analysiert.jpg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Views\Modal\AskForFloatView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Modal\InformDialogView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\Modal\AskForFloatView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Modal\InformDialogView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>

@@ -290,21 +290,18 @@
                         <!--mark the top middle of car-->
                         <materialDesign:Card Margin="0 5 0 0">
                             <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
-                            2) Add a reference point to the object. You can do so by clicking onto the individual images of each object.
-                            The reference point should be placed onto the front-middle of the car. Typically, you can use the car emblem as your reference point.
-                            (e.g. VW-emblem)
+                            2) Add reference markings to the objects. You can do so by firstly switching from "Rectangle" to "Line" in the shape pallet below.
+                                After that, draw a line by holding down the left mouse button. Every object should have it's own line. The line should cut the object in half.
+                                A car should have a line typically starting at it's emblem (e.g. VW) at the front middle, ending at the windshield wipers in the back.
                             </TextBlock>
                         </materialDesign:Card>
                         <!--select the image reference mark-->
                         <materialDesign:Card Margin="0 5 0 0">
                             <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
-                            3) Lastly, make sure
-                            </TextBlock>
-                        </materialDesign:Card>
-                        <!--Give length of reference-->
-                        <materialDesign:Card Margin="0 5 0 0">
-                            <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
-                            3) Lastly, make sure
+                            3) Lastly, add a single reference line to the image itself. For that select the "Reference" shape in the pallet down below. The usage 
+                                is the same as in step 2, but you must enter the actual length of the line in meters after you've drawn it. This reference
+                                line will be used as the primary direction for the analysis. Typically you can use the white reference line in the image
+                                itself as your reference line.
                             </TextBlock>
                         </materialDesign:Card>
                     </StackPanel>
@@ -350,7 +347,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <materialDesign:Card Margin="5" materialDesign:ShadowAssist.ShadowDepth="Depth5" VerticalAlignment="Stretch"
-                                                 MinWidth="200" MaxWidth="550">
+                                                 MinWidth="220" MaxWidth="550">
                                 <Grid Margin="5">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -393,54 +390,6 @@
                 </ItemsControl>
             </ScrollViewer>
 
-
-            <!--list of found items-->            
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="1" Grid.Row="1" Visibility="Collapsed" 
-                          VerticalAlignment="Stretch" Margin="0 5 10 10" Width="300" Grid.RowSpan="3">
-                <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <materialDesign:Card Margin="5" materialDesign:ShadowAssist.ShadowDepth="Depth3">
-                                <StackPanel Margin="5 0 5 0">
-                                    <!--name and buttons-->
-                                    <Grid Margin="0 3 0 0">
-                                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="{Binding Name}" Foreground="SteelBlue"/>
-                                        <DockPanel LastChildFill="False" HorizontalAlignment="Right">
-                                            <!--edit button-->
-                                            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Edit"
-                                                    Height="25" Width="25" Margin="0 0 5 0">
-                                                <materialDesign:PackIcon Kind="Edit" Height="15" Width="15" />
-                                            </Button>
-                                            <!--delete button-->
-                                            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Delete"
-                                                    Height="25" Width="25"
-                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteDetectedItemCommand}"
-                                                    CommandParameter="{Binding Path=Name}">
-                                                <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
-                                            </Button>
-                                        </DockPanel>
-                                    </Grid>
-
-                                    <!--x and y coordiante-->
-                                    <TextBlock Padding="5" HorizontalAlignment="Center">
-                                            <Run Text="X:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="{Binding X}" FontSize="15"/>
-                                            <Run Text="Y:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="{Binding Y}" FontSize="15"/>
-                                    </TextBlock>
-                                    <!--width and height-->
-                                    <TextBlock Padding="5" HorizontalAlignment="Center">
-                                            <Run Text="Width:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="{Binding Width}" FontSize="15"/>
-                                            <Run Text="Height:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="{Binding Height}" FontSize="15"/>
-                                    </TextBlock>
-                                </StackPanel>
-                            </materialDesign:Card>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
         </Grid>
         
     </Grid>

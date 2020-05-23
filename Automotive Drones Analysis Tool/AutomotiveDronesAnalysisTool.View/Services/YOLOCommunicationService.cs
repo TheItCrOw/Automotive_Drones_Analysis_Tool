@@ -58,6 +58,10 @@ namespace AutomotiveDronesAnalysisTool.View.Services
                 {
                     image.Save(memStream, ImageFormat.Png);
                     var items = yoloWrapper.Detect(memStream.ToArray());
+                    // We do NOT want sports ball as objects. 
+                    // Later I can add a blacklist of all the objects that are not important to ignore them.
+                    items = items.Where(i => i.Type != "sports ball").Select(i => i);
+
                     for (int i = 0; i < items.Count(); i++)
                         items.ElementAt(i).Type = $"object #{i}";
 

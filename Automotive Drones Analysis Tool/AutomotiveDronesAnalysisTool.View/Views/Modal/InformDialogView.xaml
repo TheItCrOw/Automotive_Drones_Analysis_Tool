@@ -1,4 +1,4 @@
-﻿<Window x:Class="AutomotiveDronesAnalysisTool.View.Views.Modal.AskForIntegerView"
+﻿<Window x:Class="AutomotiveDronesAnalysisTool.View.Views.Modal.InformDialogView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -20,8 +20,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!--title-->
@@ -34,21 +32,8 @@
             <TextBlock Style="{StaticResource TextTitleTextblockStyle}" FontSize="15" x:Name="Text_Textbox" Margin="5"/>
         </ScrollViewer>
         
-        <!--add integer-->
-        <TextBox Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="2" 
-                         materialDesign:HintAssist.Hint="Value" materialDesign:HintAssist.IsFloating="True" x:Name="Number_Textbox"/>
-
-        <!--error message-->
-        <TextBlock Grid.Row="3" Style="{StaticResource TextTextblockStyle}" FontSize="15" Foreground="Red" Margin="5 0 0 0" x:Name="Error_Textbox"
-                   VerticalAlignment="Center" TextAlignment="Left" HorizontalAlignment="Stretch"/>
-
         <!--Buttons-->
-        <DockPanel Grid.Row="4" HorizontalAlignment="Right">
-            <!--cancel button-->
-            <Button x:Name="Cancel_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="75" Margin="5" Height="35" 
-                    Click="Cancel_Button_Click">
-                <materialDesign:PackIcon Kind="Cancel" Height="25" Width="25"/>
-            </Button>
+        <DockPanel Grid.Row="2" HorizontalAlignment="Right">
             <!--confirm button-->
             <Button x:Name="Confirm_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="75" Margin="5" Height="35"
                     Click="Confirm_Button_Click">
