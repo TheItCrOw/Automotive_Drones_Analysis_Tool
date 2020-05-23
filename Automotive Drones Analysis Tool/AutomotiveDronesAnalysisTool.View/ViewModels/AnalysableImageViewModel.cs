@@ -31,6 +31,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private BitmapImage _image;
         private BitmapImage _imageCopy;
         private readonly AnalysableImageModel Model;
+        private bool _alreadyAnalysed;
 
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
@@ -112,6 +113,9 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public void AnalyseImage()
         {
+            if (_alreadyAnalysed)
+                return;
+
             // Clear the list.
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Clear());
 
@@ -132,6 +136,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
             Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
+            _alreadyAnalysed = true;
         }
 
         /// <summary>

@@ -197,7 +197,7 @@
                              Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisConverter}}">
                 <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Command="{Binding StartImageAnalysisCommand}"
                     Margin="5" HorizontalAlignment="Right" Width="75" Height="35" ToolTip="Analyse image">
-                    <materialDesign:PackIcon Kind="Check" Height="25" Width="25"/>
+                    <materialDesign:PackIcon Kind="ArrowRight" Height="25" Width="25"/>
                 </Button>
             </materialDesign:Card>
 
@@ -298,7 +298,7 @@
                         <!--select the image reference mark-->
                         <materialDesign:Card Margin="0 5 0 0">
                             <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
-                            3) Lastly, add a single reference line to the image itself. For that select the "Reference" shape in the pallet down below. The usage 
+                            3) Lastly, add a single reference line to the image itself. To do so, select the "Reference" shape in the pallet down below. The usage 
                                 is the same as in step 2, but you must enter the actual length of the line in meters after you've drawn it. This reference
                                 line will be used as the primary direction for the analysis. Typically you can use the white reference line in the image
                                 itself as your reference line.
@@ -308,7 +308,7 @@
                 </ScrollViewer>
                 
                 <!--pencil palette-->
-                <materialDesign:Card Grid.Row="1" Margin="5 5 5 0" materialDesign:ShadowAssist.ShadowDepth="Depth3">
+                <materialDesign:Card Grid.Row="1" Margin="5 5 20 0" materialDesign:ShadowAssist.ShadowDepth="Depth3">
                     <StackPanel Margin="5">
                         <DockPanel LastChildFill="False" Margin="0 0 0 0">
                             <TextBlock Text="Shapes:" Style="{StaticResource TextTextblockStyle}" Foreground="SteelBlue" VerticalAlignment="Center"/>
@@ -334,10 +334,10 @@
             </Grid>
 
             <!--grid splitter-->
-            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="Gray" Margin="10 0 10 0" Grid.ColumnSpan="2"/>
+            <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="Gray" Margin="10 0 10 0"/>
 
             <!--analysed objects -->
-            <ScrollViewer Grid.Row="3" Margin="5 0 0 0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Grid.ColumnSpan="2">
+            <ScrollViewer Grid.Row="3" Margin="5 0 0 0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}" x:Name="AnalysedImages_ItemsControl">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -381,7 +381,27 @@
                                         </TextBlock>
                                     </StackPanel>
 
-                                    <Image Source="{Binding Image}" Grid.Row="2"/>
+                                    <!--image-->
+                                    <!--only rectangles have images-->
+                                    <Image Grid.Row="2">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Shape}" Value="Line">
+                                                        <Setter Property="Source" Value="pack://application:,,,/Ressources/Vector-Path-Line.png"/>
+                                                        <Setter Property="Margin" Value="20"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Shape}" Value="ReferenceLine">
+                                                        <Setter Property="Source" Value="pack://application:,,,/Ressources/Tape-Measure.png"/>
+                                                        <Setter Property="Margin" Value="20"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Shape}" Value="Rectangle">
+                                                        <Setter Property="Source" Value="{Binding Image}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
 
                                 </Grid>
                             </materialDesign:Card>
@@ -390,6 +410,13 @@
                 </ItemsControl>
             </ScrollViewer>
 
+            <!--go next button-->
+            <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" ToolTip="Generate report" Cursor="Hand" Grid.Row="3" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Margin="5 15 15 15" MaxWidth="250" MaxHeight="250"
+                    Height="{Binding }">
+                <materialDesign:PackIcon Kind="ArrowForward" Height="{Binding }" Width="{Binding }" Margin="40"/>
+            </Button>
+            
         </Grid>
         
     </Grid>

@@ -12,6 +12,8 @@
     <None Remove="Ressources\IAV-Standort.jpg" />
     <None Remove="Ressources\Situation_1_nah.JPG" />
     <None Remove="Ressources\Situation_1_nah_analysiert.jpg" />
+    <None Remove="Ressources\Tape-Measure.png" />
+    <None Remove="Ressources\Vector-Path-Line.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +47,8 @@
     <Resource Include="Ressources\IAV-Standort.jpg" />
     <Resource Include="Ressources\Situation_1_nah.JPG" />
     <Resource Include="Ressources\Situation_1_nah_analysiert.jpg" />
+    <Resource Include="Ressources\Tape-Measure.png" />
+    <Resource Include="Ressources\Vector-Path-Line.png" />
   </ItemGroup>
 
   <ItemGroup>
