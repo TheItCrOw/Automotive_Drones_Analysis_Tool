@@ -245,7 +245,7 @@
 
 
             <!--drawing canvas right here-->
-            <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Margin="15" 
+            <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Margin="15" VerticalAlignment="Top"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
                 <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
