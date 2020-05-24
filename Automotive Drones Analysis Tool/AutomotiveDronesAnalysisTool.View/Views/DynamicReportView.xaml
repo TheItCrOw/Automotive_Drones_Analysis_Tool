@@ -40,24 +40,6 @@
             </DockPanel>
         </materialDesign:Card>
 
-        <!--<materialDesign:Card Grid.Row="1" x:Name="Main_Canvas" VerticalAlignment="Stretch" Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth5">
-            --><!--main canvas with the image--><!--
-            <Canvas>
-                <Canvas.Background>
-                    <ImageBrush x:Name="Main_Image" ImageSource="{Binding ViewModel.Image}" Stretch="Uniform"/>
-                </Canvas.Background>
-                <Grid Margin="{Binding ElementName=Main_Image, Path=ViewboxUnits}" 
-                      Width="{Binding ElementName=Main_Image, Path=Viewbox.Width}" 
-                      Background="Red">
-                    <Button Background="Transparent">
-                        
-                    </Button>
-                </Grid>
-            </Canvas>
-        </materialDesign:Card>-->
-
-
-
         <!--image here-->
         <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" Grid.Row="1" HorizontalAlignment="Center">
             <Image Source="{Binding ViewModel.Image}" Margin="5" x:Name="ViewModel_Image"/>
@@ -70,7 +52,7 @@
             <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
-                         x:Name="ViewModelImage_Canvas" MouseDown="ViewModelImage_Canvas_MouseDown">
+                         x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
                 <Canvas.Background>
                     <SolidColorBrush Color="Black" Opacity="0.5"/>
                 </Canvas.Background>
