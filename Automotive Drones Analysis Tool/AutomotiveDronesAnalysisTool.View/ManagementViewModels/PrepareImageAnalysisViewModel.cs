@@ -14,6 +14,7 @@ using Alturos.Yolo.Model;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.Model.Arguments;
 using System.Linq;
+using AutomotiveDronesAnalysisTool.View.Views;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
@@ -38,7 +39,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <summary>
         /// Viewmodel that is being bound to the UI
         /// </summary>
-        public AnalysableImageViewModel ViewModel
+        public new AnalysableImageViewModel ViewModel
         {
             get => _viewModel;
             set => SetProperty(ref _viewModel, value);
@@ -102,9 +103,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 return;
             }
 
-
-
-            //ServiceContainer.GetService<DialogService>().InformUser();
+            // Pass the prepared model and viewmodel and show the report view
+            ServiceContainer.GetService<ViewService>().Show<DynamicReportView, DynamicReportViewModel>(Model, this.ViewModel);
         }
 
         /// <summary>

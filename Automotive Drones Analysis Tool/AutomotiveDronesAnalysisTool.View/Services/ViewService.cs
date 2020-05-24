@@ -1,5 +1,6 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Bases;
 using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using AutomotiveDronesAnalysisTool.View.ViewModels;
 using AutomotiveDronesAnalysisTool.View.Views;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TU"></typeparam>
-        public void Show<T, TU>(ModelBase model = null) where T : UserControl where TU : ManagementViewModelBase
+        public void Show<T, TU>(ModelBase model = null, ViewModelBase viewmodel = null) where T : UserControl where TU : ManagementViewModelBase
         {
             // Always handle UI stuff in the renderer thread.
             Application.Current?.Dispatcher.Invoke(() =>
@@ -52,6 +53,9 @@ namespace AutomotiveDronesAnalysisTool.View.Services
 
                 if (model != null)
                     viewModel.Model = model;
+
+                if (viewmodel != null)
+                    viewModel.ViewModel = viewmodel;
 
                 viewModel.Initiliaze();
 

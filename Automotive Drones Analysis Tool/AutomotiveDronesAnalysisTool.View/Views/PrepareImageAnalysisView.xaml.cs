@@ -43,13 +43,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ChooseRectangle_Button_Click(ChooseRectangle_Button, new RoutedEventArgs());
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Analyse_Image.Source = null;
-            UpdateLayout();
-            GC.Collect();
-        }
-
         private void ViewModelImage_Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Get the start pos of the mouse

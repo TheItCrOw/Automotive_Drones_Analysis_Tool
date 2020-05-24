@@ -13,7 +13,7 @@
              TextOptions.TextRenderingMode="Auto"
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             d:DesignHeight="900" d:DesignWidth="1100" Unloaded="UserControl_Unloaded">
+             d:DesignHeight="900" d:DesignWidth="1100" Cursor="Hand">
     <Grid>
         <!--Show this by default-->
         <Grid Visibility="{Binding ImageEditModeActivated, Converter={StaticResource InverseBoolToVisConverter}}">
@@ -239,8 +239,7 @@
             </materialDesign:Card>
 
             <!--image here-->
-            <materialDesign:Card Margin="10 10 10 5" materialDesign:ShadowAssist.ShadowDepth="Depth4" Grid.Row="1" 
-                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <materialDesign:Card Margin="10 10 10 5" materialDesign:ShadowAssist.ShadowDepth="Depth4" Grid.Row="1" HorizontalAlignment="Center">
                 <Image Source="{Binding ViewModel.Image}" Margin="5" x:Name="ViewModel_Image"/>
             </materialDesign:Card>
 

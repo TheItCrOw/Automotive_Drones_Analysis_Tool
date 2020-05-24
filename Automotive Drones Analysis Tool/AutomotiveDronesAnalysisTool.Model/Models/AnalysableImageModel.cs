@@ -39,5 +39,11 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
         /// The information provided by the user. Item1 = name, Item2 = value
         /// </summary>
         public List<Tuple<string,string>> AdditionalInformation { get; set; }
+
+        [DataMember]
+        /// <summary>
+        /// Contains all the detected objects of the <see cref="Image"/>
+        /// </summary>
+        public List<DetectedItemModel> DetectedObjects { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Bases;
 using AutomotiveDronesAnalysisTool.View.Services;
+using AutomotiveDronesAnalysisTool.View.ViewModels;
 using AutomotiveDronesAnalysisTool.View.Views;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -13,8 +14,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     public abstract class ManagementViewModelBase : BindableBase, IDisposable
     {
         private bool _isLoading;
-
         public ModelBase Model { get; set; }
+        public ViewModelBase ViewModel { get; set; }
         public bool IsLoading
         {
             get => _isLoading;
