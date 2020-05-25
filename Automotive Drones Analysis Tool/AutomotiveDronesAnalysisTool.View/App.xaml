@@ -49,7 +49,17 @@
                 <Setter Property="FontFamily" Value="Microsoft YaHei Light"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
-            
+
+            <!--A Textblock for report detected object-->
+            <Style TargetType="{x:Type TextBlock}" x:Key="DetectedObjectsTextblockStyle">
+                <Setter Property="FontSize" Value="25" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="TextAlignment" Value="Left"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+            </Style>
+
             <!--Textboxes-->
 
             <!--A textbox for Input-->

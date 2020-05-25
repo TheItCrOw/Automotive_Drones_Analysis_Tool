@@ -42,7 +42,7 @@
 
         <!--image here-->
         <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" Grid.Row="1" HorizontalAlignment="Center">
-            <Image Source="{Binding ViewModel.Image}" Margin="5" x:Name="ViewModel_Image"/>
+            <Image Source="{Binding ViewModel.CleanImageCopy}" Margin="5" x:Name="ViewModel_Image"/>
         </materialDesign:Card>
 
         <!--drawing canvas right here-->
@@ -54,7 +54,7 @@
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
                 <Canvas.Background>
-                    <SolidColorBrush Color="Black" Opacity="0.5"/>
+                    <SolidColorBrush Color="Black" Opacity="0.75"/>
                 </Canvas.Background>
             </Canvas>
         </Border>

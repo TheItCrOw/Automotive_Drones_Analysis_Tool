@@ -29,7 +29,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
     {
         private string _projectName;
         private BitmapImage _image;
-        private BitmapImage _imageCopy;
+        private BitmapImage _cleaImageCopy;
         private readonly AnalysableImageModel Model;
         private bool _alreadyAnalysed;
 
@@ -57,10 +57,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <summary>
         /// The copy of the image
         /// </summary>
-        public BitmapImage ImageCopy
+        public BitmapImage CleanImageCopy
         {
-            get => _imageCopy;
-            set => SetProperty(ref _imageCopy, value);
+            get => _cleaImageCopy;
+            set => SetProperty(ref _cleaImageCopy, value);
         }
 
         /// <summary>
@@ -89,6 +89,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Projectname = model.Projectname;
             Metadata = model.MetaData;
             Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
+            CleanImageCopy = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
 
             if (model.AdditionalInformation != null)
                 foreach (var pair in model.AdditionalInformation)
@@ -145,7 +146,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public void Dispose()
         {
             Image?.StreamSource.Dispose(); // Clear the stream
-            ImageCopy?.StreamSource.Dispose(); // Clear copy stream
+            CleanImageCopy?.StreamSource.Dispose(); // Clear copy stream
             foreach (var item in DetectedObjects) // Clear detected items.
                 item?.Image?.StreamSource?.Dispose();
             DetectedObjects?.Clear();
@@ -185,7 +186,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             var detectedItem = new DetectedItemModel()
             {
-                Id = new Guid(),
+                Id = Guid.NewGuid(),
                 AnalysableImageModelId = Id,
                 Name = itemName,
                 X = (int)(detectedItemArgs.X * widthRatio),
@@ -237,7 +238,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
                 var detectedItem = new DetectedItemModel()
                 {
-                    Id = new Guid(),
+                    Id = Guid.NewGuid(),
                     AnalysableImageModelId = Id,
                     Name = "Reference-line",
                     X = (int)(detectedItemArgs.X * widthRatio),

@@ -69,6 +69,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         #endregion
         public DetectedItemViewModel(DetectedItemModel model)
         {
+            Id = model.Id;
             Model = model;
             Name = model.Name;
             X = model.X;

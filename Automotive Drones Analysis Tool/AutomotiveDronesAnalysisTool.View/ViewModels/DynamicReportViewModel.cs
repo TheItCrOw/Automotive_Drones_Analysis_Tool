@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Media.Imaging;
 
 namespace AutomotiveDronesAnalysisTool.View.ViewModels
 {
@@ -15,6 +16,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public event InitiliazedViewModelEvent InitializedViewModel;
 
         private AnalysableImageViewModel _viewModel;
+        private BitmapImage _cleanImageCopy;
 
         /// <summary>
         /// Viewmodel that is being bound to the UI
@@ -24,6 +26,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _viewModel;
             set => SetProperty(ref _viewModel, value);
         }
+
 
         public override void Dispose()
         {
