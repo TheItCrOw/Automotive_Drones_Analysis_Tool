@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MaterialDesignThemes.Wpf;
 using MaterialDesignColors;
+using AutomotiveDronesAnalysisTool.Model.Arguments;
 
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
@@ -35,6 +36,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         List<DetectedItemViewModel> _detectedLines; // Only Lines
         DetectedItemViewModel _detectedReferenceLine;
         Dictionary<Guid, Guid> _detectedRectanglesToLines;
+        double _lengthOfOneCoordinateStep = 0; // This determines how much 1 step on the x axis is in the actual world.
+        Size _lastCanvasSize;
 
         public DynamicReportView()
         {
@@ -67,6 +70,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 // Wait a bit. We do not want the user to spam click the canvas and thus breaking it.
                 Thread.Sleep(1000);
+                _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
 
                 ViewModelImage_Canvas.Children.Clear();
 
@@ -171,13 +175,21 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 lineId = lId;
 
             var deletableItems = new List<UIElement>();
+            var allLinesOfThisObject = new List<Line>();
             foreach (var child in ViewModelImage_Canvas.Children)
             {
                 if (child is Line l && l.Tag.Equals(lineId))
+                {
                     deletableItems.Add(l);
-                else if (child is TextBlock tb && tb.Tag.Equals(correspondingDetectedItem.Id))
-                    deletableItems.Add(tb);
+                    allLinesOfThisObject.Add(l);
+                }
             }
+
+            // Highly inefficient I know, but Im short on time right now. TODO: Do this better
+            foreach (var child2 in ViewModelImage_Canvas.Children)
+                if (child2 is TextBlock textBlock && allLinesOfThisObject.Any(l => l.Tag.Equals(textBlock.Tag)))
+                    deletableItems.Add(textBlock);
+
             // Actually delete the items.
             foreach (var i in deletableItems)
                 ViewModelImage_Canvas.Children.Remove(i);
@@ -199,25 +211,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         }
 
         /// <summary>
-        /// Draws the name of the item on top of the cropped rectangle
-        /// </summary>
-        /// <param name="corrDetectedObject"></param>
-        private void DrawNameOfObject(DetectedItemViewModel corrDetectedObject)
-        {
-            var nameTextblock = new TextBlock();
-            nameTextblock.Text = corrDetectedObject.Name;
-            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * 0.03f;
-            nameTextblock.Foreground = Brushes.White;
-            nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
-            nameTextblock.Tag = corrDetectedObject.Id;
-
-            Canvas.SetLeft(nameTextblock, corrDetectedObject.X / GetCurrentWidthRatio());
-            Canvas.SetTop(nameTextblock, corrDetectedObject.Y / GetCurrentHeightRatio());
-
-            ViewModelImage_Canvas.Children.Add(nameTextblock);
-        }
-
-        /// <summary>
         /// Draws the one ref line of the image
         /// </summary>
         private void DrawReferenceLineOfImage()
@@ -225,7 +218,18 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var startPoint = new Point(_detectedReferenceLine.X / GetCurrentWidthRatio(), _detectedReferenceLine.Y / GetCurrentHeightRatio());
             var endPoint = new Point(_detectedReferenceLine.Width / GetCurrentWidthRatio(), _detectedReferenceLine.Height / GetCurrentHeightRatio());
 
+            // Calulcate the length of 1 x step of the image.
+            var actualLength = _detectedReferenceLine.ActualLength;
+
+            if(actualLength != 0)
+            {
+                var distanceOfLine = GeometryHelper.Distance(new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
+                    new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+                _lengthOfOneCoordinateStep = actualLength / distanceOfLine;
+            }
+
             DrawLine(startPoint, endPoint, _detectedReferenceLine.Id, Brushes.LimeGreen, true);
+            DrawTextblock(actualLength.ToString(), _detectedReferenceLine.Id, new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y));
         }
 
         /// <summary>
@@ -247,7 +251,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 var topRightCornerLine = new Point();
                 topRightCornerLine.X = line.X > line.Width ? line.X : line.Width;
                 topRightCornerLine.Y = line.Y > line.Height ? line.Y : line.Height;
-                var distance = GeometryHelper.Distance2(topRightCornerLine, topRightCornerRect);
+                var distance = GeometryHelper.Distance(topRightCornerLine, topRightCornerRect);
 
                 if (distance < smallestDist)
                 {
@@ -259,6 +263,16 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             // the user has not drawn any reference lines.
             if (correspondingLine == null)
                 return;
+
+            // Calculate the actual distance of the line and show it in ui.
+            if(_lengthOfOneCoordinateStep != 0)
+            {
+                var actualDistance = GeometryHelper.Distance(new Point(correspondingLine.X, correspondingLine.Y),
+                                     new Point(correspondingLine.Width, correspondingLine.Height));
+
+                var actualLength = actualDistance * _lengthOfOneCoordinateStep;
+                DrawTextblock($"{Math.Round(actualLength)} m²", correspondingLine.Id, new Point(correspondingLine.X, correspondingLine.Y));
+            }
 
             // Finally draw the line
             DrawLine(new Point(correspondingLine.X / GetCurrentWidthRatio(), correspondingLine.Y / GetCurrentHeightRatio()),
@@ -282,41 +296,39 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 //Since this is running on a background thread you need to marshal it back to the UI thread.
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
+                    var newSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
+                    var oldSize = _lastCanvasSize;
+
+                    var newXRatio = newSize.Width / oldSize.Width;
+                    var newYRatio = newSize.Height / oldSize.Height;
+
                     foreach (var child in ViewModelImage_Canvas.Children)
                     {
-                        // We have to handle lines seperatly since it could be the image reference line.
-                        if (child is Line line)
+                        if(child is Button button)
                         {
-                            var correpsondingDetectedObject = _detectedLines.FirstOrDefault(o => o.Id.Equals(line.Tag));
+                            button.Width = button.Width * newXRatio;
+                            button.Height = button.Height * newYRatio;
 
-                            if (correpsondingDetectedObject == null)
-                            {
-                                // Check if its the image reference line
-                                if (line.Tag.Equals(_detectedReferenceLine.Id))
-                                    correpsondingDetectedObject = _detectedReferenceLine;
-                                else // Its not a valid object.
-                                    continue; // TODO: Maybe tell the user. Not sure yet tho
-                            }
-
-                            line.X1 = correpsondingDetectedObject.X / GetCurrentWidthRatio();
-                            line.Y1 = correpsondingDetectedObject.Y / GetCurrentHeightRatio();
-                            line.X2 = correpsondingDetectedObject.Width / GetCurrentWidthRatio();
-                            line.Y2 = correpsondingDetectedObject.Height / GetCurrentHeightRatio();
+                            Canvas.SetLeft(button, Canvas.GetLeft(button) * newXRatio);
+                            Canvas.SetTop(button, Canvas.GetTop(button) * newYRatio);
                         }
-                        else if (child is FrameworkElement item)
+                        else if(child is Line line)
                         {
-                            var correpsondingDetectedObject = _detectedObjects.FirstOrDefault(o => o.Id.Equals(item.Tag));
+                            line.X1 = line.X1 * newXRatio;
+                            line.X2 = line.X2 * newXRatio;
+                            line.Y1 = line.Y1 * newYRatio;
+                            line.Y2 = line.Y2 * newYRatio;
+                        }
+                        else if(child is TextBlock textBlock)
+                        {
+                            Canvas.SetLeft(textBlock, Canvas.GetLeft(textBlock) * newXRatio);
+                            Canvas.SetTop(textBlock, Canvas.GetTop(textBlock) * newYRatio);
 
-                            if (correpsondingDetectedObject == null) // TODO: Maybe tell the user. Not sure yet tho
-                                continue;
-
-                            item.Width = correpsondingDetectedObject.Width / GetCurrentWidthRatio();
-                            item.Height = correpsondingDetectedObject.Height / GetCurrentHeightRatio();
-
-                            Canvas.SetLeft(item, correpsondingDetectedObject.X / GetCurrentWidthRatio());
-                            Canvas.SetTop(item, correpsondingDetectedObject.Y / GetCurrentHeightRatio());
+                            textBlock.FontSize = newSize.Width * 0.025f;
                         }
                     }
+                    _lastCanvasSize = newSize;
+
                 }));
             };
 
@@ -358,13 +370,32 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         }
 
         /// <summary>
+        /// Draws the name of the item on top of the cropped rectangle
+        /// </summary>
+        /// <param name="corrDetectedObject"></param>
+        private void DrawTextblock(string value, Guid tag, Point location)
+        {
+            var nameTextblock = new TextBlock();
+            nameTextblock.Text = value;
+            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * 0.025f;
+            nameTextblock.Foreground = Brushes.White;
+            nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
+            nameTextblock.Tag = tag;
+
+            Canvas.SetLeft(nameTextblock, location.X / GetCurrentWidthRatio());
+            Canvas.SetTop(nameTextblock, location.Y / GetCurrentHeightRatio());
+
+            ViewModelImage_Canvas.Children.Add(nameTextblock);
+        }
+
+        /// <summary>
         /// Fires when the user clicks onto a line.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void DrawnLine_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show("Presse line.");
+            var line = (Line)sender;
         }
 
         /// <summary>

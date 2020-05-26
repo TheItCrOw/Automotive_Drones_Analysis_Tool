@@ -22,9 +22,9 @@ namespace AutomotiveDronesAnalysisTool.Utility
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public static double Distance2(Point p1, Point p2)
+        public static double Distance(Point p1, Point p2)
         {
-            return Pow2(p2.X - p1.X) + Pow2(p2.Y - p1.Y);
+            return Math.Sqrt(Math.Pow((p2.Y - p1.Y), 2) + Math.Pow((p2.X - p1.X), 2));
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace AutomotiveDronesAnalysisTool.Utility
             double minDist2 = double.MaxValue;
             foreach (Point p in points)
             {
-                double dist2 = Distance2(p, toPoint);
+                double dist2 = Distance(p, toPoint);
                 if (dist2 < minDist2)
                 {
                     minDist2 = dist2;
