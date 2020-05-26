@@ -16,6 +16,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MaterialDesignThemes.Wpf;
+using MaterialDesignColors;
 
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
@@ -86,7 +88,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                                 Background = imageBrush,
                                 Opacity = 0,
                                 BorderThickness = new Thickness(0),
-
+                                BorderBrush = Brushes.Black
                             };
                             button.Click += DetectedRectangleObject_Click; // Sub to event.
 
@@ -142,7 +144,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 // Enlighten the selected object
                 var isSelected = item.Opacity == 1;
                 item.Opacity = item.Opacity == 0 ? 1 : 0;
-                item.BorderThickness = item.BorderThickness == new Thickness(0) ? new Thickness(1) : new Thickness(0);
+                item.BorderThickness = item.BorderThickness == new Thickness(0) ? new Thickness(0.5f) : new Thickness(0);
 
                 // If it is currently selected, after the click it's not anymore.
                 if (isSelected)
@@ -163,19 +165,25 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             // Delete the reference lines of the item
             var correspondingDetectedItem = _detectedObjects.FirstOrDefault(i => i.Id.Equals(item.Tag));
+            Guid lineId = Guid.Empty;
+            // Get the reference line id of the object.
+            if (_detectedRectanglesToLines.TryGetValue(correspondingDetectedItem.Id, out var lId))
+                lineId = lId;
 
-            if (_detectedRectanglesToLines.TryGetValue(correspondingDetectedItem.Id, out var lineId))
+            var deletableItems = new List<UIElement>();
+            foreach (var child in ViewModelImage_Canvas.Children)
             {
-                var index = 0;
-                foreach (var child in ViewModelImage_Canvas.Children)
-                {
-                    if (child is Line l && l.Tag.Equals(lineId))
-                        index = ViewModelImage_Canvas.Children.IndexOf(l);
-                }
-                ViewModelImage_Canvas.Children.RemoveAt(index);
-                // Remove the line, rectangle relation
-                _detectedRectanglesToLines.Remove(correspondingDetectedItem.Id);
+                if (child is Line l && l.Tag.Equals(lineId))
+                    deletableItems.Add(l);
+                else if (child is TextBlock tb && tb.Tag.Equals(correspondingDetectedItem.Id))
+                    deletableItems.Add(tb);
             }
+            // Actually delete the items.
+            foreach (var i in deletableItems)
+                ViewModelImage_Canvas.Children.Remove(i);
+
+            // Remove the line, rectangle relation
+            _detectedRectanglesToLines.Remove(correspondingDetectedItem.Id);
         }
 
         /// <summary>
@@ -186,18 +194,27 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             // Get the corresponding rectangle object.
             var corrDetectedObject = _detectedRectangles.FirstOrDefault(r => r.Id.Equals(item.Tag));
 
+            DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
+            //DrawNameOfObject(corrDetectedObject);
+        }
+
+        /// <summary>
+        /// Draws the name of the item on top of the cropped rectangle
+        /// </summary>
+        /// <param name="corrDetectedObject"></param>
+        private void DrawNameOfObject(DetectedItemViewModel corrDetectedObject)
+        {
             var nameTextblock = new TextBlock();
             nameTextblock.Text = corrDetectedObject.Name;
             nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * 0.03f;
             nameTextblock.Foreground = Brushes.White;
-            nameTextblock.VerticalAlignment = VerticalAlignment.Top;
             nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
-            // Position the name on top of the left top corner,
-            nameTextblock.Margin = new Thickness(-item.ActualWidth / 2, -item.ActualHeight / 2, 0, 0);
-            //nameTextblock.Style = (Style)TryFindResource("DetectedObjectsTextblockStyle");
-            item.Content = nameTextblock;
+            nameTextblock.Tag = corrDetectedObject.Id;
 
-            DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
+            Canvas.SetLeft(nameTextblock, corrDetectedObject.X / GetCurrentWidthRatio());
+            Canvas.SetTop(nameTextblock, corrDetectedObject.Y / GetCurrentHeightRatio());
+
+            ViewModelImage_Canvas.Children.Add(nameTextblock);
         }
 
         /// <summary>
@@ -217,13 +234,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// <param name="item"></param>
         private void DrawReferenceLineOfObject(DetectedItemViewModel corrDetectedObject, out DetectedItemViewModel corrRefLineObject)
         {
-            // Get the middle of the object
+            // Get top right corner of the rectangle
             corrRefLineObject = null;
-            var middleX = corrDetectedObject.X + corrDetectedObject.Width / 2;
-            var middleY = corrDetectedObject.Y + corrDetectedObject.Height / 2;
-            var mid = new Point(middleX, middleY);
-
-            // Get the corresponding ref line of this rectangle.
             var topRightCornerRect = new Point();
             topRightCornerRect.X = corrDetectedObject.X + corrDetectedObject.Width;
             topRightCornerRect.Y = corrDetectedObject.Y + corrDetectedObject.Height;
@@ -234,7 +246,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 var topRightCornerLine = new Point();
                 topRightCornerLine.X = line.X > line.Width ? line.X : line.Width;
-                topRightCornerLine.Y = line.Y > line.Height ? line.Y : line.Y;
+                topRightCornerLine.Y = line.Y > line.Height ? line.Y : line.Height;
                 var distance = GeometryHelper.Distance2(topRightCornerLine, topRightCornerRect);
 
                 if (distance < smallestDist)
@@ -272,9 +284,27 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 {
                     foreach (var child in ViewModelImage_Canvas.Children)
                     {
-                        if (child is Button)
+                        // We have to handle lines seperatly since it could be the image reference line.
+                        if (child is Line line)
                         {
-                            var item = (Button)child;
+                            var correpsondingDetectedObject = _detectedLines.FirstOrDefault(o => o.Id.Equals(line.Tag));
+
+                            if (correpsondingDetectedObject == null)
+                            {
+                                // Check if its the image reference line
+                                if (line.Tag.Equals(_detectedReferenceLine.Id))
+                                    correpsondingDetectedObject = _detectedReferenceLine;
+                                else // Its not a valid object.
+                                    continue; // TODO: Maybe tell the user. Not sure yet tho
+                            }
+
+                            line.X1 = correpsondingDetectedObject.X / GetCurrentWidthRatio();
+                            line.Y1 = correpsondingDetectedObject.Y / GetCurrentHeightRatio();
+                            line.X2 = correpsondingDetectedObject.Width / GetCurrentWidthRatio();
+                            line.Y2 = correpsondingDetectedObject.Height / GetCurrentHeightRatio();
+                        }
+                        else if (child is FrameworkElement item)
+                        {
                             var correpsondingDetectedObject = _detectedObjects.FirstOrDefault(o => o.Id.Equals(item.Tag));
 
                             if (correpsondingDetectedObject == null) // TODO: Maybe tell the user. Not sure yet tho
@@ -286,30 +316,11 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             Canvas.SetLeft(item, correpsondingDetectedObject.X / GetCurrentWidthRatio());
                             Canvas.SetTop(item, correpsondingDetectedObject.Y / GetCurrentHeightRatio());
                         }
-                        if (child is Line)
-                        {
-                            var item = (Line)child;
-                            var correpsondingDetectedObject = _detectedLines.FirstOrDefault(o => o.Id.Equals(item.Tag));
-
-                            if (correpsondingDetectedObject == null) 
-                            {
-                                // Check if its the image reference line
-                                if (item.Tag.Equals(_detectedReferenceLine.Id))
-                                    correpsondingDetectedObject = _detectedReferenceLine;
-                                else // Its not a valid object.
-                                    continue; // TODO: Maybe tell the user. Not sure yet tho
-                            }
-
-                            item.X1 = correpsondingDetectedObject.X / GetCurrentWidthRatio();
-                            item.Y1 = correpsondingDetectedObject.Y / GetCurrentHeightRatio();
-                            item.X2 = correpsondingDetectedObject.Width / GetCurrentWidthRatio();
-                            item.Y2 = correpsondingDetectedObject.Height / GetCurrentHeightRatio();
-                        }
                     }
                 }));
             };
 
-            this.SizeChanged += (o, e) =>
+            ViewModelImage_Canvas.SizeChanged += (o, e) =>
             {
                 //restart the time if user is still manipulating the window             
                 timer.Stop();
@@ -332,17 +343,28 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             line.X2 = endPoint.X;
             line.Y1 = startPoint.Y;
             line.Y2 = endPoint.Y;
-            line.IsHitTestVisible = false;
             line.Tag = tag;
             if (dashed)
             {
                 line.StrokeDashOffset = 2;
-                line.StrokeDashArray = new DoubleCollection() { 2 };
+                line.StrokeDashArray = new DoubleCollection() { 4 };
             }
+            line.Cursor = Cursors.Hand;
+            line.MouseDown += DrawnLine_MouseDown;
 
             ViewModelImage_Canvas.Children.Add(line);
 
             return line;
+        }
+
+        /// <summary>
+        /// Fires when the user clicks onto a line.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DrawnLine_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            MessageBox.Show("Presse line.");
         }
 
         /// <summary>

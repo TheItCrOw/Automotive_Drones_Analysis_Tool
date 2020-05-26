@@ -11,7 +11,7 @@
              TextElement.FontSize="13"
              TextOptions.TextFormattingMode="Ideal"
              TextOptions.TextRenderingMode="Auto"
-             Background="{DynamicResource MaterialDesignPaper}"
+             Background="DarkSlateGray"
              FontFamily="{DynamicResource MaterialDesignFont}"
              d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window"
              >
@@ -26,7 +26,7 @@
         <materialDesign:Card Height="45" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="10">
             <DockPanel LastChildFill="True" Margin="5 0 5 0">
                 <!--Home button-->
-                <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="100" 
+                <Button x:Name="Home_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="100" 
                         ToolTip="Home" Height="35" Command="{Binding NavigateHomeCommand}">
                     <materialDesign:PackIcon Kind="Home" Height="25" Width="25"/>
                 </Button>
@@ -40,25 +40,139 @@
             </DockPanel>
         </materialDesign:Card>
 
-        <!--image here-->
-        <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" Grid.Row="1" HorizontalAlignment="Center">
-            <Image Source="{Binding ViewModel.CleanImageCopy}" Margin="5" x:Name="ViewModel_Image"/>
-        </materialDesign:Card>
+        <!--content grid-->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="0.2*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!--image here-->
+            <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
+                <Image Source="{Binding ViewModel.CleanImageCopy}" Margin="5" x:Name="ViewModel_Image"/>
+            </materialDesign:Card>
 
-        <!--drawing canvas right here-->
-        <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Margin="15" VerticalAlignment="Top"
+            <!--drawing canvas right here-->
+            <Border BorderBrush="Black" BorderThickness="1" Margin="15" VerticalAlignment="Top"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
-            <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
-                <Canvas.Background>
-                    <SolidColorBrush Color="Black" Opacity="0.75"/>
-                </Canvas.Background>
-            </Canvas>
-        </Border>
+                    <Canvas.Background>
+                        <SolidColorBrush Color="Black" Opacity="0.75"/>
+                    </Canvas.Background>
+                </Canvas>
+            </Border>
 
+            <!--vertical gridsplitter-->
+            <GridSplitter Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch"/>
+
+            <!--inspector on the right-->
+            <Grid Grid.Column="2" VerticalAlignment="Stretch" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <!--grid of meta data and addional data so on-->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!--inspector title-->
+                        <materialDesign:Card Margin="5 0 5 5" materialDesign:ShadowAssist.ShadowDepth="Depth5">
+                            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Inspector" Margin="5"/>
+                        </materialDesign:Card>
+
+                        <!--meta data expander-->
+                        <materialDesign:Card Grid.Row="1" Margin="5">
+                            <Expander>
+                                <Expander.Header>
+                                    <TextBlock FontSize="15" FontWeight="Bold" Text="Meta data"/>
+                                </Expander.Header>
+                                <!--actual list-->
+                                <ItemsControl ItemsSource="{Binding ViewModel.Metadata}" Margin="5">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray">
+                                                <Grid Margin="0 10 0 0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <!--Name of property-->
+                                                    <TextBlock Text="{Binding Path=Key}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Left"
+                                               TextWrapping="Wrap"/>
+
+                                                    <!--value of property-->
+                                                    <TextBlock Text="{Binding Path=Value}" FontSize="13" TextWrapping="Wrap"
+                                               Grid.Column="1" HorizontalAlignment="Left"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+                        </materialDesign:Card>
+
+                        <!--additinal information expander-->
+                        <materialDesign:Card Grid.Row="2" Margin="5">
+                            <Expander>
+                                <Expander.Header>
+                                    <TextBlock FontSize="15" FontWeight="Bold" Text="Additonal Information"/>
+                                </Expander.Header>
+                                <!--actual list-->
+                                <ItemsControl ItemsSource="{Binding ViewModel.AdditionalInformation}" Margin="5">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray">
+                                                <Grid Margin="0 10 0 0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <!--Name of property-->
+                                                    <TextBlock Text="{Binding Path=Item1}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Left"
+                                               TextWrapping="Wrap"/>
+
+                                                    <!--value of property-->
+                                                    <TextBlock Text="{Binding Path=Item2}" FontSize="13" TextWrapping="Wrap"
+                                               Grid.Column="1" HorizontalAlignment="Left"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+                        </materialDesign:Card>
+                    </Grid>
+                </ScrollViewer>
+
+                <!--horizontal grid splitter-->
+                <GridSplitter Grid.Row="1" Height="4" Background="Transparent" HorizontalAlignment="Stretch"/>
+
+                <!--current selected object-->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <materialDesign:Card  VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="5">
+                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Margin="5" Text="Selected object"/>
+
+                    </materialDesign:Card>
+                </ScrollViewer>
+
+
+            </Grid>
+        </Grid>
 
     </Grid>
 </UserControl>

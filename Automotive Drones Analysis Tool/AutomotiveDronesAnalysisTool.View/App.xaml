@@ -69,6 +69,8 @@
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
 
+            <SolidColorBrush x:Key="ThemeBlueColor" Color="#FF0288D1"/>
+
             <!--Bool to vis converter-->
             <converters:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
             <!--Inverse bool to vis converter-->
