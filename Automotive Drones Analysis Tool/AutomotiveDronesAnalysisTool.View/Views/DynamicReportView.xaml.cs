@@ -38,6 +38,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         Dictionary<Guid, Guid> _detectedRectanglesToLines;
         double _lengthOfOneCoordinateStep = 0; // This determines how much 1 step on the x axis is in the actual world.
         Size _lastCanvasSize;
+        float _fontSizeMultiplier = 0.015f;
 
         public DynamicReportView()
         {
@@ -178,11 +179,16 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var allLinesOfThisObject = new List<Line>();
             foreach (var child in ViewModelImage_Canvas.Children)
             {
-                if (child is Line l && l.Tag.Equals(lineId))
+                if (child is Line l)
                 {
-                    deletableItems.Add(l);
-                    allLinesOfThisObject.Add(l);
+                    if(l.Tag.Equals(lineId) || l.Tag.Equals(correspondingDetectedItem.Id))
+                    {
+                        deletableItems.Add(l);
+                        allLinesOfThisObject.Add(l);
+                    }
                 }
+                else if (child is TextBlock tb && tb.Tag.Equals(correspondingDetectedItem.Id))
+                    deletableItems.Add(tb);
             }
 
             // Highly inefficient I know, but Im short on time right now. TODO: Do this better
@@ -207,7 +213,59 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var corrDetectedObject = _detectedRectangles.FirstOrDefault(r => r.Id.Equals(item.Tag));
 
             DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
+            DrawWidthAndHeightOfButton(corrDetectedObject);
+
+            // The angle is always the one on the right.
+            double rightAngle = GeometryHelper.GetAngleBetweenTwoLines(
+                new Point(corrRefLineObject.X, corrRefLineObject.Y),
+                new Point(corrRefLineObject.Width, corrRefLineObject.Height),
+                new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
+                new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+
+            double leftAngle = 180 - rightAngle;
+
             //DrawNameOfObject(corrDetectedObject);
+        }
+
+        /// <summary>
+        /// Calulcates and draws the width of the given object
+        /// </summary>
+        private void DrawWidthAndHeightOfButton(DetectedItemViewModel corrDetectedObject)
+        {
+            var actualLengthOfHeight = corrDetectedObject.Height * _lengthOfOneCoordinateStep;
+            var actualLengthOfWidth = corrDetectedObject.Width * _lengthOfOneCoordinateStep;
+
+            var verticalHeightLineP1 =  new Point(
+                corrDetectedObject.X / GetCurrentWidthRatio(),
+                corrDetectedObject.Y / GetCurrentHeightRatio());
+
+            var verticalHeightLineP2 = new Point(
+                corrDetectedObject.X / GetCurrentWidthRatio(),
+                (corrDetectedObject.Y + corrDetectedObject.Height) / GetCurrentHeightRatio());
+
+            var horizontalWidthLineP1 = new Point(
+                corrDetectedObject.X / GetCurrentWidthRatio(),
+                corrDetectedObject.Y / GetCurrentHeightRatio());
+
+            var horizontalWidthLineP2 = new Point(
+                (corrDetectedObject.Width + corrDetectedObject.X) / GetCurrentWidthRatio(),
+                corrDetectedObject.Y / GetCurrentHeightRatio());
+
+            // Draw the verticalHeightLine and the horizontalWIdthLine of the rectangle
+            DrawLine(verticalHeightLineP1, verticalHeightLineP2, corrDetectedObject.Id, Brushes.White);
+            DrawLine(horizontalWidthLineP1, horizontalWidthLineP2, corrDetectedObject.Id, Brushes.White);
+
+            // Now get the center of each lines where the textblock will be placed. We have to ignore the image Ratio for that though...
+            var centerOfHeight = GeometryHelper.GetCenterOfLine(
+                new Point(verticalHeightLineP1.X * GetCurrentWidthRatio(), verticalHeightLineP1.Y * GetCurrentHeightRatio()),
+                new Point(verticalHeightLineP2.X * GetCurrentWidthRatio(), verticalHeightLineP2.Y * GetCurrentHeightRatio()));
+
+            var centerOfWidth = GeometryHelper.GetCenterOfLine(
+                new Point(horizontalWidthLineP1.X * GetCurrentWidthRatio(), horizontalWidthLineP1.Y * GetCurrentHeightRatio()), 
+                new Point(horizontalWidthLineP2.X * GetCurrentWidthRatio(), horizontalWidthLineP2.Y * GetCurrentHeightRatio()));
+
+            DrawTextblock($"{string.Format("{0:0.00}", actualLengthOfHeight)}m", corrDetectedObject.Id, Brushes.White, centerOfHeight);
+            DrawTextblock($"{string.Format("{0:0.00}", actualLengthOfWidth)}m", corrDetectedObject.Id, Brushes.White, centerOfWidth);
         }
 
         /// <summary>
@@ -228,8 +286,11 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 _lengthOfOneCoordinateStep = actualLength / distanceOfLine;
             }
 
+            var centerPointOfLine = GeometryHelper.GetCenterOfLine(
+                new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y), new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+
             DrawLine(startPoint, endPoint, _detectedReferenceLine.Id, Brushes.LimeGreen, true);
-            DrawTextblock(actualLength.ToString(), _detectedReferenceLine.Id, new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y));
+            DrawTextblock($"{actualLength.ToString()}m", _detectedReferenceLine.Id, Brushes.LimeGreen, centerPointOfLine);
         }
 
         /// <summary>
@@ -270,14 +331,17 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 var actualDistance = GeometryHelper.Distance(new Point(correspondingLine.X, correspondingLine.Y),
                                      new Point(correspondingLine.Width, correspondingLine.Height));
 
+                var centerPointOfLine = GeometryHelper.GetCenterOfLine(
+                        new Point(correspondingLine.X, correspondingLine.Y), new Point(correspondingLine.Width, correspondingLine.Height));
+
                 var actualLength = actualDistance * _lengthOfOneCoordinateStep;
-                DrawTextblock($"{Math.Round(actualLength)} m²", correspondingLine.Id, new Point(correspondingLine.X, correspondingLine.Y));
+                DrawTextblock($"{ string.Format("{0:0.00}", actualLength)}m", correspondingLine.Id, Brushes.White, centerPointOfLine);
             }
 
             // Finally draw the line
             DrawLine(new Point(correspondingLine.X / GetCurrentWidthRatio(), correspondingLine.Y / GetCurrentHeightRatio()),
                 new Point(correspondingLine.Width / GetCurrentWidthRatio(), correspondingLine.Height / GetCurrentHeightRatio()),
-                correspondingLine.Id, Brushes.Blue);
+                correspondingLine.Id, Brushes.DarkSlateGray);
 
             corrRefLineObject = correspondingLine;
             // Track the current connection between rect and line
@@ -324,7 +388,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             Canvas.SetLeft(textBlock, Canvas.GetLeft(textBlock) * newXRatio);
                             Canvas.SetTop(textBlock, Canvas.GetTop(textBlock) * newYRatio);
 
-                            textBlock.FontSize = newSize.Width * 0.025f;
+                            textBlock.FontSize = newSize.Width * _fontSizeMultiplier;
                         }
                     }
                     _lastCanvasSize = newSize;
@@ -350,7 +414,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             var line = new Line();
             line.Stroke = brush;
-            line.StrokeThickness = 4;
+            line.StrokeThickness = 3;
             line.X1 = startPoint.X;
             line.X2 = endPoint.X;
             line.Y1 = startPoint.Y;
@@ -373,14 +437,17 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// Draws the name of the item on top of the cropped rectangle
         /// </summary>
         /// <param name="corrDetectedObject"></param>
-        private void DrawTextblock(string value, Guid tag, Point location)
+        private void DrawTextblock(string value, Guid tag, Brush brush, Point location)
         {
             var nameTextblock = new TextBlock();
             nameTextblock.Text = value;
-            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * 0.025f;
-            nameTextblock.Foreground = Brushes.White;
+            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * _fontSizeMultiplier;
+            nameTextblock.Foreground = brush;
             nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
             nameTextblock.Tag = tag;
+            nameTextblock.Background = Brushes.DarkSlateGray;
+            // Textblocks should always be on top.
+            Canvas.SetZIndex(nameTextblock, 1);
 
             Canvas.SetLeft(nameTextblock, location.X / GetCurrentWidthRatio());
             Canvas.SetTop(nameTextblock, location.Y / GetCurrentHeightRatio());

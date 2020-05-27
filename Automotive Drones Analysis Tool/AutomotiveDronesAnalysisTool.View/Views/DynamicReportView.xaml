@@ -199,7 +199,7 @@
                             <TextBlock Padding="5" HorizontalAlignment="Center" Grid.Row="3">
                                             <Run Text="Actual length:" FontSize="15" FontWeight="Bold"/>
                                             <Run Text="11,2" FontSize="15"/>
-                                            <Run Text="m²" FontSize="15"/>
+                                            <Run Text="m" FontSize="15"/>
                             </TextBlock>
 
                         </Grid>
