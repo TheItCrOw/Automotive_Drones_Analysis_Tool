@@ -204,7 +204,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 if (child is Line l)
                 {
-                    if (l.Tag.Equals(lineId) || l.Tag.Equals(correspondingDetectedItem.Id))
+                    if (l.Tag.Equals(lineId) || l.Tag.Equals(correspondingDetectedItem.Id) || l.Tag.Equals("Always_Destroy_Distance"))
                     {
                         deletableItems.Add(l);
                         allLinesOfThisObject.Add(l);
@@ -230,6 +230,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             // Draw the new angles.
             DrawAllAnglesOfLine();
+            DrawDistanceOfObjects();
         }
 
         /// <summary>
@@ -243,6 +244,67 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
             DrawWidthAndHeightOfButton(corrDetectedObject);
             DrawAllAnglesOfLine();
+            DrawDistanceOfObjects();
+        }
+
+        private void DrawDistanceOfObjects()
+        {
+            double index = 1;
+            // First cleanup the previous distances, they are recalculated anywise. They would stack up.
+            var removableLines = new List<FrameworkElement>();
+            foreach (var child in ViewModelImage_Canvas.Children)
+                if (child is FrameworkElement el)
+                    if (el.Tag.Equals("Always_Destroy_Distance"))
+                        removableLines.Add(el);
+
+            // Delete them as children.
+            foreach (var removableLine in removableLines)
+                ViewModelImage_Canvas.Children.Remove(removableLine);
+
+            // Now calculate them again.
+            foreach(var pair in _detectedRectanglesToLines)
+            {
+                // Get the current rect object that is being analysed.
+                var corrRectangleObject = _detectedObjects.FirstOrDefault(o => o.Id == pair.Key);
+
+                if(corrRectangleObject != null)
+                {
+                    foreach(var pair2 in _detectedRectanglesToLines)
+                    {
+                        var corrRectangleObject2 = _detectedObjects.FirstOrDefault(o => o.Id == pair2.Key);
+                        if(corrRectangleObject2 != corrRectangleObject)
+                        {
+                            // Get the distance between the two objects x axis.
+                            var distance = GeometryHelper.Distance(
+                                new Point( corrRectangleObject.X + corrRectangleObject.Width,
+                                    corrRectangleObject.Y + corrRectangleObject.Height),
+                                new Point(corrRectangleObject2.X, corrRectangleObject.Y + corrRectangleObject.Height));
+
+                            // Caclulate the actual reallife length.
+                            var actualLength = distance * _lengthOfOneCoordinateStep;
+
+                            // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
+                            var margin = (30 * GetCurrentHeightRatio()) * index; // 35 is customisable.
+
+                            var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
+                                (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());
+
+                            var endPoint = new Point(corrRectangleObject2.X / GetCurrentWidthRatio(),
+                                (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());
+
+                            // Draw the line
+                            DrawLine(startPoint, endPoint, "Always_Destroy_Distance", Brushes.Yellow, false);
+
+                            // Draw the textblock with the length
+                            var centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPoint);
+                            centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
+                            centerOfLine.Y = centerOfLine.Y * GetCurrentHeightRatio();
+                            DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Yellow, centerOfLine);
+                        }
+                        index += 0.5f;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -479,7 +541,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// <param name="startPoint"></param>
         /// <param name="endPoint"></param>
         /// <returns></returns>
-        private Line DrawLine(Point startPoint, Point endPoint, Guid tag, Brush brush, bool dashed = false)
+        private Line DrawLine(Point startPoint, Point endPoint, object tag, Brush brush, bool dashed = true)
         {
             var line = new Line();
             line.Stroke = brush;
@@ -489,9 +551,11 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             line.Y1 = startPoint.Y;
             line.Y2 = endPoint.Y;
             line.Tag = tag;
-            line.StrokeDashOffset = 2;
-            line.StrokeDashArray = new DoubleCollection() { 4 };
-            line.Cursor = Cursors.Hand;
+            if(dashed)
+            {
+                line.StrokeDashOffset = 2;
+                line.StrokeDashArray = new DoubleCollection() { 4 };
+            }
             line.MouseDown += DrawnLine_MouseDown;
 
             ViewModelImage_Canvas.Children.Add(line);
@@ -593,7 +657,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
             ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
-
         }
 
         /// <summary>

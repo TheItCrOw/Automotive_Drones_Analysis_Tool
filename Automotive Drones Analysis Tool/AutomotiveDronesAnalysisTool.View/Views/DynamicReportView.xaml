@@ -89,7 +89,6 @@
             <Grid Grid.Column="2" VerticalAlignment="Stretch" Margin="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="0.3*"/>
                 </Grid.RowDefinitions>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -170,11 +169,8 @@
                     </Grid>
                 </ScrollViewer>
 
-                <!--horizontal grid splitter-->
-                <GridSplitter Grid.Row="1" Height="4" Background="Transparent" HorizontalAlignment="Stretch"/>
-
                 <!--go next button-->
-                <Button x:Name="ExportAsPdf_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" ToolTip="Generate report" Cursor="Hand" Grid.Row="2" 
+                <Button x:Name="ExportAsPdf_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" ToolTip="Export to PDF" Cursor="Hand" Grid.Row="2" 
                     HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Margin="10" MaxWidth="150" MaxHeight="150"
                     Height="{Binding }" Command="{Binding GenerateReportCommand}" Click="ExportAsPdf_Button_Click">
                     <materialDesign:PackIcon Kind="FilePdfOutline" Height="{Binding }" Width="{Binding }" Margin="30"/>
