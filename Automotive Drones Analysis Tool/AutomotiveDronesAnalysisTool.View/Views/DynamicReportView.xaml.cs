@@ -19,15 +19,18 @@ using System.Windows.Shapes;
 using MaterialDesignThemes.Wpf;
 using MaterialDesignColors;
 using AutomotiveDronesAnalysisTool.Model.Arguments;
+using System.Timers;
 
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
     /// <summary>
     /// Interaktionslogik für DynamicReportView.xaml
+    /// This section here was made in kind of a rush... This needs to be refactored. // TODO: Refactor
     /// </summary>
     public partial class DynamicReportView : UserControl
     {
-        System.Timers.Timer timer; //Declare it as a class member, not a local field, so it won't get GC'ed. 
+        System.Timers.Timer _resizeTimer; //Declare it as a class member, not a local field, so it won't get GC'ed. 
+        private static System.Timers.Timer _loopTimer;
 
         private bool _canvasInitiliazed;
         AnalysableImageViewModel _viewModel;
@@ -38,7 +41,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         Dictionary<Guid, Guid> _detectedRectanglesToLines;
         double _lengthOfOneCoordinateStep = 0; // This determines how much 1 step on the x axis is in the actual world.
         Size _lastCanvasSize;
-        float _fontSizeMultiplier = 0.015f;
+        float _fontSizeMultiplier = 0.012f;
+        [Obsolete]
+        private TextBlock _currentyDraggedTextBlock;
 
         public DynamicReportView()
         {
@@ -60,8 +65,22 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             _detectedRectanglesToLines = new Dictionary<Guid, Guid>();
         }
 
+        [Obsolete]
         /// <summary>
-        /// Init the shapes and buttons
+        ///  To make textblocks draggable and to avoid more threads, we need a timer that indicates if the mouse is being pressed down.
+        /// </summary>
+        private void StartDragLoopTimer()
+        {
+            //loop timer
+            _loopTimer = new System.Timers.Timer();
+            _loopTimer.Interval = 500; // interval in milliseconds
+            _loopTimer.Enabled = false;
+            _loopTimer.Elapsed += DragTextblock;
+            _loopTimer.AutoReset = true;
+        }
+
+        /// <summary>
+        /// Init the shapes and buttons when the Image Canvas is loaded.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -70,7 +89,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             try
             {
                 // Wait a bit. We do not want the user to spam click the canvas and thus breaking it.
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
 
                 ViewModelImage_Canvas.Children.Clear();
@@ -122,7 +141,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 HandleWindowResize();
 
                 _canvasInitiliazed = true;
-
             }
             catch (Exception ex)
             {
@@ -181,7 +199,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             {
                 if (child is Line l)
                 {
-                    if(l.Tag.Equals(lineId) || l.Tag.Equals(correspondingDetectedItem.Id))
+                    if (l.Tag.Equals(lineId) || l.Tag.Equals(correspondingDetectedItem.Id))
                     {
                         deletableItems.Add(l);
                         allLinesOfThisObject.Add(l);
@@ -189,6 +207,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 }
                 else if (child is TextBlock tb && tb.Tag.Equals(correspondingDetectedItem.Id))
                     deletableItems.Add(tb);
+                else if (child is TextBlock tb2 && tb2.Tag.Equals("Always_Destroy")) // TB with this tag must always be deleted.
+                    deletableItems.Add(tb2);
             }
 
             // Highly inefficient I know, but Im short on time right now. TODO: Do this better
@@ -202,6 +222,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             // Remove the line, rectangle relation
             _detectedRectanglesToLines.Remove(correspondingDetectedItem.Id);
+
+            // Draw the new angles.
+            DrawAllAnglesOfLine();
         }
 
         /// <summary>
@@ -214,17 +237,57 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
             DrawWidthAndHeightOfButton(corrDetectedObject);
+            DrawAllAnglesOfLine();
+        }
 
-            // The angle is always the one on the right.
-            double rightAngle = GeometryHelper.GetAngleBetweenTwoLines(
-                new Point(corrRefLineObject.X, corrRefLineObject.Y),
-                new Point(corrRefLineObject.Width, corrRefLineObject.Height),
-                new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
-                new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+        /// <summary>
+        /// Calculates and draws all angles foreach ref line
+        /// </summary>
+        private void DrawAllAnglesOfLine()
+        {
+            // Gather all currently active ref lines.
+            var allActiveRefLines = new List<DetectedItemViewModel>();
+            foreach (var pair in _detectedRectanglesToLines)
+            {
+                var corrRefLineObject = _detectedLines.FirstOrDefault(l => l.Id == pair.Value);
+                allActiveRefLines.Add(corrRefLineObject);
+            }
 
-            double leftAngle = 180 - rightAngle;
+            foreach (var lineObject1 in allActiveRefLines)
+            {
+                var sb = new StringBuilder();
 
-            //DrawNameOfObject(corrDetectedObject);
+                // Angle to the image ref line.
+                double minorAngle2 = GeometryHelper.GetAngleBetweenTwoLines(
+                    new Point(lineObject1.X, lineObject1.Y),
+                    new Point(lineObject1.Width, lineObject1.Height),
+                    new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
+                    new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+
+                double majorAngle2 = 360 - minorAngle2;
+                sb.Append($"{_detectedReferenceLine.CodeName}: {(int)minorAngle2}° | {(int)majorAngle2}°");
+
+                // We want to calculate the angle foreach line with all other lines.
+                foreach (var lineObject2 in allActiveRefLines)
+                {
+                    if (lineObject1 != lineObject2)
+                    {
+                        double minorAngle = GeometryHelper.GetAngleBetweenTwoLines(
+                            new Point(lineObject1.X, lineObject1.Y),
+                            new Point(lineObject1.Width, lineObject1.Height),
+                            new Point(lineObject2.X, lineObject2.Y),
+                            new Point(lineObject2.Width, lineObject2.Height));
+
+                        double majorAngle = 360 - minorAngle;
+
+                        sb.Append($"{Environment.NewLine}{lineObject2.CodeName}: {(int)minorAngle}° | {(int)majorAngle}°");
+                    }
+                }
+
+                var tbPoint = new Point(lineObject1.Width, lineObject1.Height);
+                // Angles are recalculated on analysing and deanalysing. So we must mark them as always destroyable.
+                DrawTextblock(sb.ToString(), "Always_Destroy", Brushes.SandyBrown, tbPoint);
+            }
         }
 
         /// <summary>
@@ -235,7 +298,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var actualLengthOfHeight = corrDetectedObject.Height * _lengthOfOneCoordinateStep;
             var actualLengthOfWidth = corrDetectedObject.Width * _lengthOfOneCoordinateStep;
 
-            var verticalHeightLineP1 =  new Point(
+            var verticalHeightLineP1 = new Point(
                 corrDetectedObject.X / GetCurrentWidthRatio(),
                 corrDetectedObject.Y / GetCurrentHeightRatio());
 
@@ -261,7 +324,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 new Point(verticalHeightLineP2.X * GetCurrentWidthRatio(), verticalHeightLineP2.Y * GetCurrentHeightRatio()));
 
             var centerOfWidth = GeometryHelper.GetCenterOfLine(
-                new Point(horizontalWidthLineP1.X * GetCurrentWidthRatio(), horizontalWidthLineP1.Y * GetCurrentHeightRatio()), 
+                new Point(horizontalWidthLineP1.X * GetCurrentWidthRatio(), horizontalWidthLineP1.Y * GetCurrentHeightRatio()),
                 new Point(horizontalWidthLineP2.X * GetCurrentWidthRatio(), horizontalWidthLineP2.Y * GetCurrentHeightRatio()));
 
             DrawTextblock($"{string.Format("{0:0.00}", actualLengthOfHeight)}m", corrDetectedObject.Id, Brushes.White, centerOfHeight);
@@ -279,7 +342,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             // Calulcate the length of 1 x step of the image.
             var actualLength = _detectedReferenceLine.ActualLength;
 
-            if(actualLength != 0)
+            if (actualLength != 0)
             {
                 var distanceOfLine = GeometryHelper.Distance(new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
                     new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
@@ -326,7 +389,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 return;
 
             // Calculate the actual distance of the line and show it in ui.
-            if(_lengthOfOneCoordinateStep != 0)
+            if (_lengthOfOneCoordinateStep != 0)
             {
                 var actualDistance = GeometryHelper.Distance(new Point(correspondingLine.X, correspondingLine.Y),
                                      new Point(correspondingLine.Width, correspondingLine.Height));
@@ -335,13 +398,14 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                         new Point(correspondingLine.X, correspondingLine.Y), new Point(correspondingLine.Width, correspondingLine.Height));
 
                 var actualLength = actualDistance * _lengthOfOneCoordinateStep;
-                DrawTextblock($"{ string.Format("{0:0.00}", actualLength)}m", correspondingLine.Id, Brushes.White, centerPointOfLine);
+                DrawTextblock($"{correspondingLine.CodeName}: {string.Format("{0:0.00}", actualLength)}m", 
+                    correspondingLine.Id, Brushes.Red, centerPointOfLine);
             }
 
             // Finally draw the line
             DrawLine(new Point(correspondingLine.X / GetCurrentWidthRatio(), correspondingLine.Y / GetCurrentHeightRatio()),
                 new Point(correspondingLine.Width / GetCurrentWidthRatio(), correspondingLine.Height / GetCurrentHeightRatio()),
-                correspondingLine.Id, Brushes.DarkSlateGray);
+                correspondingLine.Id, Brushes.Red);
 
             corrRefLineObject = correspondingLine;
             // Track the current connection between rect and line
@@ -353,9 +417,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// </summary>
         private void HandleWindowResize()
         {
-            timer = new System.Timers.Timer(100);
-            timer.AutoReset = false; //the Elapsed event should be one-shot
-            timer.Elapsed += (o, e) =>
+            _resizeTimer = new System.Timers.Timer(100);
+            _resizeTimer.AutoReset = false; //the Elapsed event should be one-shot
+            _resizeTimer.Elapsed += (o, e) =>
             {
                 //Since this is running on a background thread you need to marshal it back to the UI thread.
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -368,7 +432,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
                     foreach (var child in ViewModelImage_Canvas.Children)
                     {
-                        if(child is Button button)
+                        if (child is Button button)
                         {
                             button.Width = button.Width * newXRatio;
                             button.Height = button.Height * newYRatio;
@@ -376,14 +440,14 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             Canvas.SetLeft(button, Canvas.GetLeft(button) * newXRatio);
                             Canvas.SetTop(button, Canvas.GetTop(button) * newYRatio);
                         }
-                        else if(child is Line line)
+                        else if (child is Line line)
                         {
                             line.X1 = line.X1 * newXRatio;
                             line.X2 = line.X2 * newXRatio;
                             line.Y1 = line.Y1 * newYRatio;
                             line.Y2 = line.Y2 * newYRatio;
                         }
-                        else if(child is TextBlock textBlock)
+                        else if (child is TextBlock textBlock)
                         {
                             Canvas.SetLeft(textBlock, Canvas.GetLeft(textBlock) * newXRatio);
                             Canvas.SetTop(textBlock, Canvas.GetTop(textBlock) * newYRatio);
@@ -399,8 +463,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ViewModelImage_Canvas.SizeChanged += (o, e) =>
             {
                 //restart the time if user is still manipulating the window             
-                timer.Stop();
-                timer.Start();
+                _resizeTimer.Stop();
+                _resizeTimer.Start();
             };
         }
 
@@ -420,11 +484,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             line.Y1 = startPoint.Y;
             line.Y2 = endPoint.Y;
             line.Tag = tag;
-            if (dashed)
-            {
-                line.StrokeDashOffset = 2;
-                line.StrokeDashArray = new DoubleCollection() { 4 };
-            }
+            line.StrokeDashOffset = 2;
+            line.StrokeDashArray = new DoubleCollection() { 4 };
             line.Cursor = Cursors.Hand;
             line.MouseDown += DrawnLine_MouseDown;
 
@@ -437,7 +498,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// Draws the name of the item on top of the cropped rectangle
         /// </summary>
         /// <param name="corrDetectedObject"></param>
-        private void DrawTextblock(string value, Guid tag, Brush brush, Point location)
+        private void DrawTextblock(string value, object tag, Brush brush, Point location)
         {
             var nameTextblock = new TextBlock();
             nameTextblock.Text = value;
@@ -446,13 +507,54 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
             nameTextblock.Tag = tag;
             nameTextblock.Background = Brushes.DarkSlateGray;
+            nameTextblock.Margin = new Thickness(3);
+
             // Textblocks should always be on top.
             Canvas.SetZIndex(nameTextblock, 1);
-
             Canvas.SetLeft(nameTextblock, location.X / GetCurrentWidthRatio());
             Canvas.SetTop(nameTextblock, location.Y / GetCurrentHeightRatio());
 
             ViewModelImage_Canvas.Children.Add(nameTextblock);
+        }
+
+        /// <summary>
+        /// Fires when the user presses up from a textblock
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NameTextblock_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => _loopTimer.Enabled = false;
+
+        /// <summary>
+        /// Fires when the user pressed down onto a textblock
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NameTextblock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender != null)
+            {
+                _currentyDraggedTextBlock = (TextBlock)sender;
+                _loopTimer.Enabled = true;
+            }
+        }
+
+        [Obsolete]
+        /// <summary>
+        /// Gets called as long as the mouse is being pressed down.
+        /// </summary>
+        private void DragTextblock(object source, ElapsedEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (_currentyDraggedTextBlock != null)
+                {
+                    double left = Canvas.GetLeft(_currentyDraggedTextBlock);
+                    double top = Canvas.GetTop(_currentyDraggedTextBlock);
+
+                    Canvas.SetLeft(_currentyDraggedTextBlock, ViewModelImage_Canvas.PointToScreen(Mouse.GetPosition(ViewModelImage_Canvas)).X);
+                    Canvas.SetTop(_currentyDraggedTextBlock, ViewModelImage_Canvas.PointToScreen(Mouse.GetPosition(ViewModelImage_Canvas)).Y);
+                }
+            });
         }
 
         /// <summary>
@@ -476,5 +578,16 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// </summary>
         /// <returns></returns>
         private double GetCurrentHeightRatio() => _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight);
+
+        /// <summary>
+        /// Switches the opacity of the viewmodel canvas
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Flashlight_Button_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
+            ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
+        }
     }
 }

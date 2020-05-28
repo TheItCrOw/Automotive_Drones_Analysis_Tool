@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -88,6 +89,12 @@ namespace AutomotiveDronesAnalysisTool.Utility
 
             return resultAngleInDegrees;
         }
+
+        /// <summary>
+        /// Returns the slope of the given line
+        /// </summary>
+        /// <returns></returns>
+        public static double GetSlopeOfLine(Point p1, Point p2) => (Math.Round((p2.Y - p1.Y), 4) / Math.Round((p2.X - p1.X), 4));
 
         /// <summary>
         /// Gets the center of the line as a coordinate.

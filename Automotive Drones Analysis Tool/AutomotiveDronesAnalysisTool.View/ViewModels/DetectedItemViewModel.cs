@@ -3,6 +3,7 @@ using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Media.Imaging;
 
@@ -35,6 +36,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             get => _name;
             set => SetProperty(ref _name, value);
+        }
+        public string CodeName
+        {
+            get => $"{Name.First()}{Name.Last()}";
         }
         public int X
         {

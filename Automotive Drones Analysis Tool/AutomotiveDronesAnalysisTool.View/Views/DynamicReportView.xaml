@@ -18,8 +18,8 @@
     <Grid x:Name="Main_Grid">
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" >
-                <GradientStop Color="Black" Offset="0.4" />
-                <GradientStop Color="#FF0288D1" Offset="1.0" />
+                <GradientStop Color="Black" Offset="0.3" />
+                <GradientStop Color="White" Offset="1.0" />
             </LinearGradientBrush>
         </Grid.Background>
 
@@ -71,10 +71,16 @@
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
                     <Canvas.Background>
-                        <SolidColorBrush Color="Black" Opacity="0.75"/>
+                        <SolidColorBrush Color="Black" Opacity="0.85"/>
                     </Canvas.Background>
                 </Canvas>
             </Border>
+            
+            <!--switch dark mode button-->
+            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button"
+                    ToolTip="Switch light mode" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Flashlight_Button_Click" Cursor="Hand">
+                <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" />
+            </Button>
 
             <!--vertical gridsplitter-->
             <GridSplitter Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch"/>
@@ -90,7 +96,6 @@
                     <!--grid of meta data and addional data so on-->
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -173,36 +178,45 @@
                     <materialDesign:Card VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="5">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition  Height="Auto"/>
-                                <RowDefinition  Height="Auto"/>
-                                <RowDefinition  Height="Auto"/>
-                                <RowDefinition  Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
+                            
+                            <!--Tools-->
+                            <Grid>
+                                
+                            </Grid>
+                            
+                            <!--cutline-->
                             <!--title-->
-                            <TextBlock FontSize="20" HorizontalAlignment="Center" Margin="10" Text="Selected object"/>
-
-                            <!--name-->
-                            <TextBlock Padding="5" HorizontalAlignment="Center" Grid.Row="1">
-                                            <Run Text="Name:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="Object #1" FontSize="15"/>
+                            <TextBlock FontSize="20" HorizontalAlignment="Center" Margin="10" Text="Cutline" TextWrapping="Wrap" Grid.Row="1"/>
+                            <!--ref line of image-->
+                            <TextBlock Padding="5" Grid.Row="2" TextWrapping="Wrap">
+                                            <Run Text="Green: " FontSize="15" FontWeight="Bold" Foreground="Lime"/>
+                                            <Run Text="Length of the reference line." FontSize="15"/>
                             </TextBlock>
-
-                            <!--x and y coordiante-->
-                            <TextBlock Padding="5" HorizontalAlignment="Center" Grid.Row="2">
-                                            <Run Text="X:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="1500" FontSize="15"/>
-                                            <Run Text="Y:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="300" FontSize="15"/>
+                            <!--ref line of object-->
+                            <TextBlock Padding="5" Grid.Row="3" TextWrapping="Wrap">
+                                            <Run Text="Red: " FontSize="15" FontWeight="Bold" Foreground="Red"/>
+                                            <Run Text="Length of the object." FontSize="15"/>
                             </TextBlock>
-
-                            <!--length-->
-                            <TextBlock Padding="5" HorizontalAlignment="Center" Grid.Row="3">
-                                            <Run Text="Actual length:" FontSize="15" FontWeight="Bold"/>
-                                            <Run Text="11,2" FontSize="15"/>
-                                            <Run Text="m" FontSize="15"/>
+                            <!--lines of rectangle-->
+                            <TextBlock Padding="5" Grid.Row="4" TextWrapping="Wrap">
+                                            <Run Text="White " FontSize="15" FontWeight="Bold" Foreground="Black"/>
+                                            <Run Text="Height and width of object's cutout." FontSize="15"/>
+                            </TextBlock>
+                            <!--lines of rectangle-->
+                            <TextBlock Padding="5" Grid.Row="5" TextWrapping="Wrap">
+                                            <Run Text="Brown " FontSize="15" FontWeight="Bold" Foreground="SandyBrown"/>
+                                            <Run Text="Angles between object and reference line (both ways)." FontSize="15"/>
                             </TextBlock>
 
                         </Grid>
+                        
                     </materialDesign:Card>
                 </ScrollViewer>
 
