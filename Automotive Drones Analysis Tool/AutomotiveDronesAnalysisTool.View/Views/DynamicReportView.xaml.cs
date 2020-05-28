@@ -295,6 +295,17 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             // Draw the line
                             DrawLine(startPoint, endPoint, "Always_Destroy_Distance", Brushes.Yellow, false);
 
+                            // Now draw the 2 vertical connection lines from the just drawn lines to the edges of the objects.
+                            var endPointForVerticalLine = new Point(
+                                        (corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
+                                        (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
+                            DrawLine(startPoint, endPointForVerticalLine, "Always_Destroy_Distance", Brushes.Yellow);
+
+                            endPointForVerticalLine = new Point(
+                                corrRectangleObject2.X / GetCurrentWidthRatio(),
+                                (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
+                            DrawLine(endPoint, endPointForVerticalLine, "Always_Destroy_Distance", Brushes.Yellow);
+
                             // Draw the textblock with the length
                             var centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPoint);
                             centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
