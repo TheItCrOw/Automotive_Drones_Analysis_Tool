@@ -18,7 +18,7 @@
     <Grid x:Name="Main_Grid">
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1" >
-                <GradientStop Color="Black" Offset="0.3" />
+                <GradientStop Color="#FF0288D1" Offset="0.2" />
                 <GradientStop Color="White" Offset="1.0" />
             </LinearGradientBrush>
         </Grid.Background>
@@ -54,7 +54,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="4"/>
-                <ColumnDefinition Width="0.2*"/>
+                <ColumnDefinition Width="0.3*"/>
             </Grid.ColumnDefinitions>
             
             <!--image here-->
@@ -90,7 +90,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="0.3*"/>
                 </Grid.RowDefinitions>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <!--grid of meta data and addional data so on-->
@@ -173,53 +173,12 @@
                 <!--horizontal grid splitter-->
                 <GridSplitter Grid.Row="1" Height="4" Background="Transparent" HorizontalAlignment="Stretch"/>
 
-                <!--current selected object-->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                    <materialDesign:Card VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="5">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <!--Tools-->
-                            <Grid>
-                                
-                            </Grid>
-                            
-                            <!--cutline-->
-                            <!--title-->
-                            <TextBlock FontSize="20" HorizontalAlignment="Center" Margin="10" Text="Cutline" TextWrapping="Wrap" Grid.Row="1"/>
-                            <!--ref line of image-->
-                            <TextBlock Padding="5" Grid.Row="2" TextWrapping="Wrap">
-                                            <Run Text="Green: " FontSize="15" FontWeight="Bold" Foreground="Lime"/>
-                                            <Run Text="Length of the reference line." FontSize="15"/>
-                            </TextBlock>
-                            <!--ref line of object-->
-                            <TextBlock Padding="5" Grid.Row="3" TextWrapping="Wrap">
-                                            <Run Text="Red: " FontSize="15" FontWeight="Bold" Foreground="Red"/>
-                                            <Run Text="Length of the object." FontSize="15"/>
-                            </TextBlock>
-                            <!--lines of rectangle-->
-                            <TextBlock Padding="5" Grid.Row="4" TextWrapping="Wrap">
-                                            <Run Text="White " FontSize="15" FontWeight="Bold" Foreground="Black"/>
-                                            <Run Text="Height and width of object's cutout." FontSize="15"/>
-                            </TextBlock>
-                            <!--lines of rectangle-->
-                            <TextBlock Padding="5" Grid.Row="5" TextWrapping="Wrap">
-                                            <Run Text="Brown " FontSize="15" FontWeight="Bold" Foreground="SandyBrown"/>
-                                            <Run Text="Angles between object and reference line (both ways)." FontSize="15"/>
-                            </TextBlock>
-
-                        </Grid>
-                        
-                    </materialDesign:Card>
-                </ScrollViewer>
-
+                <!--go next button-->
+                <Button x:Name="ExportAsPdf_Button" Style="{StaticResource MaterialDesignRaisedDarkButton}" ToolTip="Generate report" Cursor="Hand" Grid.Row="2" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Margin="10" MaxWidth="150" MaxHeight="150"
+                    Height="{Binding }" Command="{Binding GenerateReportCommand}" Click="ExportAsPdf_Button_Click">
+                    <materialDesign:PackIcon Kind="FilePdfOutline" Height="{Binding }" Width="{Binding }" Margin="30"/>
+                </Button>
 
             </Grid>
         </Grid>

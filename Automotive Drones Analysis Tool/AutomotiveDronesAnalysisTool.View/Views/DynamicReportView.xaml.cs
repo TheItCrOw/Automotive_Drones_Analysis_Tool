@@ -20,6 +20,11 @@ using MaterialDesignThemes.Wpf;
 using MaterialDesignColors;
 using AutomotiveDronesAnalysisTool.Model.Arguments;
 using System.Timers;
+using Microsoft.Win32;
+using System.Drawing.Printing;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Graphics;
+using System.IO;
 
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
@@ -588,6 +593,26 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
             ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
+
+        }
+
+        /// <summary>
+        /// Starts the process of exporting the analysis as pdf
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExportAsPdf_Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Inform the viewmodle about the current height width ratio according to the size of the canvas and the image.
+            ((DynamicReportViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
+
+            var uiElements = new List<FrameworkElement>();
+
+            foreach (var child in ViewModelImage_Canvas.Children)
+                if (child is FrameworkElement el)
+                    uiElements.Add(el);
+
+            ((DynamicReportViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
         }
     }
 }

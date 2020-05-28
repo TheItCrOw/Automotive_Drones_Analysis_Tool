@@ -35,6 +35,59 @@ namespace AutomotiveDronesAnalysisTool.Utility
         }
 
         /// <summary>
+        /// Converts a media brush into a drawing color.
+        /// </summary>
+        /// <param name="brush"></param>
+        /// <returns></returns>
+        public static Color ConvertBrushToColor(System.Windows.Media.Brush brush)
+        {
+            var mediaColor = ((System.Windows.Media.SolidColorBrush)brush).Color;
+            var drawingColor = System.Drawing.Color.FromArgb(
+                    mediaColor.A, mediaColor.R, mediaColor.G, mediaColor.B);
+
+            return drawingColor;
+        }
+
+        /// <summary>
+        /// Converts a bitmapimage to a bitmap
+        /// </summary>
+        /// <param name="bitmapImage"></param>
+        /// <returns></returns>
+        public static Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
+        {
+            // BitmapImage bitmapImage = new BitmapImage(new Uri("../Images/test.png", UriKind.Relative));
+
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
+                enc.Save(outStream);
+                Bitmap bitmap = new Bitmap(outStream);
+
+                return new Bitmap(bitmap);
+            }
+        }
+
+        /// <summary>
+        /// Generates a bitmap out of a bitmapsource
+        /// </summary>
+        /// <param name="bitmapsource"></param>
+        /// <returns></returns>
+        public static Bitmap BitmapFromSource(BitmapSource bitmapsource)
+        {
+            Bitmap bitmap;
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapsource));
+                enc.Save(outStream);
+                bitmap = new Bitmap(outStream);
+            }
+            return bitmap;
+        }
+
+
+        /// <summary>
         /// Converts the given bitmap into a bitmap source
         /// </summary>
         /// <param name="source"></param>

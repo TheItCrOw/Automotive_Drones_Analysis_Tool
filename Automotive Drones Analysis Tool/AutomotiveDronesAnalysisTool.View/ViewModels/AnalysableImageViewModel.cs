@@ -99,6 +99,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Returns the instance of the model.
+        /// </summary>
+        public AnalysableImageModel GetModelInstance() => Model;
+
+        /// <summary>
         /// Deletes the given item from the detectedItemslist and from the image
         /// </summary>
         /// <param name="key"></param>
