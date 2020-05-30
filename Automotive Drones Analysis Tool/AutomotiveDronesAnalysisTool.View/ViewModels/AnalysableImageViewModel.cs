@@ -345,7 +345,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         if (trimmedString.StartsWith("-") || trimmedString.StartsWith("+"))
                             trimmedString = pair.Value.Substring(1, pair.Value.Length - 1); // Get rid of the "+" at the start of string
 
-                        if (trimmedString.Contains("."))
+                        if (trimmedString.Contains(".")) // If the string is a double or float
                         {
                             var index = trimmedString.IndexOf(".");
                             trimmedString = trimmedString.Substring(0, index);

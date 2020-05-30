@@ -34,8 +34,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
     /// </summary>
     public partial class DynamicReportView : UserControl
     {
+        #region Fields
         System.Timers.Timer _resizeTimer; //Declare it as a class member, not a local field, so it won't get GC'ed. 
-        private static System.Timers.Timer _loopTimer;
 
         private bool _canvasInitiliazed;
         AnalysableImageViewModel _viewModel;
@@ -47,8 +47,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         double _lengthOfOneCoordinateStep = 0; // This determines how much 1 step on the x axis is in the actual world.
         Size _lastCanvasSize;
         float _fontSizeMultiplier = 0.012f;
-        [Obsolete]
-        private TextBlock _currentyDraggedTextBlock;
+        private Point _currentStartPoint;
+        private bool _mouseIsClicked;
+        private TextBlock _currentySelectedTextblock;
+        #endregion
 
         public DynamicReportView()
         {
@@ -70,19 +72,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             _detectedRectanglesToLines = new Dictionary<Guid, Guid>();
         }
 
-        [Obsolete]
-        /// <summary>
-        ///  To make textblocks draggable and to avoid more threads, we need a timer that indicates if the mouse is being pressed down.
-        /// </summary>
-        private void StartDragLoopTimer()
-        {
-            //loop timer
-            _loopTimer = new System.Timers.Timer();
-            _loopTimer.Interval = 500; // interval in milliseconds
-            _loopTimer.Enabled = false;
-            _loopTimer.Elapsed += DragTextblock;
-            _loopTimer.AutoReset = true;
-        }
+        #region Events
 
         /// <summary>
         /// Init the shapes and buttons when the Image Canvas is loaded.
@@ -96,6 +86,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 // Wait a bit. We do not want the user to spam click the canvas and thus breaking it.
                 Thread.Sleep(500);
                 _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
+                ViewModelImage_Canvas.MouseMove += ViewModelImage_Canvas_MouseMove;
+                ViewModelImage_Canvas.MouseUp += ViewModelImage_Canvas_MouseUp;
 
                 ViewModelImage_Canvas.Children.Clear();
 
@@ -120,6 +112,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                                 BorderBrush = Brushes.Black
                             };
                             button.Click += DetectedRectangleObject_Click; // Sub to event.
+                            button.MouseUp += Button_MouseUp;
 
                             Canvas.SetLeft(button, item.X / GetCurrentWidthRatio());
                             Canvas.SetTop(button, item.Y / GetCurrentHeightRatio());
@@ -185,6 +178,133 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"An error occured while loading the objects data: {ex}");
             }
         }
+        /// <summary>
+        /// Fires when the mouse moves of the textblock
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NameTextblock_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_mouseIsClicked)
+            {
+                var mousePos = Mouse.GetPosition(ViewModelImage_Canvas);
+                if (sender is TextBlock textBlock)
+                {
+                    Canvas.SetLeft(textBlock, Canvas.GetLeft(textBlock) - (_currentStartPoint.X - mousePos.X));
+                    Canvas.SetTop(textBlock, Canvas.GetTop(textBlock) - (_currentStartPoint.Y - mousePos.Y));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fires when the user moves the mouse on the canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ViewModelImage_Canvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_mouseIsClicked)
+            {
+                var mousePos = Mouse.GetPosition(ViewModelImage_Canvas);
+                if (_currentySelectedTextblock != null)
+                {
+                    Canvas.SetLeft(_currentySelectedTextblock, mousePos.X);
+                    Canvas.SetTop(_currentySelectedTextblock, mousePos.Y);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fires when the user presses up on a button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _mouseIsClicked = false;
+            _currentySelectedTextblock = null;
+        }
+
+        /// <summary>
+        /// Fires when the user presses up on the canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ViewModelImage_Canvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _mouseIsClicked = false;
+            _currentySelectedTextblock = null;
+        }
+
+        /// <summary>
+        /// Fires when the user pressed down onto a textblock
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NameTextblock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender != null && sender is TextBlock textBlock)
+            {
+                _currentStartPoint = Mouse.GetPosition(ViewModelImage_Canvas);
+                _mouseIsClicked = true;
+                _currentySelectedTextblock = textBlock;
+            }
+        }
+
+        /// <summary>
+        /// Fires when the user clicks onto a line.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DrawnLine_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var line = (Line)sender;
+        }
+
+        /// <summary>
+        /// Switches the opacity of the viewmodel canvas
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Flashlight_Button_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
+            ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
+        }
+
+        /// <summary>
+        /// Starts the process of exporting the analysis as pdf
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExportAsPdf_Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Inform the viewmodle about the current height width ratio according to the size of the canvas and the image.
+            ((DynamicReportViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
+
+            // Gather all the drawable ui elements in a list and pass them to the viewmode to export.
+            var uiElements = new List<FrameworkElement>();
+
+            foreach (var child in ViewModelImage_Canvas.Children)
+                if (child is FrameworkElement el)
+                    uiElements.Add(el);
+
+            ((DynamicReportViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
+        }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Gets the current width ratio between canvas and model.image
+        /// </summary>
+        /// <returns></returns>
+        private double GetCurrentWidthRatio() => _viewModel.Image.PixelWidth / (ViewModelImage_Canvas.ActualWidth);
+
+        /// <summary>
+        /// Gets the current height ratio between canvas and model.image
+        /// </summary>
+        /// <returns></returns>
+        private double GetCurrentHeightRatio() => _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight);
 
         /// <summary>
         /// Hides and deanalyses the given item
@@ -247,6 +367,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             DrawDistanceOfObjects();
         }
 
+        /// <summary>
+        /// Draws the distances of each objects rectangle to each other.
+        /// </summary>
         private void DrawDistanceOfObjects()
         {
             double index = 1;
@@ -262,21 +385,21 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 ViewModelImage_Canvas.Children.Remove(removableLine);
 
             // Now calculate them again.
-            foreach(var pair in _detectedRectanglesToLines)
+            foreach (var pair in _detectedRectanglesToLines)
             {
                 // Get the current rect object that is being analysed.
                 var corrRectangleObject = _detectedObjects.FirstOrDefault(o => o.Id == pair.Key);
 
-                if(corrRectangleObject != null)
+                if (corrRectangleObject != null)
                 {
-                    foreach(var pair2 in _detectedRectanglesToLines)
+                    foreach (var pair2 in _detectedRectanglesToLines)
                     {
                         var corrRectangleObject2 = _detectedObjects.FirstOrDefault(o => o.Id == pair2.Key);
-                        if(corrRectangleObject2 != corrRectangleObject)
+                        if (corrRectangleObject2 != corrRectangleObject)
                         {
                             // Get the distance between the two objects x axis.
                             var distance = GeometryHelper.Distance(
-                                new Point( corrRectangleObject.X + corrRectangleObject.Width,
+                                new Point(corrRectangleObject.X + corrRectangleObject.Width,
                                     corrRectangleObject.Y + corrRectangleObject.Height),
                                 new Point(corrRectangleObject2.X, corrRectangleObject.Y + corrRectangleObject.Height));
 
@@ -476,7 +599,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                         new Point(correspondingLine.X, correspondingLine.Y), new Point(correspondingLine.Width, correspondingLine.Height));
 
                 var actualLength = actualDistance * _lengthOfOneCoordinateStep;
-                DrawTextblock($"{correspondingLine.CodeName}: {string.Format("{0:0.00}", actualLength)}m", 
+                DrawTextblock($"{correspondingLine.CodeName}: {string.Format("{0:0.00}", actualLength)}m",
                     correspondingLine.Id, Brushes.Red, centerPointOfLine);
             }
 
@@ -562,7 +685,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             line.Y1 = startPoint.Y;
             line.Y2 = endPoint.Y;
             line.Tag = tag;
-            if(dashed)
+            if (dashed)
             {
                 line.StrokeDashOffset = 2;
                 line.StrokeDashArray = new DoubleCollection() { 4 };
@@ -588,6 +711,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             nameTextblock.Tag = tag;
             nameTextblock.Background = Brushes.DarkSlateGray;
             nameTextblock.Margin = new Thickness(3);
+            nameTextblock.MouseDown += NameTextblock_MouseDown;
 
             // Textblocks should always be on top.
             Canvas.SetZIndex(nameTextblock, 1);
@@ -596,97 +720,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             ViewModelImage_Canvas.Children.Add(nameTextblock);
         }
+        #endregion
 
-        /// <summary>
-        /// Fires when the user presses up from a textblock
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NameTextblock_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => _loopTimer.Enabled = false;
-
-        /// <summary>
-        /// Fires when the user pressed down onto a textblock
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NameTextblock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender != null)
-            {
-                _currentyDraggedTextBlock = (TextBlock)sender;
-                _loopTimer.Enabled = true;
-            }
-        }
-
-        [Obsolete]
-        /// <summary>
-        /// Gets called as long as the mouse is being pressed down.
-        /// </summary>
-        private void DragTextblock(object source, ElapsedEventArgs e)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (_currentyDraggedTextBlock != null)
-                {
-                    double left = Canvas.GetLeft(_currentyDraggedTextBlock);
-                    double top = Canvas.GetTop(_currentyDraggedTextBlock);
-
-                    Canvas.SetLeft(_currentyDraggedTextBlock, ViewModelImage_Canvas.PointToScreen(Mouse.GetPosition(ViewModelImage_Canvas)).X);
-                    Canvas.SetTop(_currentyDraggedTextBlock, ViewModelImage_Canvas.PointToScreen(Mouse.GetPosition(ViewModelImage_Canvas)).Y);
-                }
-            });
-        }
-
-        /// <summary>
-        /// Fires when the user clicks onto a line.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DrawnLine_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var line = (Line)sender;
-        }
-
-        /// <summary>
-        /// Gets the current width ratio between canvas and model.image
-        /// </summary>
-        /// <returns></returns>
-        private double GetCurrentWidthRatio() => _viewModel.Image.PixelWidth / (ViewModelImage_Canvas.ActualWidth);
-
-        /// <summary>
-        /// Gets the current height ratio between canvas and model.image
-        /// </summary>
-        /// <returns></returns>
-        private double GetCurrentHeightRatio() => _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight);
-
-        /// <summary>
-        /// Switches the opacity of the viewmodel canvas
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Flashlight_Button_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
-            ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
-        }
-
-        /// <summary>
-        /// Starts the process of exporting the analysis as pdf
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ExportAsPdf_Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Inform the viewmodle about the current height width ratio according to the size of the canvas and the image.
-            ((DynamicReportViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
-
-            var uiElements = new List<FrameworkElement>();
-
-            foreach (var child in ViewModelImage_Canvas.Children)
-                if (child is FrameworkElement el)
-                    uiElements.Add(el);
-
-            ((DynamicReportViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
-        }
     }
 }
