@@ -78,7 +78,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public override void Dispose()
         {
             _projectModel?.Image.Dispose(); // Clear image from model
-            _projectModel?.ImageCopy.Dispose(); // Clear copy
             _projectModel = null;
             ViewModel?.Dispose();
             ViewModel = null;

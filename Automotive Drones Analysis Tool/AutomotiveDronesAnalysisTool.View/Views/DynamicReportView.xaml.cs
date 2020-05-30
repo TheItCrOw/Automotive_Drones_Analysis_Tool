@@ -112,7 +112,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                                 BorderBrush = Brushes.Black
                             };
                             button.Click += DetectedRectangleObject_Click; // Sub to event.
-                            button.MouseUp += Button_MouseUp;
+                            button.PreviewMouseUp += Button_MouseUp;
 
                             Canvas.SetLeft(button, item.X / GetCurrentWidthRatio());
                             Canvas.SetTop(button, item.Y / GetCurrentHeightRatio());
@@ -268,7 +268,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// <param name="e"></param>
         private void Flashlight_Button_Click(object sender, RoutedEventArgs e)
         {
-            ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 0.85f ? 1 : 0.85;
+            ViewModelImage_Canvas.Opacity = ViewModelImage_Canvas.Opacity == 1 ? 0.85f : 1;
             ViewModelImage_Canvas.Background = ViewModelImage_Canvas.Background == Brushes.Black ? Brushes.Transparent : Brushes.Black;
         }
 
@@ -348,7 +348,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             // Remove the line, rectangle relation
             _detectedRectanglesToLines.Remove(correspondingDetectedItem.Id);
 
-            // Draw the new angles.
+            // Cleanup objects, draw angles and distances again.
+            CleanupDestroyableObjects();
             DrawAllAnglesOfLine();
             DrawDistanceOfObjects();
         }
@@ -361,10 +362,28 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             // Get the corresponding rectangle object.
             var corrDetectedObject = _detectedRectangles.FirstOrDefault(r => r.Id.Equals(item.Tag));
 
+            CleanupDestroyableObjects();
             DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
             DrawWidthAndHeightOfButton(corrDetectedObject);
             DrawAllAnglesOfLine();
             DrawDistanceOfObjects();
+        }
+
+        /// <summary>
+        /// Cleans up the objects that must always be destroyed upon analysing or deanalysing
+        /// </summary>
+        private void CleanupDestroyableObjects()
+        {
+            // First cleanup the previous distances, they are recalculated anywise. They would stack up.
+            var removableLines = new List<FrameworkElement>();
+            foreach (var child in ViewModelImage_Canvas.Children)
+                if (child is FrameworkElement el)
+                    if (el.Tag.Equals("Always_Destroy_Distance") || el.Tag.Equals("Always_Destroy"))
+                        removableLines.Add(el);
+
+            // Delete them as children.
+            foreach (var removableLine in removableLines)
+                ViewModelImage_Canvas.Children.Remove(removableLine);
         }
 
         /// <summary>
@@ -373,16 +392,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         private void DrawDistanceOfObjects()
         {
             double index = 1;
-            // First cleanup the previous distances, they are recalculated anywise. They would stack up.
-            var removableLines = new List<FrameworkElement>();
-            foreach (var child in ViewModelImage_Canvas.Children)
-                if (child is FrameworkElement el)
-                    if (el.Tag.Equals("Always_Destroy_Distance"))
-                        removableLines.Add(el);
-
-            // Delete them as children.
-            foreach (var removableLine in removableLines)
-                ViewModelImage_Canvas.Children.Remove(removableLine);
 
             // Now calculate them again.
             foreach (var pair in _detectedRectanglesToLines)
@@ -407,7 +416,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             var actualLength = distance * _lengthOfOneCoordinateStep;
 
                             // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
-                            var margin = (30 * GetCurrentHeightRatio()) * index; // 35 is customisable.
+                            var margin = (25 * GetCurrentHeightRatio()) * index; // 35 is customisable.
 
                             var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());

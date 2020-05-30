@@ -94,8 +94,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             {
                 Id = new Guid(),
                 Projectname = this.ProjectName,
-                Image = new Bitmap(imagePath),
-                ImageCopy = new Bitmap(imagePath)
+                Image = new Bitmap(imagePath)
             };
             imageAnalyseModel.MetaData = new Dictionary<string, string>();
 

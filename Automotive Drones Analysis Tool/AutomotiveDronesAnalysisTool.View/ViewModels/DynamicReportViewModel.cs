@@ -4,9 +4,13 @@ using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
 using Prism.Commands;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Tables;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,6 +57,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             set => SetProperty(ref _selectedItem, value);
         }
 
+        /// <summary>
+        /// List of all the rectangled cropped out objects
+        /// </summary>
+        public ObservableCollection<DetectedItemViewModel> DetetectedRectangleObjects { get; set; }
+
         public override void Dispose()
         {
 
@@ -61,7 +70,22 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public override void Initiliaze()
         {
             ViewModel = (AnalysableImageViewModel)base.ViewModel;
+            // Comments are currently only addable in the dynamic report view
+            ViewModel.Comments = new ObservableCollection<string>();
+            DetetectedRectangleObjects = new ObservableCollection<DetectedItemViewModel>();
+            LoadDetectedRectangleObjects();
+
             InitializedViewModel?.Invoke(ViewModel);
+        }
+
+        /// <summary>
+        /// Filles the <see cref="DetetectedRectangleObjects"/> list with the correctly shaped items from the ViewModel
+        /// </summary>
+        private void LoadDetectedRectangleObjects()
+        {
+            foreach (var o in ViewModel.DetectedObjects)
+                if (o.Shape == DrawingShape.Rectangle)
+                    DetetectedRectangleObjects.Add(o);
         }
 
         /// <summary>
@@ -70,73 +94,54 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <param name="drawnItems"></param>
         private void ExportReportAsPdf(List<FrameworkElement> drawnItems)
         {
-            var image = BitmapHelper.BitmapImage2Bitmap(ViewModel.CleanImageCopy);
-            var penWidth = image.Width * 0.0014f;
-            var fontSize = image.Width * 0.01f;
-            var pen = new Pen(Color.White, penWidth);
-            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-
-            using (var g = Graphics.FromImage(image))
-            {
-                foreach (var item in drawnItems)
-                {
-                    var x = Canvas.GetLeft(item) * WidthHeightRatio.X;
-                    var y = Canvas.GetTop(item) * WidthHeightRatio.Y;
-                    var width = item.Width * WidthHeightRatio.X;
-                    var height = item.Height * WidthHeightRatio.Y;
-
-                    if (item is Line line)
-                    {
-                        pen.Color = BitmapHelper.ConvertBrushToColor(line.Stroke);
-
-                        g.DrawLine(pen, 
-                            (int)(line.X1 * WidthHeightRatio.X),
-                            (int)(line.Y1 * WidthHeightRatio.Y),
-                            (int)(line.X2 * WidthHeightRatio.X),
-                            (int)(line.Y2 * WidthHeightRatio.Y));
-                    }
-                    else if (item is TextBlock textBlock)
-                    {
-                        var font = new Font(FontFamily.GenericSansSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-                        pen.Color = BitmapHelper.ConvertBrushToColor(textBlock.Background);
-
-                        g.FillRectangle(
-                            Brushes.DarkSlateGray, 
-                            (int)(Canvas.GetLeft(textBlock) * WidthHeightRatio.X),
-                            (int)(Canvas.GetTop(textBlock) * WidthHeightRatio.Y),
-                            (int)(textBlock.ActualWidth * WidthHeightRatio.X),
-                            (int)(textBlock.ActualHeight * WidthHeightRatio.Y));
-
-                        g.DrawString(textBlock.Text, 
-                            font, 
-                            Brushes.White, 
-                            new PointF((int)(Canvas.GetLeft(textBlock) * WidthHeightRatio.X),
-                                       (int)(Canvas.GetTop(textBlock) * WidthHeightRatio.Y)));
-                    }
-                }
-            }
+            var analysedImage = BitmapHelper.DrawFrameworkElementsOntoBitmap(
+                drawnItems,
+                BitmapHelper.BitmapImage2Bitmap(ViewModel.CleanImageCopy),
+                WidthHeightRatio.X,
+                WidthHeightRatio.Y);            
 
             using (PdfDocument document = new PdfDocument())
             {
                 //Add a page to the document
                 PdfPage page = document.Pages.Add();
-
                 //Create PDF graphics for a page
                 PdfGraphics graphics = page.Graphics;
 
-                //Set the standard font
-                PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-
-                //Draw the text
-                graphics.DrawString("Hello World!!!", font, PdfBrushes.Black, new System.Drawing.PointF(0, 0));
-                //Load the image from the disk.
-                PdfBitmap pdfImage = new PdfBitmap(image);
-
-                double widthHeightRatio = (double)image.Width / (double)image.Height;
+                //Draw the analysed image
+                PdfBitmap pdfImage = new PdfBitmap(analysedImage);
+                // Scale the picture right so its not uneven
+                double widthHeightRatio = (double)analysedImage.Width / (double)analysedImage.Height;
                 var height = 520 / widthHeightRatio;
-
-                //Draw the image onto the pdf.
                 graphics.DrawImage(pdfImage, 0, 0, 520, (int)height); // max width of pdf: 520! Adjust the height accordingly.
+
+                //Draw the metadata as a table
+                // title first
+                var subheaderFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
+                var subheader = "Metadata";
+                var subheaderFontSize = subheaderFont.MeasureString(subheader);
+                graphics.DrawString(subheader, subheaderFont, PdfBrushes.Black, new PointF(260 - subheaderFontSize.Width / 2, (float)height + 10));
+
+                // then table
+                var pdfLightTable = new PdfLightTable();
+                pdfLightTable.Columns.Add(new PdfColumn("Name"));
+                pdfLightTable.Columns.Add(new PdfColumn("Value"));
+
+                foreach(var pair in ViewModel.Metadata)
+                    pdfLightTable.Rows.Add(new object[] { pair.Key, pair.Value });
+              
+                PdfFont font = new PdfStandardFont(PdfFontFamily.Courier, 10);
+                PdfCellStyle altStyle = new PdfCellStyle(font, PdfBrushes.White, PdfPens.Black);
+                altStyle.BackgroundBrush = PdfBrushes.DarkSlateGray;
+
+                var headerFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
+                PdfCellStyle headerStyle = new PdfCellStyle(headerFont, PdfBrushes.White, PdfPens.Black);
+                headerStyle.BackgroundBrush = PdfBrushes.Blue;
+
+                pdfLightTable.Style.AlternateStyle = altStyle;
+                pdfLightTable.Style.HeaderStyle = headerStyle;
+                pdfLightTable.Style.ShowHeader = false;
+
+                pdfLightTable.Draw(page, new PointF(0, (float)height + subheaderFontSize.Height + 10));
 
                 //Save the document
                 document.Save("E:\\Output.pdf");

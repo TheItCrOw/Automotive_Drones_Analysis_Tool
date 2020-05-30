@@ -57,30 +57,63 @@
                 <ColumnDefinition Width="0.3*"/>
             </Grid.ColumnDefinitions>
             
-            <!--image here-->
-            <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
-                <Image Source="{Binding ViewModel.CleanImageCopy}" Margin="5" x:Name="ViewModel_Image"/>
-            </materialDesign:Card>
-
-            <!--drawing canvas right here-->
-            <Border BorderBrush="Black" BorderThickness="1" Margin="15" VerticalAlignment="Top"
+            <!--left side main content with image-->
+            <ScrollViewer>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <!--image here-->
+                    <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
+                        <Image Source="{Binding ViewModel.CleanImageCopy}" Margin="5" x:Name="ViewModel_Image"/>
+                    </materialDesign:Card>
+                    <!--drawing canvas right here-->
+                    <Border BorderBrush="Black" BorderThickness="1" Margin="15" VerticalAlignment="Top"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
-                <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                        <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
-                    <Canvas.Background>
-                        <SolidColorBrush Color="Black" Opacity="0.85"/>
-                    </Canvas.Background>
-                </Canvas>
-            </Border>
-            
-            <!--switch dark mode button-->
-            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button"
+                            <Canvas.Background>
+                                <SolidColorBrush Color="Black" Opacity="0.85"/>
+                            </Canvas.Background>
+                        </Canvas>
+                    </Border>
+                    <!--switch dark mode button-->
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button"
                     ToolTip="Switch light mode" VerticalAlignment="Top" HorizontalAlignment="Right" Click="Flashlight_Button_Click" Cursor="Hand">
-                <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" />
-            </Button>
+                        <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" />
+                    </Button>
+                    <!--cropped out objects list...not sure if this is usefull tho-->
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding DetetectedRectangleObjects}" Visibility="Collapsed">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <materialDesign:Card Margin="10" Padding="10" materialDesign:ShadowAssist.ShadowDepth="Depth3">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="0.5*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel HorizontalAlignment="Left">
+                                            <materialDesign:Card Background="#FF0288D1" Margin="0 0 0 5" Padding="2">
+                                                <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Foreground="White">
+                                                <Run Text="{Binding Name}"/>
+                                                <Run Text="("/>
+                                                <Run Text="{Binding CodeName, Mode=OneWay}"/>
+                                                <Run Text=")"/>
+                                                </TextBlock>
+                                            </materialDesign:Card>
+                                            <Image Source="{Binding Image}" Height="350"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </materialDesign:Card>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ScrollViewer>
 
             <!--vertical gridsplitter-->
             <GridSplitter Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch"/>
@@ -95,6 +128,7 @@
                     <!--grid of meta data and addional data so on-->
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -161,6 +195,23 @@
                                                Grid.Column="1" HorizontalAlignment="Left"/>
                                                 </Grid>
                                             </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+                        </materialDesign:Card>
+
+                        <!--Add comments-->
+                        <materialDesign:Card Grid.Row="3" Margin="5">
+                            <Expander>
+                                <Expander.Header>
+                                    <TextBlock FontSize="15" FontWeight="Bold" Text="Comments"/>
+                                </Expander.Header>
+                                <!--actual list-->
+                                <ItemsControl ItemsSource="{Binding ViewModel.Comments}" Margin="5">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>

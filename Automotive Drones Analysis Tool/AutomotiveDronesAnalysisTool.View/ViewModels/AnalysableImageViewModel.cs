@@ -78,6 +78,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public ObservableCollection<DetectedItemViewModel> DetectedObjects { get; set; }
 
+        /// <summary>
+        /// List of comments added by the user in the report view.
+        /// </summary>
+        public ObservableCollection<string> Comments { get; set; }
+
 
         public AnalysableImageViewModel(AnalysableImageModel model)
         {
