@@ -374,7 +374,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// </summary>
         private void CleanupDestroyableObjects()
         {
-            // First cleanup the previous distances, they are recalculated anywise. They would stack up.
             var removableLines = new List<FrameworkElement>();
             foreach (var child in ViewModelImage_Canvas.Children)
                 if (child is FrameworkElement el)
@@ -416,7 +415,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             var actualLength = distance * _lengthOfOneCoordinateStep;
 
                             // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
-                            var margin = (25 * GetCurrentHeightRatio()) * index; // 35 is customisable.
+                            var margin = (30 * GetCurrentHeightRatio()) * index; // 35 is customisable.
 
                             var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());

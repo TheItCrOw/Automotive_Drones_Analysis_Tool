@@ -1,9 +1,11 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using Microsoft.Win32;
 using Prism.Commands;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Grid;
 using Syncfusion.Pdf.Tables;
 using System;
 using System.Collections.Generic;
@@ -107,44 +109,65 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 //Create PDF graphics for a page
                 PdfGraphics graphics = page.Graphics;
 
-                //Draw the analysed image
+                //Draw the analysed image ===============================================================================
                 PdfBitmap pdfImage = new PdfBitmap(analysedImage);
                 // Scale the picture right so its not uneven
                 double widthHeightRatio = (double)analysedImage.Width / (double)analysedImage.Height;
-                var height = 520 / widthHeightRatio;
-                graphics.DrawImage(pdfImage, 0, 0, 520, (int)height); // max width of pdf: 520! Adjust the height accordingly.
+                float height = (float)(page.Size.Width / widthHeightRatio);
+                graphics.DrawImage(pdfImage, 0, 0, page.Size.Width, (int)height); // max width of pdf: 520! Adjust the height accordingly.
 
-                //Draw the metadata as a table
+                //Draw the metadata as a table ==========================================================================
                 // title first
                 var subheaderFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
                 var subheader = "Metadata";
                 var subheaderFontSize = subheaderFont.MeasureString(subheader);
-                graphics.DrawString(subheader, subheaderFont, PdfBrushes.Black, new PointF(260 - subheaderFontSize.Width / 2, (float)height + 10));
+                height += 10;
+                graphics.DrawString(subheader, subheaderFont, PdfBrushes.Black, new PointF(260 - subheaderFontSize.Width / 2, height));
 
                 // then table
-                var pdfLightTable = new PdfLightTable();
-                pdfLightTable.Columns.Add(new PdfColumn("Name"));
-                pdfLightTable.Columns.Add(new PdfColumn("Value"));
+                var pdfGrid = new PdfGrid();
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Name");
+                dataTable.Columns.Add("Value");
 
-                foreach(var pair in ViewModel.Metadata)
-                    pdfLightTable.Rows.Add(new object[] { pair.Key, pair.Value });
-              
-                PdfFont font = new PdfStandardFont(PdfFontFamily.Courier, 10);
-                PdfCellStyle altStyle = new PdfCellStyle(font, PdfBrushes.White, PdfPens.Black);
-                altStyle.BackgroundBrush = PdfBrushes.DarkSlateGray;
+                foreach (var pair in ViewModel.Metadata)
+                    dataTable.Rows.Add(pair.Key, pair.Value);
 
-                var headerFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
-                PdfCellStyle headerStyle = new PdfCellStyle(headerFont, PdfBrushes.White, PdfPens.Black);
-                headerStyle.BackgroundBrush = PdfBrushes.Blue;
+                pdfGrid.DataSource = dataTable;
+                pdfGrid.Style.Font = new PdfStandardFont(PdfFontFamily.Courier, 10);
 
-                pdfLightTable.Style.AlternateStyle = altStyle;
-                pdfLightTable.Style.HeaderStyle = headerStyle;
-                pdfLightTable.Style.ShowHeader = false;
+                // Keep track of the currently used height
+                height += subheaderFontSize.Height + 10;
+                // pdfGridLayout contains x,y,widht and height coordiantes of the drawn datatable!
+                var pdfGridLayout = pdfGrid.Draw(page, new PointF(0, height));
 
-                pdfLightTable.Draw(page, new PointF(0, (float)height + subheaderFontSize.Height + 10));
+                //Draw the additonal information as a table ==========================================================================
+                // title
+                var pdfTextElement = new PdfTextElement("Additonal Information", new PdfStandardFont(PdfFontFamily.Courier, 14));
+                subheaderFontSize = subheaderFont.MeasureString(pdfTextElement.Text);
+                pdfTextElement.Draw(pdfGridLayout.Page, new PointF(260 - subheaderFontSize.Width / 2, pdfGridLayout.Bounds.Height + 10));
 
-                //Save the document
-                document.Save("E:\\Output.pdf");
+                dataTable = new DataTable();
+                dataTable.Columns.Add("Name");
+                dataTable.Columns.Add("Value");
+                foreach (var tuple in ViewModel.AdditionalInformation)
+                    dataTable.Rows.Add(tuple.Item1, tuple.Item2);
+
+                pdfGrid.DataSource = dataTable;
+                // Keep track of the currently used height
+                pdfGridLayout = pdfGrid.Draw(pdfGridLayout.Page, new PointF(0, pdfGridLayout.Bounds.Height + 30));
+
+                //Save the document =====================================================================================================
+
+                var saveFileDialog = new SaveFileDialog()
+                {
+                    Filter = "PDF Document |*.pdf",
+                    Title = "Save a pdf",
+                };
+                saveFileDialog.ShowDialog();
+
+                if (saveFileDialog.FileName != string.Empty)
+                    document.Save($"{saveFileDialog.FileName}");
             }
         }
     }
