@@ -14,10 +14,8 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Width="1050"
-        Height="850"
         Title="Automotive Drone Analysis Tool"
-        WindowStartupLocation="CenterScreen">
+        WindowState="Maximized">
     <Grid>
 
         <!--The frame content can be changed according to the desired view-->

@@ -32,17 +32,26 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private BitmapImage _cleaImageCopy;
         private readonly AnalysableImageModel Model;
         private bool _alreadyAnalysed;
+        private string _imageName;
 
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand AnalyseImageCommand => new DelegateCommand(AnalyseImage);
         public DelegateCommand<DetectedItemArguments> AddDetectedItemCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItem);
+        public DelegateCommand<string> AddCommentCommand => new DelegateCommand<string>(AddComment);
+        public DelegateCommand<string> DeleteCommentCommand => new DelegateCommand<string>(DeleteComment);
 
         public string Projectname
         {
             get => _projectName;
             set => SetProperty(ref _projectName, value);
+        }
+
+        public string ImageName
+        {
+            get => _imageName;
+            set => SetProperty(ref _imageName, value);
         }
 
         /// <summary>
@@ -83,7 +92,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public ObservableCollection<string> Comments { get; set; }
 
-
         public AnalysableImageViewModel(AnalysableImageModel model)
         {
             AdditionalInformation = new ObservableCollection<Tuple<string, string>>();
@@ -91,7 +99,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             Model = model;
             Id = new Guid();
-            Projectname = model.Projectname;
+            Projectname = model.ProjectName;
+            ImageName = model.ImageName;
             Metadata = model.MetaData;
             Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
             CleanImageCopy = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
@@ -99,8 +108,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             if (model.AdditionalInformation != null)
                 foreach (var pair in model.AdditionalInformation)
                     AdditionalInformation.Add(Tuple.Create(pair.Item1, pair.Item2));
-
-            SetupYOLOConfig();
         }
 
         /// <summary>
@@ -156,11 +163,66 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public void Dispose()
         {
             Image?.StreamSource.Dispose(); // Clear the stream
+            Image = null;
             CleanImageCopy?.StreamSource.Dispose(); // Clear copy stream
+            CleanImageCopy = null;
+            Model.Image.Dispose();
+            Model.Image = null;
+            Metadata.Clear();
+
             foreach (var item in DetectedObjects) // Clear detected items.
+            {
                 item?.Image?.StreamSource?.Dispose();
+                item.Image = null;
+            }
             DetectedObjects?.Clear();
         }
+
+        /// <summary>
+        /// Sets up the YOLO config correctly.
+        /// </summary>
+        public void SetupYOLOConfig()
+        {
+            // Calculate the current widthHeight and set it into the YOLo config.
+            var yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model);
+
+            if (yoloWidthHeight == 0)
+            {
+                if (ServiceContainer.GetService<DialogService>()
+                    .AskForInteger(
+                    "Missing altitude",
+                    "We couldn't find the absolute altitude in the metadata of the image from where the picture was taken. " +
+                    "If you do know the altitude of the given picture, please add the value of it now and press the confirm button. This helps analysing the image. " +
+                    "Please only enter a value if you can ensure the correctness. Typically it varies from 450 to 470. " +
+                    "If the altitude is not known or simply doesn't exist, please press the cancel button. A default value will then be chosen to analyse the image.",
+                    out var result))
+                {
+                    // Add the result as "AdditionalInformation"
+                    AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString()));
+                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, result);
+                }
+                else
+                {
+                    // if the user does not input the altitude, we assume the deafult altitude
+                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453); // 453 is a default value.
+                }
+            }
+
+            // Update the YOLO config with the given widthHeight
+            ServiceContainer.GetService<YOLOCommunicationService>().SetWidthHeight(yoloWidthHeight);
+        }
+
+        /// <summary>
+        /// Adds a comment to the viewmodel
+        /// </summary>
+        /// <param name="comment"></param>
+        private void AddComment(string comment) => Comments.Add(comment);
+
+        /// <summary>
+        /// Delete the given comment from the viewmodel
+        /// </summary>
+        /// <param name="comment"></param>
+        private void DeleteComment(string comment) => Comments.Remove(comment);
 
         /// <summary>
         /// Adds a new yoloItem and draws it onto the picture.
@@ -398,6 +460,12 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             }
         }
 
+        /// <summary>
+        /// This is/was for testing pupose. Maybe using it later.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        [Obsolete]
         private Bitmap TestShapeDetection(Bitmap image)
         {
             // step 1 - turn background to black
@@ -494,40 +562,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private System.Drawing.Point[] ToPointsArray(List<IntPoint> points)
         {
             return points.Select(p => new System.Drawing.Point(p.X, p.Y)).ToArray();
-        }
-
-        /// <summary>
-        /// Sets up the YOLO config correctly.
-        /// </summary>
-        private void SetupYOLOConfig()
-        {
-            // Calculate the current widthHeight and set it into the YOLo config.
-            var yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model);
-
-            if (yoloWidthHeight == 0)
-            {
-                if (ServiceContainer.GetService<DialogService>()
-                    .AskForInteger(
-                    "Missing altitude",
-                    "We couldn't find the absolute altitude in the metadata of the image from where the picture was taken. " +
-                    "If you do know the altitude of the given picture, please add the value of it now and press the confirm button. This helps analysing the image. " +
-                    "Please only enter a value if you can ensure the correctness. Typically it varies from 450 to 470. " +
-                    "If the altitude is not known or simply doesn't exist, please press the cancel button. A default value will then be chosen to analyse the image.",
-                    out var result))
-                {
-                    // Add the result as "AdditionalInformation"
-                    AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString()));
-                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, result);
-                }
-                else
-                {
-                    // if the user does not input the altitude, we assume the deafult altitude
-                    yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453);
-                }
-            }
-
-            // Update the YOLO config with the given widthHeight
-            ServiceContainer.GetService<YOLOCommunicationService>().SetWidthHeight(yoloWidthHeight);
         }
 
         /// <summary>

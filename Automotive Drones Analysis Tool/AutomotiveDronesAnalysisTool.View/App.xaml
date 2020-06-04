@@ -75,6 +75,8 @@
             <converters:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
             <!--Inverse bool to vis converter-->
             <converters:InverseBooleanToVisibiltyConverter x:Key="InverseBoolToVisConverter"/>
+            <!--convert bitmap to imagesource-->
+            <converters:BitmapToImageSourceConverter x:Key="BitmapToImageSourceConverter"/>
 
         </ResourceDictionary>
     </Application.Resources>

@@ -63,6 +63,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 {
                     _projectModel = (AnalysableImageModel)Model;
                     ViewModel = new AnalysableImageViewModel(_projectModel);
+                    ViewModel.SetupYOLOConfig();
                 });
                 IsLoading = false;
             }
@@ -81,7 +82,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             _projectModel = null;
             ViewModel?.Dispose();
             ViewModel = null;
-            GC.Collect();
         }
 
         /// <summary>

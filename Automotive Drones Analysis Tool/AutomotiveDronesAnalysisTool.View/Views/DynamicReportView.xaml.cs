@@ -273,6 +273,20 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         }
 
         /// <summary>
+        /// Fires when the user presses down on the comment textbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Comment_Textbox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && sender is TextBox textBox)
+            {
+                ((DynamicReportViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
+                textBox.Text = string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Starts the process of exporting the analysis as pdf
         /// </summary>
         /// <param name="sender"></param>
@@ -729,6 +743,5 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ViewModelImage_Canvas.Children.Add(nameTextblock);
         }
         #endregion
-
     }
 }

@@ -35,7 +35,7 @@
         </ScrollViewer>
         
         <!--add integer-->
-        <TextBox Margin="5" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="2" 
+        <TextBox Margin="5 0" FontFamily="Microsoft YaHei Light" FontSize="15" Grid.Row="2" 
                          materialDesign:HintAssist.Hint="Value" materialDesign:HintAssist.IsFloating="True" x:Name="Number_Textbox"/>
 
         <!--error message-->

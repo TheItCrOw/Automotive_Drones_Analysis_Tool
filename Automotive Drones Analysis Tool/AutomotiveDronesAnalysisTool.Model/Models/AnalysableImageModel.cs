@@ -14,7 +14,13 @@ namespace AutomotiveDronesAnalysisTool.Model.Models
         /// <summary>
         /// Name of the project
         /// </summary>
-        public string Projectname { get; set; }
+        public string ProjectName { get; set; }
+
+        [DataMember]
+        /// <summary>
+        /// Name of the image
+        /// </summary>
+        public string ImageName { get; set; }
 
         [DataMember]            
         /// <summary>

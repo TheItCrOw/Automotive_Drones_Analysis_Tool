@@ -17,7 +17,7 @@
              >
     <Grid>
         <Grid.Background>
-            <ImageBrush ImageSource="pack://application:,,,/Ressources/IAV-Standort-2.jpg"/>
+            <ImageBrush ImageSource="pack://application:,,,/Ressources/IAV-Standort-2.jpg" Stretch="UniformToFill"/>
         </Grid.Background>
 
         <Grid.RowDefinitions>

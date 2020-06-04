@@ -63,7 +63,8 @@
             </Button>
 
             <!--Sequence-->
-            <Button Grid.Column="1" Grid.RowSpan="2" Height="200" Width="200" materialDesign:ShadowAssist.ShadowDepth="Depth5">
+            <Button Grid.Column="1" Grid.RowSpan="2" Height="200" Width="200" materialDesign:ShadowAssist.ShadowDepth="Depth5"
+                    Command="{Binding UploadSequenceCommand}">
                 <StackPanel>
                     <TextBlock Text="Sequence" Foreground="White" Style="{StaticResource TextTitleTextblockStyle}" Margin="0 0 0 10"/>
                     <materialDesign:PackIcon Kind="FolderMultipleImage" Foreground="White" Width="100" Height="100" HorizontalAlignment="Center"/>

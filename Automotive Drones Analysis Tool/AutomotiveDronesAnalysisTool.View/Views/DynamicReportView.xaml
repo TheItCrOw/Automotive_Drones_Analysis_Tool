@@ -158,7 +158,6 @@
                                                     <!--Name of property-->
                                                     <TextBlock Text="{Binding Path=Key}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Left"
                                                TextWrapping="Wrap"/>
-
                                                     <!--value of property-->
                                                     <TextBlock Text="{Binding Path=Value}" FontSize="13" TextWrapping="Wrap"
                                                Grid.Column="1" HorizontalAlignment="Left"/>
@@ -208,13 +207,39 @@
                                     <TextBlock FontSize="15" FontWeight="Bold" Text="Comments"/>
                                 </Expander.Header>
                                 <!--actual list-->
-                                <ItemsControl ItemsSource="{Binding ViewModel.Comments}" Margin="5">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <Grid Margin="5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <!--add comment button-->
+                                    <TextBox FontSize="13" materialDesign:HintAssist.Hint="New comment" materialDesign:HintAssist.IsFloating="True"
+                                             x:Name="Comment_Textbox" PreviewKeyDown="Comment_Textbox_PreviewKeyDown" Margin="5 -10 5 15"/>
+                                    <!--list of comments-->
+                                    <ItemsControl ItemsSource="{Binding ViewModel.Comments}" Grid.Row="1">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <!--actual comment-->
+                                                        <TextBlock Text="{Binding }" FontSize="13" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="5"/>
+                                                        <!--delete button-->
+                                                        <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
+                                                                Width="20" Height="20" ToolTip="Delete" x:Name="Delete_Button" Grid.Column="1"
+                                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteCommentCommand}"
+                                                                CommandParameter="{Binding }">
+                                                            <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
                             </Expander>
                         </materialDesign:Card>
                     </Grid>

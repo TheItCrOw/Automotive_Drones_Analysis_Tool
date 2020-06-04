@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Ressources\IAV-Drohne.jpg" />
     <None Remove="Ressources\IAV-Icon.png" />
     <None Remove="Ressources\IAV-Standort-2.jpg" />
+    <None Remove="Ressources\IAV-Standort-3.jpg" />
     <None Remove="Ressources\IAV-Standort.jpg" />
     <None Remove="Ressources\Situation_1_nah.JPG" />
     <None Remove="Ressources\Situation_1_nah_analysiert.jpg" />
@@ -22,6 +24,9 @@
     </Reference>
     <Reference Include="MaterialDesignThemes.Wpf">
       <HintPath>..\Libraries\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>..\Libraries\System.Windows.Forms.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -43,8 +48,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Ressources\IAV-Drohne.jpg" />
     <Resource Include="Ressources\IAV-Icon.png" />
     <Resource Include="Ressources\IAV-Standort-2.jpg" />
+    <Resource Include="Ressources\IAV-Standort-3.jpg" />
     <Resource Include="Ressources\IAV-Standort.jpg" />
     <Resource Include="Ressources\Situation_1_nah.JPG" />
     <Resource Include="Ressources\Situation_1_nah_analysiert.jpg" />

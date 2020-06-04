@@ -53,7 +53,7 @@
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Resume last analysis"/>
                     </Button>
                     <!--<Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>-->
-                    <TextBlock Text="Created: 05/05/2020" Style="{StaticResource TextTextblockStyle}"/>
+                    <TextBlock Text="" Style="{StaticResource TextTextblockStyle}"/>
                 </StackPanel>
             </materialDesign:Card>
 
@@ -66,7 +66,7 @@
                         <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Load analysis"/>
                     </Button>
                     <!--<Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>-->
-                    <TextBlock Text="Created: 05/05/2020" Style="{StaticResource TextTextblockStyle}"/>
+                    <TextBlock Text="" Style="{StaticResource TextTextblockStyle}"/>
 
                 </StackPanel>
             </materialDesign:Card>
