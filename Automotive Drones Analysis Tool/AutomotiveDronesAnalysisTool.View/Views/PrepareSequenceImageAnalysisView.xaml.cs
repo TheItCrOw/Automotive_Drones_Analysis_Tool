@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
+using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -21,6 +23,16 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         public PrepareSequenceImageAnalysisView()
         {
             InitializeComponent();
+        }
+
+        private void Comment_Textbox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && sender is TextBox textBox)
+            {
+                ((PrepareSequenceImageAnalysisViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
+                textBox.Text = string.Empty;
+                textBox.Focus();
+            }
         }
     }
 }

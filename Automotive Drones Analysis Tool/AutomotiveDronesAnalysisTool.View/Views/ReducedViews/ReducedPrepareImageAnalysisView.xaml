@@ -1,0 +1,209 @@
+﻿<UserControl x:Class="AutomotiveDronesAnalysisTool.View.Views.ReducedViews.ReducedPrepareImageAnalysisView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AutomotiveDronesAnalysisTool.View.Views.ReducedViews"
+             mc:Ignorable="d" 
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="0.3*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!--image here-->
+        <materialDesign:Card Margin="10 10 10 5" materialDesign:ShadowAssist.ShadowDepth="Depth5" Grid.Row="0" HorizontalAlignment="Center">
+            <Image Source="{Binding ViewModel.Image}" x:Name="ViewModel_Image"/>
+        </materialDesign:Card>
+
+        <!--drawing canvas right here-->
+        <Border Grid.Row="0" BorderBrush="Black" VerticalAlignment="Top" Margin="10 10 10 5"
+                    Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
+                    Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
+            <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                         Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
+                         Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
+                         x:Name="ViewModelImage_Canvas"
+                         MouseDown="ViewModelImage_Canvas_MouseDown" MouseMove="ViewModelImage_Canvas_MouseMove" MouseUp="ViewModelImage_Canvas_MouseUp">
+                <Canvas.Background>
+                    <SolidColorBrush Color="White" Opacity="0"/>
+                </Canvas.Background>
+            </Canvas>
+        </Border>
+
+        <!--todo list and penic palette here-->
+        <Grid Grid.Column="1" Grid.Row="0" Width="300" Margin="0 5 5 5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!--todo list expander-->
+            <Expander Background="Transparent" IsExpanded="True">
+                <Expander.Header>
+                    <!--title-->
+                    <materialDesign:Card materialDesign:ShadowAssist.ShadowDepth="Depth3">
+                        <Grid Margin="3">
+                            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Foreground="SteelBlue" Text="Checklist"/>
+                            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Height="20" Width="20" 
+                                    HorizontalAlignment="Right" Margin="0 0 3 0" ToolTip="To guarantee an extensive analysis, try to implement the listed notes.">
+                                <materialDesign:PackIcon Kind="QuestionMark" Height="15" Width="15" />
+                            </Button>
+                        </Grid>
+                    </materialDesign:Card>
+                </Expander.Header>
+
+                <!--todo list-->
+                <ScrollViewer>
+                    <StackPanel Margin="5">
+                        <!--select all objects-->
+                        <materialDesign:Card>
+                            <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
+                            1) Make sure the machine marked all desired objects fully and correctly. If not, correct the existing ones or add new marks.
+                            You can do so by simply using the mouse to draw a rectangle onto the image on the left. You can delete markings by pressing
+                            the delete button from the list down below.
+                            </TextBlock>
+                        </materialDesign:Card>
+                        <!--mark the top middle of car-->
+                        <materialDesign:Card Margin="0 5 0 0">
+                            <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
+                            2) Add reference markings to the objects. You can do so by firstly switching from "Rectangle" to "Line" in the shape pallet below.
+                                After that, draw a line by holding down the left mouse button. Every object should have it's own line. The line should cut the object in half.
+                                A car should have a line typically starting at it's emblem (e.g. VW) at the front middle, ending at the windshield wipers in the back.
+                            </TextBlock>
+                        </materialDesign:Card>
+                        <!--select the image reference mark-->
+                        <materialDesign:Card Margin="0 5 0 0">
+                            <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
+                            3) Lastly, add a single reference line to the image itself. To do so, select the "Reference" shape in the pallet down below. The usage 
+                                is the same as in step 2, but you must enter the actual length of the line in meters after you've drawn it. This reference
+                                line will be used as the primary direction for the analysis. Typically you can use the white reference line in the image
+                                itself as your reference line.
+                            </TextBlock>
+                        </materialDesign:Card>
+                    </StackPanel>
+                </ScrollViewer>
+            </Expander>
+            <!--pencil palette-->
+            <materialDesign:Card Grid.Row="1" Margin="5 5 20 0" materialDesign:ShadowAssist.ShadowDepth="Depth3">
+                <StackPanel Margin="5">
+                    <DockPanel LastChildFill="False" Margin="0 0 0 0">
+                        <TextBlock Text="Shapes:" Style="{StaticResource TextTextblockStyle}" Foreground="SteelBlue" VerticalAlignment="Center"/>
+                        <!--rectangle-->
+                        <Button x:Name="ChooseRectangle_Button" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Height="30" Width="30" 
+                                    HorizontalAlignment="Right" Margin="5 0 5 0" ToolTip="Rectangle" Click="ChooseRectangle_Button_Click">
+                            <materialDesign:PackIcon Kind="RectangleOutline" Height="25" Width="25" />
+                        </Button>
+                        <!--Line-->
+                        <Button x:Name="ChooseLine_Button" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Height="30" Width="30" 
+                                    HorizontalAlignment="Right" Margin="0 0 5 0" ToolTip="Line" Click="ChooseLine_Button_Click">
+                            <materialDesign:PackIcon Kind="VectorLine" Height="25" Width="25"/>
+                        </Button>
+                        <!--Line-->
+                        <Button x:Name="ChooseReferenceLine_Button" Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Height="30" Width="30" 
+                                    HorizontalAlignment="Right" Margin="0 0 5 0" ToolTip="Reference" Click="ChooseReferenceLine_Button_Click">
+                            <materialDesign:PackIcon Kind="MeasuringTape" Height="25" Width="25"/>
+                        </Button>
+                    </DockPanel>
+                </StackPanel>
+            </materialDesign:Card>
+        </Grid>
+
+        <!--grid splitter-->
+        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Background="Transparent" Margin="10 0 10 0"/>
+
+        <!--analysed objects -->
+        <ScrollViewer Grid.Row="2" Margin="5 0 0 0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding ViewModel.DetectedObjects}" x:Name="AnalysedImages_ItemsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <materialDesign:Card Margin="5" materialDesign:ShadowAssist.ShadowDepth="Depth5" VerticalAlignment="Stretch"
+                                                 MinWidth="220" MaxWidth="550">
+                            <Grid Margin="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <!--name and buttons-->
+                                <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="{Binding Name}" Foreground="SteelBlue"/>
+                                <!--delete button-->
+                                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" ToolTip="Delete"
+                                                    Height="25" Width="25" HorizontalAlignment="Right" Margin="0 0 0 0"
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteDetectedItemCommand}"
+                                                    CommandParameter="{Binding Path=Id}" x:Name="DeleteObject_Button" Click="DeleteObject_Button_Click"
+                                                        >
+                                    <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
+                                </Button>
+                                <StackPanel Grid.Row="1">
+                                    <!--x and y coordiante-->
+                                    <TextBlock Padding="5" HorizontalAlignment="Center">
+                                            <Run Text="X:" FontSize="15" FontWeight="Bold"/>
+                                            <Run Text="{Binding X}" FontSize="15"/>
+                                            <Run Text="Y:" FontSize="15" FontWeight="Bold"/>
+                                            <Run Text="{Binding Y}" FontSize="15"/>
+                                    </TextBlock>
+                                    <!--width and height-->
+                                    <TextBlock Padding="5" HorizontalAlignment="Center">
+                                            <Run Text="Width:" FontSize="15" FontWeight="Bold"/>
+                                            <Run Text="{Binding Width}" FontSize="15"/>
+                                            <Run Text="Height:" FontSize="15" FontWeight="Bold"/>
+                                            <Run Text="{Binding Height}" FontSize="15"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <!--image-->
+                                <!--only rectangles have images-->
+                                <Image Grid.Row="2">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Shape}" Value="Line">
+                                                    <Setter Property="Source" Value="pack://application:,,,/Ressources/Vector-Path-Line.png"/>
+                                                    <Setter Property="Margin" Value="20"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Shape}" Value="ReferenceLine">
+                                                    <Setter Property="Source" Value="pack://application:,,,/Ressources/Tape-Measure.png"/>
+                                                    <Setter Property="Margin" Value="20"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Shape}" Value="Rectangle">
+                                                    <Setter Property="Source" Value="{Binding Image}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+
+                            </Grid>
+                        </materialDesign:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!--go next button-->
+        <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" ToolTip="Generate report" Cursor="Hand" Grid.Row="3" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Margin="10" MaxWidth="150" MaxHeight="150"
+                    Height="{Binding }" Command="{Binding GenerateReportCommand}">
+            <materialDesign:PackIcon Kind="ArrowForward" Height="{Binding }" Width="{Binding }" Margin="30"/>
+        </Button>
+
+    </Grid>
+</UserControl>

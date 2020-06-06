@@ -32,7 +32,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand StartImageAnalysisCommand => new DelegateCommand(StartImageAnalysis);
         public DelegateCommand SwitchViewModesCommand => new DelegateCommand(SwitchViewModes);
-        public DelegateCommand<string> DeleteDetectedItemCommand => new DelegateCommand<string>(DeleteDetectedItem);
+        public DelegateCommand<object> DeleteDetectedItemCommand => new DelegateCommand<object>(DeleteDetectedItem);
         public DelegateCommand<DetectedItemArguments> AddDetectedItemFromCanvasCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItemFromCanvas);
         public DelegateCommand GenerateReportCommand => new DelegateCommand(GenerateReport);
 
@@ -126,14 +126,14 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <summary>
         /// Deletes the detected item by it's type
         /// </summary>
-        private void DeleteDetectedItem(string key)
+        private void DeleteDetectedItem(object id)
         {
             if (ViewModel == null)
                 throw new NullReferenceException("AnalysableViewModel is null. Can't delete item.");
 
             try
             {
-                ViewModel.DeleteDetectedItem(key);
+                ViewModel.DeleteDetectedItemCommand?.Execute(Guid.Parse(id.ToString()));
             }
             catch (Exception ex)
             {

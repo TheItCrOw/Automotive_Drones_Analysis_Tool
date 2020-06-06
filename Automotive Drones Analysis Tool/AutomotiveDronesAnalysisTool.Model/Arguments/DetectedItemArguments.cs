@@ -10,6 +10,7 @@ namespace AutomotiveDronesAnalysisTool.Model.Arguments
     /// </summary>
     public class DetectedItemArguments
     {
+        public Guid Id { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
         public int Width { get; set; }

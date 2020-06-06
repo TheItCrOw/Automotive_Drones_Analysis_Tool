@@ -37,113 +37,201 @@
         </materialDesign:Card>
 
         <!--main content here-->
-        <ScrollViewer Grid.Row="1" VerticalAlignment="Stretch" Margin="10">
-            <ItemsControl ItemsSource="{Binding AnalysableImageViewModels}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <materialDesign:Card Margin="0 15 5 0" materialDesign:ShadowAssist.ShadowDepth="Depth4">
-                            <Grid Height="300">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="0.1*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="0.2*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <!--image-->
-                                <materialDesign:Card Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Image Source="{Binding Image}" Stretch="Uniform"/>
-                                </materialDesign:Card>
+        <Grid Grid.Row="1" VerticalAlignment="Stretch" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.3*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding AnalysableImageViewModels}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <materialDesign:Card Margin="0 0 5 10" materialDesign:ShadowAssist.ShadowDepth="Depth4">
+                                <!--highlight the card if selected-->
+                                <materialDesign:Card.Style>
+                                    <Style TargetType="materialDesign:Card">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Background" Value="LightBlue"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </materialDesign:Card.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="0.2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="250"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                <!--meta data list with expander--> 
-                                <materialDesign:Card Grid.Column="1" Margin="5" VerticalAlignment="Stretch">
-                                    <Expander ExpandDirection="Right">
-                                        <Expander.Header>
-                                            <TextBlock Width="75" Text="Metadata" FontSize="15" FontWeight="Bold"/>
-                                        </Expander.Header>
-                                        <ScrollViewer Margin="10">
-                                            <ItemsControl ItemsSource="{Binding Metadata}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="250"/>
-                                                                <ColumnDefinition Width="250"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{Binding Key}" TextWrapping="Wrap" FontSize="15" FontWeight="Bold"/>
-                                                            <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" FontSize="15"/>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Expander>
-                                </materialDesign:Card>
+                                    <!--image-->
+                                    <materialDesign:Card Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <!--margin -1 cause there is always a small white stripe clipping for some reason...-->
+                                        <Image Source="{Binding Image}" Stretch="Uniform" Margin="0 -1 0 0"/>
+                                    </materialDesign:Card>
 
-                                <!--additonal information list with expander-->
-                                <materialDesign:Card Grid.Column="2" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                    <Expander ExpandDirection="Right">
-                                        <Expander.Header>
-                                            <TextBlock Width="75" Text="Additional" FontSize="15" FontWeight="Bold"/>
-                                        </Expander.Header>
-                                        <ScrollViewer Height="250" Margin="10">
-                                            <ItemsControl ItemsSource="{Binding AdditionalInformation}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{Binding Item1}" TextWrapping="Wrap" FontSize="15" FontWeight="Bold"/>
-                                                            <TextBlock Grid.Column="1" Text="{Binding Item2}" TextWrapping="Wrap" FontSize="15"/>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Expander>
-                                </materialDesign:Card>
+                                    <!--meta data list with expander-->
+                                    <materialDesign:Card Grid.Row="1" Grid.ColumnSpan="2" Margin="5" 
+                                                         Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisConverter}}">
+                                        <Expander ExpandDirection="Down">
+                                            <Expander.Header>
+                                                <TextBlock Text="Metadata" FontSize="15" FontWeight="Bold"/>
+                                            </Expander.Header>
+                                            <ScrollViewer Margin="5" VerticalScrollBarVisibility="Visible" MaxHeight="350">
+                                                <ItemsControl ItemsSource="{Binding Metadata}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding Key}" TextWrapping="Wrap" FontSize="15" FontWeight="Bold"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" FontSize="15"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </Expander>
+                                    </materialDesign:Card>
 
-                                <!--comments-->
-                                <materialDesign:Card Grid.Column="3" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                                    <Expander ExpandDirection="Right">
-                                        <Expander.Header>
-                                            <TextBlock Width="75" Text="Comments" FontSize="15" FontWeight="Bold"/>
-                                        </Expander.Header>
-                                        <ScrollViewer Height="250" Margin="10">
-                                            <ItemsControl ItemsSource="{Binding AdditionalInformation}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding }" TextWrapping="Wrap" FontSize="15" FontWeight="Bold"/>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Expander>
-                                </materialDesign:Card>
+                                    <!--additional information list with expander-->
+                                    <materialDesign:Card Grid.Row="2" Grid.ColumnSpan="2" Margin="5" 
+                                                         Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisConverter}}">
+                                        <Expander ExpandDirection="Down">
+                                            <Expander.Header>
+                                                <DockPanel>
+                                                    <!--add button-->
+                                                    <Button Width="20" Height="20" Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                                                            Margin="0 0 10 0" ToolTip="Add information"
+                                                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.AddInformationCommand}"
+                                                            CommandParameter="{Binding }">
+                                                        <!--for some reason this icon is bugged, so I have to adjust it here manually.-->
+                                                        <materialDesign:PackIcon Kind="Add" Height="20" Width="20" Margin="-16 -4 -6 0"/>
+                                                    </Button>
+                                                    <TextBlock Text="Additional Information" FontSize="15" FontWeight="Bold"/>
+                                                </DockPanel>
+                                            </Expander.Header>
+                                            <!--actual list-->
+                                            <ScrollViewer Margin="5" VerticalScrollBarVisibility="Visible" MaxHeight="350">
+                                                <ItemsControl ItemsSource="{Binding AdditionalInformation}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray" Margin="3">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding Item1}" TextWrapping="Wrap" FontSize="15" FontWeight="Bold"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Item2}" TextWrapping="Wrap" FontSize="15"/>
+                                                                    <!--edit. Get the ancestor datacontext for executing command-->
+                                                                    <Button x:Name="Edit_Button" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}"
+                                                                            Margin="0 0 5 0" Width="20" Height="20" ToolTip="Edit" Grid.Column="2"
+                                                                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.EditInformationCommand}"
+                                                                            CommandParameter="{Binding Path=Item1}">
+                                                                        <materialDesign:PackIcon Kind="Edit" Height="15" Width="15" />
+                                                                    </Button>
+                                                                    <!--delete. Get the ancestor datacontext for executing command-->
+                                                                    <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Grid.Column="3"
+                                                                            Width="20" Height="20" ToolTip="Edit" x:Name="Delete_Button"
+                                                                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteInformationCommand}"
+                                                                            CommandParameter="{Binding Path=Item1}">
+                                                                        <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </Expander>
+                                    </materialDesign:Card>
 
-                                <!--go next button-->
-                                <Button x:Name="ExportAsPdf_Button" 
-                                        Style="{StaticResource MaterialDesignRaisedDarkButton}" 
-                                        ToolTip="Prepare image"
-                                        Margin="5"
-                                        Grid.Column="4" 
-                                        HorizontalAlignment="Right"
-                                        MaxWidth="100" 
-                                        Height="{Binding }"
-                                        Command="{Binding GenerateReportCommand}">
-                                    <materialDesign:PackIcon Kind="ArrowRight" Height="{Binding }" Width="{Binding }"/>
-                                </Button>
+                                    <!--Comment list with expander-->
+                                    <materialDesign:Card Grid.Row="3" Grid.ColumnSpan="2" Margin="5" 
+                                                         Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisConverter}}">
+                                        <Expander ExpandDirection="Down">
+                                            <Expander.Header>
+                                                <TextBlock Text="Comments" FontSize="15" FontWeight="Bold"/>
+                                            </Expander.Header>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                <!--add comment box-->
+                                                <TextBox FontSize="13" materialDesign:HintAssist.Hint="New comment" materialDesign:HintAssist.IsFloating="True"
+                                             x:Name="Comment_Textbox" PreviewKeyDown="Comment_Textbox_PreviewKeyDown" Margin="5 -10 5 15"/>
+                                                <ScrollViewer Grid.Row="1" Margin="5" VerticalScrollBarVisibility="Visible" MaxHeight="350">
+                                                    <ItemsControl ItemsSource="{Binding Comments}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border BorderThickness="0 0 0 0.3" BorderBrush="Gray">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <!--actual comment-->
+                                                                        <TextBlock Text="{Binding }" FontSize="13" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="5"/>
+                                                                        <!--delete button-->
+                                                                        <Button Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
+                                                                Width="20" Height="20" ToolTip="Delete" x:Name="Delete_Button" Grid.Column="1"
+                                                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteCommentCommand}"
+                                                                CommandParameter="{Binding }">
+                                                                            <materialDesign:PackIcon Kind="Delete" Height="15" Width="15" />
+                                                                        </Button>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Expander>
+                                    </materialDesign:Card>
 
-                            </Grid>
-                        </materialDesign:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-        
+                                    <!--go next button-->
+                                    <Button x:Name="ExportAsPdf_Button" 
+                                            Background="White"
+                                            BorderThickness="0"
+                                            BorderBrush="Black"
+                                            Style="{StaticResource MaterialDesignRaisedDarkButton}" 
+                                            ToolTip="Prepare image"
+                                            Margin="5"
+                                            Grid.Column="4" 
+                                            HorizontalAlignment="Right"
+                                            MaxWidth="100" 
+                                            Height="{Binding }"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.SelectViewModelCommand}"
+                                            CommandParameter="{Binding }">
+                                        <materialDesign:PackIcon Kind="ArrowRight" Height="{Binding }" Foreground="Black" Width="{Binding }"/>
+                                    </Button>
+
+                                </Grid>
+                            </materialDesign:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!--edit mode of the selected viewmodel-->
+            <materialDesign:Card Grid.Column="1" VerticalAlignment="Stretch">
+                <Frame x:Name="Content_Frame" Content="{Binding FrameContent}"/>
+            </materialDesign:Card>
+        </Grid>
+
         <!--Progress bar when loading-->
         <ProgressBar Grid.Row="2" IsIndeterminate="{Binding IsLoading}" Height="6"/>
 

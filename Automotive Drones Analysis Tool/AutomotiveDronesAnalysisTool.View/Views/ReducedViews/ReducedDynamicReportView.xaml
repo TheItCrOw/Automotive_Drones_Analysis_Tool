@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="AutomotiveDronesAnalysisTool.View.Views.ReducedViews.ReducedDynamicReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AutomotiveDronesAnalysisTool.View.Views.ReducedViews"
+             mc:Ignorable="d" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             Background="White"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+             d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window"
+             >
+    <ScrollViewer>
+        <Grid x:Name="Main_Grid">
+            <!--image here-->
+            <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
+                <Image Source="{Binding ViewModel.CleanImageCopy}" x:Name="ViewModel_Image"/>
+            </materialDesign:Card>
+            <!--drawing canvas right here-->
+            <Border BorderBrush="White" BorderThickness="0" Margin="10" VerticalAlignment="Top"
+                    Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
+                    Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
+                <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                         Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
+                         Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
+                         x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
+                    <Canvas.Background>
+                        <SolidColorBrush Color="Black" Opacity="0.85"/>
+                    </Canvas.Background>
+                </Canvas>
+            </Border>
+            <!--switch dark mode button-->
+            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right">
+                <!--switch lightmode-->
+                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button" Margin="0 5 5 0"
+                                ToolTip="Switch light mode"  Click="Flashlight_Button_Click" Cursor="Hand">
+                    <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" />
+                </Button>
+                <!--export as pdf-->
+                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding GenerateReportCommand}"
+                                ToolTip="Export as PDF"  Click="Flashlight_Button_Click" Cursor="Hand" Margin="0 5 0 0">
+                    <materialDesign:PackIcon Kind="FilePdfOutline" Height="30" Width="30" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

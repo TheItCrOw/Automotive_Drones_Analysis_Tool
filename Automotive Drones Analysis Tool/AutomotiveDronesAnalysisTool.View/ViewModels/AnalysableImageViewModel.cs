@@ -33,12 +33,14 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private readonly AnalysableImageModel Model;
         private bool _alreadyAnalysed;
         private string _imageName;
+        private bool _isSelected;
 
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
         public DelegateCommand<string> DeleteInformationCommand => new DelegateCommand<string>(DeleteInformation);
         public DelegateCommand AnalyseImageCommand => new DelegateCommand(AnalyseImage);
         public DelegateCommand<DetectedItemArguments> AddDetectedItemCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItem);
+        public DelegateCommand<object> DeleteDetectedItemCommand => new DelegateCommand<object>(DeleteDetectedItem);
         public DelegateCommand<string> AddCommentCommand => new DelegateCommand<string>(AddComment);
         public DelegateCommand<string> DeleteCommentCommand => new DelegateCommand<string>(DeleteComment);
 
@@ -73,6 +75,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// True if this viewmodel has been selected through UI.
+        /// </summary>
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
+
+        /// <summary>
         /// Metadata of the image
         /// </summary>
         public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
@@ -83,7 +94,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public ObservableCollection<Tuple<string, string>> AdditionalInformation { get; set; }
 
         /// <summary>
-        /// List of found objects by YOLO
+        /// List of found objects by YOLO and the user
         /// </summary>
         public ObservableCollection<DetectedItemViewModel> DetectedObjects { get; set; }
 
@@ -96,9 +107,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             AdditionalInformation = new ObservableCollection<Tuple<string, string>>();
             DetectedObjects = new ObservableCollection<DetectedItemViewModel>();
+            Comments = new ObservableCollection<string>();
 
             Model = model;
-            Id = new Guid();
+            Id = Guid.NewGuid();
             Projectname = model.ProjectName;
             ImageName = model.ImageName;
             Metadata = model.MetaData;
@@ -119,12 +131,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// Deletes the given item from the detectedItemslist and from the image
         /// </summary>
         /// <param name="key"></param>
-        public void DeleteDetectedItem(string key)
-        {
-            DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Name == key));
-            var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
-            Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
-        }
+        public void DeleteDetectedItem(object id) => DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Id.Equals(id)));
 
         /// <summary>
         /// Detects object and analyses the image.
@@ -133,7 +140,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             if (_alreadyAnalysed)
                 return;
-
             // Clear the list.
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Clear());
 
@@ -258,7 +264,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             var detectedItem = new DetectedItemModel()
             {
-                Id = Guid.NewGuid(),
+                Id = detectedItemArgs.Id,
                 AnalysableImageModelId = Id,
                 Name = itemName,
                 X = (int)(detectedItemArgs.X * widthRatio),
@@ -275,8 +281,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
 
-            var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
-            Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
+            //var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
+            //Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
         }
 
         /// <summary>
@@ -323,9 +329,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 var detectedItemViewModel = new DetectedItemViewModel(detectedItem);
 
                 Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
-
-                var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
-                Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
             }
         }
 
