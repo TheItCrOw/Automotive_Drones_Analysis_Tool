@@ -18,6 +18,7 @@ using AutomotiveDronesAnalysisTool.View.Views;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    [Obsolete]
     public class PrepareImageAnalysisViewModel : ManagementViewModelBase
     {
         private AnalysableImageModel _projectModel;
@@ -63,7 +64,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                 {
                     _projectModel = (AnalysableImageModel)Model;
                     ViewModel = new AnalysableImageViewModel(_projectModel);
-                    ViewModel.SetupYOLOConfig();
                 });
                 IsLoading = false;
             }

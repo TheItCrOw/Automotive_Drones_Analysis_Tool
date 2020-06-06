@@ -109,7 +109,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                     // Switch views.
                     ServiceContainer.GetService<ViewService>()
-                        .Show<PrepareSequenceImageAnalysisView, PrepareSequenceImageAnalysisViewModel>(sequenceAnalysableImageModel);
+                        .Show<ImageAnalysisMenuView, ImageAnalysisMenuViewModel>(sequenceAnalysableImageModel);
 
                     IsLoading = false;
                 }
@@ -171,8 +171,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         if (imageAnalyseModel == null)
                             return;
 
+                        var sequenceModel = new SequenceAnalysableImageModel(new List<AnalysableImageModel>() {imageAnalyseModel});
+
                         // Switch the views.
-                        ServiceContainer.GetService<ViewService>().Show<PrepareImageAnalysisView, PrepareImageAnalysisViewModel>(imageAnalyseModel);
+                        ServiceContainer.GetService<ViewService>()
+                                        .Show<ImageAnalysisMenuView, ImageAnalysisMenuViewModel>(sequenceModel);
                     });
                 }
             }

@@ -24,6 +24,7 @@ using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.View.ViewModels
 {
+    [Obsolete]
     public class DynamicReportViewModel : ManagementViewModelBase
     {
         /// <summary>

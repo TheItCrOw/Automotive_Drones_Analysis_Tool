@@ -43,7 +43,7 @@
                 </Button>
                 <!--export as pdf-->
                 <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding GenerateReportCommand}"
-                                ToolTip="Export as PDF"  Click="Flashlight_Button_Click" Cursor="Hand" Margin="0 5 0 0">
+                                ToolTip="Export as PDF" Click="ExportAsPdf_Button_Click" Cursor="Hand" Margin="0 5 0 0">
                     <materialDesign:PackIcon Kind="FilePdfOutline" Height="30" Width="30" />
                 </Button>
             </StackPanel>

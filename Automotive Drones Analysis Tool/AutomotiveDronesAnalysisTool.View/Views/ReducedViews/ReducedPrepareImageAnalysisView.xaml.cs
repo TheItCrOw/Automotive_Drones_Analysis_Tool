@@ -139,7 +139,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 Shape = _currentShape
             };
 
-            ((PrepareSequenceImageAnalysisViewModel)this.DataContext).AddDetectedItemFromCanvasCommand.Execute(detectedItemArgs);
+            ((ImageAnalysisMenuViewModel)this.DataContext).AddDetectedItemFromCanvasCommand.Execute(detectedItemArgs);
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             if (sender is FrameworkElement el)
             {
                 var detectedItemId = ((DetectedItemViewModel)(el.DataContext)).Id;
-
+                
                 FrameworkElement foundItem = null;
                 foreach (var drawnElement in ViewModelImage_Canvas.Children)
                     if (drawnElement is FrameworkElement frameworkEl && frameworkEl.Tag.Equals(detectedItemId))

@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace AutomotiveDronesAnalysisTool.View.Views
 {
     /// <summary>
-    /// Interaktionslogik für PrepareSequenceImageAnalysisView.xaml
+    /// Interaktionslogik für ImageAnalysisMenuView.xaml
     /// </summary>
-    public partial class PrepareSequenceImageAnalysisView : UserControl
+    public partial class ImageAnalysisMenuView : UserControl
     {
-        public PrepareSequenceImageAnalysisView()
+        public ImageAnalysisMenuView()
         {
             InitializeComponent();
         }
@@ -29,7 +29,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         {
             if (e.Key == Key.Enter && sender is TextBox textBox)
             {
-                ((PrepareSequenceImageAnalysisViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
+                ((ImageAnalysisMenuViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
                 textBox.Text = string.Empty;
                 textBox.Focus();
             }

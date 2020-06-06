@@ -1,22 +1,30 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
 using AutomotiveDronesAnalysisTool.Model.Models;
+using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.ViewModels;
 using AutomotiveDronesAnalysisTool.View.Views;
 using AutomotiveDronesAnalysisTool.View.Views.ReducedViews;
 using Prism.Commands;
+using Syncfusion.Pdf;
+using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Grid;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
-    class PrepareSequenceImageAnalysisViewModel : ManagementViewModelBase
+    class ImageAnalysisMenuViewModel : ManagementViewModelBase
     {
         /// <summary>
         /// Indicates when the viewmodel has been loaded and initialized.
@@ -39,7 +47,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand<DetectedItemArguments> AddDetectedItemFromCanvasCommand => new DelegateCommand<DetectedItemArguments>(AddDetectedItemFromCanvas);
         public DelegateCommand<string> AddCommentCommand => new DelegateCommand<string>(AddComment);
         public DelegateCommand<string> DeleteCommentCommand => new DelegateCommand<string>(DeleteComment);
+        public DelegateCommand<object> DeleteAnalysabeImageCommand => new DelegateCommand<object>(DeleteAnalysabeImage);
         public DelegateCommand GenerateReportCommand => new DelegateCommand(GenerateReport);
+        public DelegateCommand<List<FrameworkElement>> ExportReportAsPdfCommand => new DelegateCommand<List<FrameworkElement>>(ExportReportAsPdf);
 
         /// <summary>
         /// The Viewmodel of the list that is currently selected
@@ -58,6 +68,12 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             get => _frameContent;
             set => SetProperty(ref _frameContent, value);
         }
+
+        /// <summary>
+        /// the ratio between the canvas that was used to draw the objects and the actual image.
+        /// X hold width ratio and y height.
+        /// </summary>
+        public System.Windows.Point WidthHeightRatio { get; set; }
 
         /// <summary>
         /// Collection containing all viewmodel of the given sequence model
@@ -105,7 +121,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                                 return;
 
                             var analysableViewModel = new AnalysableImageViewModel(analysableModel);
-                            Application.Current?.Dispatcher?.Invoke(() => AnalysableImageViewModels.Add(analysableViewModel));
+                            System.Windows.Application.Current?.Dispatcher?.Invoke(() => AnalysableImageViewModels.Add(analysableViewModel));
                         }
                     });
 
@@ -122,23 +138,179 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
+        /// Deletes an analysabe image from the list.
+        /// </summary>
+        private void DeleteAnalysabeImage(object id)
+        {
+            try
+            {
+                if (ServiceContainer.GetService<DialogService>()
+                    .InformUser("Delete?", "Continue deleting the selected analysable image from the project?"))
+                {
+                    AnalysableImageViewModels.Remove(AnalysableImageViewModels.FirstOrDefault(i => i.Id.Equals(id)));
+                }
+                // If the list is empty, there is no point in staying in the current view.
+                if (AnalysableImageViewModels.Count == 0)
+                    ServiceContainer.GetService<ViewService>().Show<HomeView, HomeViewModel>();
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't delete item: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Draws the given framework items onto the image and exports that as a pdf
+        /// </summary>
+        /// <param name="drawnItems"></param>
+        private void ExportReportAsPdf(List<FrameworkElement> drawnItems)
+        {
+            try
+            {
+                var analysedImage = BitmapHelper.DrawFrameworkElementsOntoBitmap(
+                    drawnItems,
+                    BitmapHelper.BitmapImage2Bitmap(ViewModel.CleanImageCopy),
+                    WidthHeightRatio.X,
+                    WidthHeightRatio.Y);
+
+                using (PdfDocument document = new PdfDocument())
+                {
+                    // Draw Image ============================================================================================================
+                    #region Setup and draw image
+                    //Add a page to the document
+                    PdfPage page = document.Pages.Add();
+                    //Create PDF graphics for a page
+                    PdfGraphics graphics = page.Graphics;
+
+                    //Draw the analysed image
+                    PdfBitmap pdfImage = new PdfBitmap(analysedImage);
+                    // Scale the picture right so its not uneven
+                    double widthHeightRatio = (double)analysedImage.Width / (double)analysedImage.Height;
+                    float height = (float)(520 / widthHeightRatio);
+                    graphics.DrawImage(pdfImage, 0, 0, 520, (int)height); // max width of pdf: 520! Adjust the height accordingly.
+                    #endregion
+
+                    // Draw Comments =========================================================================================================
+                    #region Draw comments
+                    // Draw the comments ====================================================================================
+                    // table
+                    var pdfGrid = new PdfGrid();
+                    var dataTable = new DataTable();
+                    dataTable.Columns.Add("Comments");
+
+                    foreach (var comment in ViewModel.Comments)
+                        dataTable.Rows.Add(comment);
+
+                    pdfGrid.DataSource = dataTable;
+                    pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
+                    pdfGrid.Style.Font = new PdfStandardFont(PdfFontFamily.Courier, 10);
+
+                    // pdfGridLayout contains x,y,widht and height coordiantes of the drawn datatable!
+                    var pdfGridLayout = pdfGrid.Draw(page, new PointF(0, height + 10));
+                    height += pdfGridLayout.Bounds.Height;
+                    #endregion
+
+                    //Draw the metadata as a table ===========================================================================================
+                    #region Draw metadata
+                    // title first
+                    var subheaderFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
+                    var subheader = "Metadata";
+                    var subheaderFontSize = subheaderFont.MeasureString(subheader);
+                    height += 10;
+                    graphics.DrawString(subheader, subheaderFont, PdfBrushes.Black, new PointF(260 - subheaderFontSize.Width / 2, height));
+
+                    // then table
+                    pdfGrid = new PdfGrid();
+                    dataTable = new DataTable();
+                    dataTable.Columns.Add("Name");
+                    dataTable.Columns.Add("Value");
+
+                    foreach (var pair in ViewModel.Metadata)
+                        dataTable.Rows.Add(pair.Key, pair.Value);
+
+                    pdfGrid.DataSource = dataTable;
+                    pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
+                    pdfGrid.Style.Font = new PdfStandardFont(PdfFontFamily.Courier, 10);
+
+                    // Keep track of the currently used height
+                    height += subheaderFontSize.Height + 10;
+                    // pdfGridLayout contains x,y,widht and height coordiantes of the drawn datatable!
+                    pdfGridLayout = pdfGrid.Draw(page, new PointF(0, height));
+                    #endregion
+
+                    //Draw the additonal information as a table ==============================================================================
+                    #region Draw Additional Information
+                    // title
+                    var pdfTextElement = new PdfTextElement("Additonal Information", new PdfStandardFont(PdfFontFamily.Courier, 14));
+                    subheaderFontSize = subheaderFont.MeasureString(pdfTextElement.Text);
+                    pdfTextElement.Draw(pdfGridLayout.Page, new PointF(260 - subheaderFontSize.Width / 2, pdfGridLayout.Bounds.Height + 10));
+
+                    dataTable = new DataTable();
+                    dataTable.Columns.Add("Name");
+                    dataTable.Columns.Add("Value");
+                    foreach (var tuple in ViewModel.AdditionalInformation)
+                        dataTable.Rows.Add(tuple.Item1, tuple.Item2);
+
+                    pdfGrid.DataSource = dataTable;
+                    pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
+                    // Keep track of the currently used height
+                    pdfGridLayout = pdfGrid.Draw(pdfGridLayout.Page, new PointF(0, pdfGridLayout.Bounds.Height + 30));
+                    #endregion
+
+                    //Save the document ======================================================================================================
+                    #region Save doc
+                    var saveFileDialog = new SaveFileDialog()
+                    {
+                        Filter = "PDF Document |*.pdf",
+                        Title = "Save a pdf",
+                    };
+                    saveFileDialog.ShowDialog();
+
+                    if (saveFileDialog.FileName != string.Empty)
+                    {
+                        document.Save($"{saveFileDialog.FileName}");
+
+                        var p = new Process();
+                        p.StartInfo = new ProcessStartInfo(saveFileDialog.FileName)
+                        {
+                            UseShellExecute = true
+                        };
+                        p.Start();
+                    }
+                    #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't generate Pdf-Report: {ex}");
+            }
+        }
+
+        /// <summary>
         /// Takes in the image preparation of this view and starts the report generation.
         /// </summary>
         private void GenerateReport()
         {
-            // Check if a reference line exists
-            if (!ViewModel.DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
+            try
             {
-                ServiceContainer.GetService<DialogService>()
-                    .InformUser("Info", "Reference line is missing. Please refer to checklist point 3 and draw the reference line first.");
-                return;
-            }
+                // Check if a reference line exists
+                if (!ViewModel.DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
+                {
+                    ServiceContainer.GetService<DialogService>()
+                        .InformUser("Info", "Reference line is missing. Please refer to checklist point 3 and draw the reference line first.");
+                    return;
+                }
 
-            // Pass the prepared model and viewmodel and show the report view
-            var reducedDynamicReportView = new ReducedDynamicReportView();
-            reducedDynamicReportView.DataContext = this;
-            InitializedViewModel?.Invoke(ViewModel);
-            FrameContent = reducedDynamicReportView;
+                // Pass the prepared model and viewmodel and show the report view
+                var reducedDynamicReportView = new ReducedDynamicReportView();
+                reducedDynamicReportView.DataContext = this;
+                InitializedViewModel?.Invoke(ViewModel);
+                FrameContent = reducedDynamicReportView;
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't load Report-View: {ex}");
+            }
         }
 
         /// <summary>
@@ -285,7 +457,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             Model = ViewModel.GetModelInstance();
 
             // If the user has already selected the objects once, then a view exists for it. Get it from the dictioanry
-            if(_analysableViewModelIdToPrepareImageView.TryGetValue(ViewModel.Id, out var reducedPrepareImageAnalysisView))
+            if (_analysableViewModelIdToPrepareImageView.TryGetValue(ViewModel.Id, out var reducedPrepareImageAnalysisView))
                 FrameContent = reducedPrepareImageAnalysisView;
             // If the viewmodel was selected the first time => Create a new view for it and add it to the dictionary.
             else

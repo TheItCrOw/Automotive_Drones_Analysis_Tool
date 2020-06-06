@@ -50,7 +50,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
         private void DynamicReportView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            ((PrepareSequenceImageAnalysisViewModel)DataContext).InitializedViewModel += DynamicReportView_InitializedViewModel;
+            ((ImageAnalysisMenuViewModel)DataContext).InitializedViewModel += DynamicReportView_InitializedViewModel;
         }
 
         private void DynamicReportView_InitializedViewModel(AnalysableImageViewModel viewModel)
@@ -269,7 +269,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         {
             if (e.Key == Key.Enter && sender is TextBox textBox)
             {
-                ((DynamicReportViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
+                ((ImageAnalysisMenuViewModel)DataContext).AddCommentCommand?.Execute(textBox.Text);
                 textBox.Text = string.Empty;
             }
         }
@@ -282,7 +282,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         private void ExportAsPdf_Button_Click(object sender, RoutedEventArgs e)
         {
             // Inform the viewmodle about the current height width ratio according to the size of the canvas and the image.
-            ((DynamicReportViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
+            ((ImageAnalysisMenuViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
 
             // Gather all the drawable ui elements in a list and pass them to the viewmode to export.
             var uiElements = new List<FrameworkElement>();
@@ -291,7 +291,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 if (child is FrameworkElement el)
                     uiElements.Add(el);
 
-            ((DynamicReportViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
+            ((ImageAnalysisMenuViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
         }
         #endregion
 

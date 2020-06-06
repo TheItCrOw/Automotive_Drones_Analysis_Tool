@@ -58,7 +58,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
         /// <summary>
         /// The image that is being analysed.
-        /// </summary>
+        /// </summary> 
         public BitmapImage Image
         {
             get => _image;
@@ -116,10 +116,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Metadata = model.MetaData;
             Image = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
             CleanImageCopy = BitmapHelper.ConvertBitmapToBitmapImage(model.Image);
-
-            if (model.AdditionalInformation != null)
-                foreach (var pair in model.AdditionalInformation)
-                    AdditionalInformation.Add(Tuple.Create(pair.Item1, pair.Item2));
         }
 
         /// <summary>
@@ -134,12 +130,13 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public void DeleteDetectedItem(object id) => DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Id.Equals(id)));
 
         /// <summary>
-        /// Detects object and analyses the image.
+        /// Detects object and analyses the image with the YOLOService.
         /// </summary>
         public void AnalyseImage()
         {
             if (_alreadyAnalysed)
                 return;
+
             // Clear the list.
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Clear());
 
@@ -237,7 +234,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private void AddDetectedItem(DetectedItemArguments detectedItemArgs)
         {
             // If the new item is the reference line - handle it exclusivly.
-            if(detectedItemArgs.Shape == DrawingShape.ReferenceLine)
+            if (detectedItemArgs.Shape == DrawingShape.ReferenceLine)
             {
                 AddReferenceLine(detectedItemArgs);
                 return;
@@ -280,9 +277,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 AnalyseItem(detectedItemViewModel);
 
             Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Add(detectedItemViewModel));
-
-            //var newImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
-            //Image = BitmapHelper.ConvertBitmapToBitmapImage(newImage);
         }
 
         /// <summary>
@@ -292,7 +286,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private void AddReferenceLine(DetectedItemArguments detectedItemArgs)
         {
             // We only want one reference line
-            if(DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
+            if (DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
             {
                 ServiceContainer.GetService<DialogService>()
                     .InformUser("Reference line already added",
@@ -301,7 +295,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 return;
             }
 
-            if(ServiceContainer.GetService<DialogService>()
+            if (ServiceContainer.GetService<DialogService>()
                 .AskForFloat("Actual length", "Please enter the actual length of the reference line in meters.", out var actualLength))
             {
                 // Calculate the correct pos and length according to the images pixels
