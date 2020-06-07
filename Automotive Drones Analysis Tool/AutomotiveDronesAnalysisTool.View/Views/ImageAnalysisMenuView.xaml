@@ -222,10 +222,8 @@
 
                                     <!--go next button-->
                                     <Button x:Name="ExportAsPdf_Button" 
-                                            Background="White"
                                             BorderThickness="0"
                                             BorderBrush="Black"
-                                            Style="{StaticResource MaterialDesignRaisedDarkButton}" 
                                             ToolTip="Prepare image"
                                             Margin="5"
                                             Grid.Column="4" 
@@ -234,6 +232,20 @@
                                             Height="{Binding }"
                                             Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.SelectViewModelCommand}"
                                             CommandParameter="{Binding }">
+                                        <!--highlight the button green if its marked as exporatble.-->
+                                        <Button.Style>
+                                            <Style BasedOn="{StaticResource MaterialDesignRaisedDarkButton}" TargetType="Button">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="True">
+                                                        <Setter Property="Background" Value="LimeGreen"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
+                                                        <Setter Property="Background" Value="White"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+
                                         <materialDesign:PackIcon Kind="ArrowRight" Height="{Binding }" Foreground="Black" Width="{Binding }"/>
                                     </Button>
 
@@ -246,7 +258,7 @@
 
             <!--edit mode of the selected viewmodel-->
             <materialDesign:Card Grid.Column="1" VerticalAlignment="Stretch">
-                <Frame x:Name="Content_Frame" Content="{Binding FrameContent}"/>
+                <Frame x:Name="Content_Frame" Content="{Binding FrameContent}" NavigationUIVisibility="Hidden"/>
             </materialDesign:Card>
         </Grid>
 

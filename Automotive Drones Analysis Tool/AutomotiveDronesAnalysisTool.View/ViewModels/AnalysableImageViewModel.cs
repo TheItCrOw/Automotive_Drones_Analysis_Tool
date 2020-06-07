@@ -34,6 +34,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private bool _alreadyAnalysed;
         private string _imageName;
         private bool _isSelected;
+        private bool _isDirty;
+        private bool _pdfExportable;
 
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
@@ -43,6 +45,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         public DelegateCommand<object> DeleteDetectedItemCommand => new DelegateCommand<object>(DeleteDetectedItem);
         public DelegateCommand<string> AddCommentCommand => new DelegateCommand<string>(AddComment);
         public DelegateCommand<string> DeleteCommentCommand => new DelegateCommand<string>(DeleteComment);
+        public DelegateCommand MarkAsPdfExportableCommand => new DelegateCommand(MarkAsPdfExportable);
 
         public string Projectname
         {
@@ -84,6 +87,24 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// True if changes have been made to this viewmodel
+        /// </summary>
+        public bool IsDirty
+        {
+            get => _isDirty;
+            set => SetProperty(ref _isDirty, value);
+        }
+
+        /// <summary>
+        /// Determines whether this viewmodel is exportable as pdf
+        /// </summary>
+        public bool PdfExportable
+        {
+            get => _pdfExportable;
+            set => SetProperty(ref _pdfExportable, value);
+        }
+
+        /// <summary>
         /// Metadata of the image
         /// </summary>
         public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
@@ -107,6 +128,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             AdditionalInformation = new ObservableCollection<Tuple<string, string>>();
             DetectedObjects = new ObservableCollection<DetectedItemViewModel>();
+            DetectedObjects.CollectionChanged += DetectedObjects_CollectionChanged;
             Comments = new ObservableCollection<string>();
 
             Model = model;
@@ -119,6 +141,16 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Fires when the detectedobjects collection changed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DetectedObjects_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            IsDirty = true;
+        }
+
+        /// <summary>
         /// Returns the instance of the model.
         /// </summary>
         public AnalysableImageModel GetModelInstance() => Model;
@@ -128,7 +160,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         /// <param name="key"></param>
         public void DeleteDetectedItem(object id) => DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Id.Equals(id)));
-
         /// <summary>
         /// Detects object and analyses the image with the YOLOService.
         /// </summary>
@@ -214,6 +245,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             // Update the YOLO config with the given widthHeight
             ServiceContainer.GetService<YOLOCommunicationService>().SetWidthHeight(yoloWidthHeight);
         }
+
+        /// <summary>
+        /// Inverse the boolean state <see cref="PdfExportable"/>
+        /// </summary>
+        private void MarkAsPdfExportable() => PdfExportable = PdfExportable == true ? false : true;
 
         /// <summary>
         /// Adds a comment to the viewmodel

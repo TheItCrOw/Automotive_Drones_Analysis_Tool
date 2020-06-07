@@ -71,12 +71,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
         private void DynamicReportView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            // This view is used by 2 viewmodel. TODO: If this stacks up, create a base class for it. Would be smoother.
-            if(DataContext is ImageAnalysisMenuViewModel imageAnalysisVm)
-                imageAnalysisVm.InitializedViewModel += DynamicReportView_InitializedViewModel;
-
-            else if(DataContext is ExportSequenceAsPdfViewModel exportPdfVm)
-                exportPdfVm.InitializedViewModel += DynamicReportView_InitializedViewModel;
+            ((ImageAnalysisMenuViewModel)(DataContext)).InitializedViewModel += DynamicReportView_InitializedViewModel;
         }
 
         private void DynamicReportView_InitializedViewModel(AnalysableImageViewModel viewModel)
@@ -99,22 +94,24 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         {
             try
             {
-                _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
-                ViewModelImage_Canvas.MouseMove += ViewModelImage_Canvas_MouseMove;
-                ViewModelImage_Canvas.MouseUp += ViewModelImage_Canvas_MouseUp;
+                // If the canvas was initialzed already, dont do it again.
+                if (!_canvasInitiliazed)
+                {
+                    _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
+                    ViewModelImage_Canvas.MouseMove += ViewModelImage_Canvas_MouseMove;
+                    ViewModelImage_Canvas.MouseUp += ViewModelImage_Canvas_MouseUp;
 
-                ViewModelImage_Canvas.Children.Clear();
+                    ViewModelImage_Canvas.Children.Clear();
 
-                LoadDetectedObjects();
+                    LoadDetectedObjects();
 
-                if (_detectedReferenceLine == null)
-                    ServiceContainer.GetService<DialogService>().InformUser("Error", $"No reference line was found - report might be incomplete.");
-                else
-                    DrawReferenceLineOfImage();
-
+                    if (_detectedReferenceLine == null)
+                        ServiceContainer.GetService<DialogService>().InformUser("Error", $"No reference line was found - report might be incomplete.");
+                    else
+                        DrawReferenceLineOfImage();
+                    _canvasInitiliazed = true;
+                }
                 HandleWindowResize();
-
-                _canvasInitiliazed = true;
             }
             catch (Exception ex)
             {
@@ -153,8 +150,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                         Canvas.SetLeft(button, item.X / GetCurrentWidthRatio());
                         Canvas.SetTop(button, item.Y / GetCurrentHeightRatio());
 
-                        if (ViewModelImage_Canvas != null && ViewModelImage_Canvas.Children != null)
-                            ViewModelImage_Canvas.Children.Add(button);
+                        ViewModelImage_Canvas.Children.Add(button);
 
                         _detectedRectangles.Add(item);
                         break;
@@ -306,14 +302,14 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         /// Gets the current width ratio between canvas and model.image
         /// </summary>
         /// <returns></returns>
-        private double GetCurrentWidthRatio() => 
+        private double GetCurrentWidthRatio() =>
             _viewModel.Image.PixelWidth / (ViewModelImage_Canvas.ActualWidth == 0 ? _viewModel.Image.PixelWidth : ViewModelImage_Canvas.ActualWidth);
 
         /// <summary>
         /// Gets the current height ratio between canvas and model.image
         /// </summary>
         /// <returns></returns>
-        private double GetCurrentHeightRatio() => 
+        private double GetCurrentHeightRatio() =>
             _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight == 0 ? _viewModel.Image.Height : ViewModelImage_Canvas.ActualHeight);
 
         /// <summary>
@@ -437,7 +433,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                             var actualLength = distance * _lengthOfOneCoordinateStep;
 
                             // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
-                            var margin = (30 * GetCurrentHeightRatio()) * index; // 30 is customisable.
+                            var margin = (ViewModelImage_Canvas.ActualHeight / 8.5f) * index; // 30 is customisable.
 
                             var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());
@@ -743,7 +739,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             }
 
             ViewModelImage_Canvas.Children.Add(line);
-
             return line;
         }
 
@@ -755,7 +750,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         {
             var nameTextblock = new TextBlock();
             nameTextblock.Text = value;
-            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth != 0 
+            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth != 0
                 ? ViewModelImage_Canvas.ActualWidth * _fontSizeMultiplier
                 : 13;
             nameTextblock.Foreground = brush;

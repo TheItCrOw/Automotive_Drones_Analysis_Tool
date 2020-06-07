@@ -40,6 +40,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private object _frameContent;
         // The dictionary that contains Framecontent to each analysabeModel.
         private Dictionary<Guid, ReducedPrepareImageAnalysisView> _analysableViewModelIdToPrepareImageView;
+        private Dictionary<Guid, ReducedDynamicReportView> _analysableViewModelIdToDynamicReportView;
 
         public DelegateCommand<AnalysableImageViewModel> SelectViewModelCommand => new DelegateCommand<AnalysableImageViewModel>(SelectViewModel);
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
@@ -51,6 +52,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public DelegateCommand<string> DeleteCommentCommand => new DelegateCommand<string>(DeleteComment);
         public DelegateCommand<object> DeleteAnalysabeImageCommand => new DelegateCommand<object>(DeleteAnalysabeImage);
         public DelegateCommand GenerateReportCommand => new DelegateCommand(GenerateReport);
+        public DelegateCommand MarkAsPdfExportableCommand => new DelegateCommand(MarkAsPdfExportable);
         public DelegateCommand ExportReportAsPdfCommand => new DelegateCommand(ExportReportAsPdf);
         public DelegateCommand ExportSequenceAsPdfCommand => new DelegateCommand(ExportSequenceAsPdf);
 
@@ -106,6 +108,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             {
                 AnalysableImageViewModels = new ObservableCollection<AnalysableImageViewModel>();
                 _analysableViewModelIdToPrepareImageView = new Dictionary<Guid, ReducedPrepareImageAnalysisView>();
+                _analysableViewModelIdToDynamicReportView = new Dictionary<Guid, ReducedDynamicReportView>();
                 IsLoading = true;
 
                 if (Model != null && Model is SequenceAnalysableImageModel sequenceAnalysableImageModel)
@@ -131,6 +134,24 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             catch (Exception ex)
             {
                 ServiceContainer.GetService<DialogService>().InformUser("Info", "Cancelled new project creation.");
+            }
+        }
+
+        /// <summary>
+        /// Marks the current viewmodel as pdf exportable
+        /// </summary>
+        private void MarkAsPdfExportable()
+        {
+            if (ViewModel == null)
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't mark as exportable.");
+
+            try
+            {
+                ViewModel.MarkAsPdfExportableCommand?.Execute();
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't mark as exportable: {ex}");
             }
         }
 
@@ -341,9 +362,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     .InformUser("Info", $"No correctly prepared item was found. An exportable item must at least contain a drawn reference line.");
                 return;
             }
-
-            ServiceContainer.GetService<ViewService>()
-                .OpenWindow<ExportSequenceAsPdfView, ExportSequenceAsPdfViewModel>(null, null, new object[] { exportableVms });
         }
 
         /// <summary>
@@ -361,11 +379,27 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     return;
                 }
 
-                // Pass the prepared model and viewmodel and show the report view
-                var reducedDynamicReportView = new ReducedDynamicReportView();
-                reducedDynamicReportView.DataContext = this;
-                InitializedViewModel?.Invoke(ViewModel);
-                FrameContent = reducedDynamicReportView;
+                if (ViewModel.IsDirty || !_analysableViewModelIdToDynamicReportView.ContainsKey(ViewModel.Id))
+                {
+                    // Pass the prepared model and viewmodel and show the report view
+                    var reducedDynamicReportView = new ReducedDynamicReportView();
+                    reducedDynamicReportView.DataContext = this;
+                    InitializedViewModel?.Invoke(ViewModel);
+                    // If the user has already opened the report once, but the viewmodel has been changed, we
+                    // delete the old view and then add the new one.
+                    if (_analysableViewModelIdToDynamicReportView.ContainsKey(ViewModel.Id))
+                        _analysableViewModelIdToDynamicReportView.Remove(ViewModel.Id);
+
+                    _analysableViewModelIdToDynamicReportView.Add(ViewModel.Id, reducedDynamicReportView);
+                    FrameContent = reducedDynamicReportView;
+                }
+                // If a reprot exists => Get it and show it instead of creating a new one.
+                else if (_analysableViewModelIdToDynamicReportView.TryGetValue(ViewModel.Id, out var dynamicView))
+                {
+                    FrameContent = dynamicView;
+                }
+
+                ViewModel.IsDirty = false;
             }
             catch (Exception ex)
             {

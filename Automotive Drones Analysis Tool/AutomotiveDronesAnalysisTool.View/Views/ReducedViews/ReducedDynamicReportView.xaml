@@ -15,38 +15,74 @@
              FontFamily="{DynamicResource MaterialDesignFont}"
              d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window"
              >
-    <ScrollViewer>
-        <Grid x:Name="Main_Grid">
-            <!--image here-->
-            <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
-                <Image Source="{Binding ViewModel.CleanImageCopy}" x:Name="ViewModel_Image"/>
-            </materialDesign:Card>
-            <!--drawing canvas right here-->
-            <Border BorderBrush="White" BorderThickness="0" Margin="10" VerticalAlignment="Top"
+    <Grid>
+        <ScrollViewer>
+            <Grid x:Name="Main_Grid">
+                <Grid.Style>
+                    <!--highlight the grid green if its marked as exporatble.-->
+                    <Style TargetType="Grid">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="True">
+                                <Setter Property="Background" Value="LimeGreen"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
+                                <Setter Property="Background" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                
+                <!--image here-->
+                <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
+                    <Image Source="{Binding ViewModel.CleanImageCopy}" x:Name="ViewModel_Image"/>
+                </materialDesign:Card>
+                <!--drawing canvas right here-->
+                <Border BorderBrush="White" BorderThickness="0" Margin="10" VerticalAlignment="Top"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
-                <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                    <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
-                    <Canvas.Background>
-                        <SolidColorBrush Color="Black" Opacity="0.85"/>
-                    </Canvas.Background>
-                </Canvas>
-            </Border>
-            <!--switch dark mode button-->
-            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right">
-                <!--switch lightmode-->
-                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button" Margin="0 5 5 0"
-                                ToolTip="Switch light mode"  Click="Flashlight_Button_Click" Cursor="Hand">
-                    <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" />
-                </Button>
-                <!--export as pdf-->
-                <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding ExportReportAsPdfCommand}"
-                                ToolTip="Export as PDF" Cursor="Hand" Margin="0 5 0 0">
-                    <materialDesign:PackIcon Kind="FilePdfOutline" Height="30" Width="30" />
-                </Button>
-            </StackPanel>
-        </Grid>
-    </ScrollViewer>
+                        <Canvas.Background>
+                            <SolidColorBrush Color="Black" Opacity="0.85"/>
+                        </Canvas.Background>
+                    </Canvas>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!--Ready for export checkbox-->
+        <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding MarkAsPdfExportableCommand}" Background="White"
+                ToolTip="Check for export" Height="85" Width="85" Margin="15" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="Black">
+            <materialDesign:PackIcon Height="70" Width="70" Foreground="Black">
+                <materialDesign:PackIcon.Style>
+                    <Style TargetType="materialDesign:PackIcon">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="True">
+                                <Setter Property="Kind" Value="Check"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
+                                <Setter Property="Kind" Value="WindowClose"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:PackIcon.Style>
+            </materialDesign:PackIcon>
+        </Button>
+
+        <!--switch dark mode button-->
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right">
+            <!--switch lightmode-->
+            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" x:Name="Flashlight_Button" Margin="0 5 5 0" Background="White"
+                                ToolTip="Switch light mode"  Click="Flashlight_Button_Click" Cursor="Hand" BorderBrush="Black">
+                <materialDesign:PackIcon Kind="Flashlight" Height="30" Width="30" Foreground="Black"/>
+            </Button>
+            <!--export as pdf-->
+            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding ExportReportAsPdfCommand}" Background="White"
+                                ToolTip="Export as PDF" Cursor="Hand" Margin="0 5 0 0" BorderBrush="Black">
+                <materialDesign:PackIcon Kind="FilePdfOutline" Height="30" Width="30" Foreground="Black"/>
+            </Button>
+        </StackPanel>
+    </Grid>
 </UserControl>
