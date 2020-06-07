@@ -1,4 +1,5 @@
-﻿using AutomotiveDronesAnalysisTool.Utility;
+﻿using AutomotiveDronesAnalysisTool.Model.Arguments;
+using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.ManagementViewModels;
 using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.ViewModels;
@@ -48,9 +49,34 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             DataContextChanged += DynamicReportView_DataContextChanged;
         }
 
+        /// <summary>
+        /// Wraps the needed objects for a pdf report.
+        /// </summary>
+        /// <returns></returns>
+        public ExportReportAsPdfArguments GetPdfReportArguments()
+        {
+            // Pass all the drawn ui elements as an arguments
+            var exportReportArguments = new ExportReportAsPdfArguments();
+            exportReportArguments.DrawnObjects = new List<object>();
+
+            foreach (var child in ViewModelImage_Canvas.Children)
+                if (child is FrameworkElement el)
+                    exportReportArguments.DrawnObjects.Add(el);
+
+            // Pass the curretn width height ratio so we draw the objects correctly onto the image.
+            exportReportArguments.WidthHeightRatio = Tuple.Create(GetCurrentWidthRatio(), GetCurrentHeightRatio());
+
+            return exportReportArguments;
+        }
+
         private void DynamicReportView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            ((ImageAnalysisMenuViewModel)DataContext).InitializedViewModel += DynamicReportView_InitializedViewModel;
+            // This view is used by 2 viewmodel. TODO: If this stacks up, create a base class for it. Would be smoother.
+            if(DataContext is ImageAnalysisMenuViewModel imageAnalysisVm)
+                imageAnalysisVm.InitializedViewModel += DynamicReportView_InitializedViewModel;
+
+            else if(DataContext is ExportSequenceAsPdfViewModel exportPdfVm)
+                exportPdfVm.InitializedViewModel += DynamicReportView_InitializedViewModel;
         }
 
         private void DynamicReportView_InitializedViewModel(AnalysableImageViewModel viewModel)
@@ -79,45 +105,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
                 ViewModelImage_Canvas.Children.Clear();
 
-                foreach (var item in _detectedObjects)
-                {
-                    switch (item.Shape)
-                    {
-                        case Model.Arguments.DrawingShape.Rectangle:
-                            // We initially only want to load the rectangles.
-                            // Background of button.
-                            var imageBrush = new ImageBrush();
-                            imageBrush.ImageSource = item.Image;
-
-                            var button = new Button()
-                            {
-                                Width = item.Width / GetCurrentWidthRatio(), // 1.33 und 2
-                                Height = item.Height / GetCurrentHeightRatio(),
-                                Tag = item.Id,
-                                Background = imageBrush,
-                                Opacity = 0,
-                                BorderThickness = new Thickness(0),
-                                BorderBrush = Brushes.Black
-                            };
-                            button.Click += DetectedRectangleObject_Click; // Sub to event.
-                            button.PreviewMouseUp += Button_MouseUp;
-
-                            Canvas.SetLeft(button, item.X / GetCurrentWidthRatio());
-                            Canvas.SetTop(button, item.Y / GetCurrentHeightRatio());
-
-                            ViewModelImage_Canvas.Children.Add(button);
-                            _detectedRectangles.Add(item);
-                            break;
-                        case Model.Arguments.DrawingShape.Line:
-                            _detectedLines.Add(item);
-                            break;
-                        case Model.Arguments.DrawingShape.ReferenceLine:
-                            _detectedReferenceLine = item;
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                LoadDetectedObjects();
 
                 if (_detectedReferenceLine == null)
                     ServiceContainer.GetService<DialogService>().InformUser("Error", $"No reference line was found - report might be incomplete.");
@@ -131,6 +119,54 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             catch (Exception ex)
             {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"An error occured while loading the report: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Loads the detected objects from the viewmodel and sorts them
+        /// </summary>
+        public void LoadDetectedObjects()
+        {
+            foreach (var item in _detectedObjects)
+            {
+                switch (item.Shape)
+                {
+                    case DrawingShape.Rectangle:
+                        // We initially only want to load the rectangles.
+                        // Background of button.
+                        var imageBrush = new ImageBrush();
+                        imageBrush.ImageSource = item.Image;
+
+                        var button = new Button()
+                        {
+                            Width = item.Width / GetCurrentWidthRatio(), // 1.33 und 2
+                            Height = item.Height / GetCurrentHeightRatio(),
+                            Tag = item.Id,
+                            Background = imageBrush,
+                            Opacity = 0,
+                            BorderThickness = new Thickness(0),
+                            BorderBrush = Brushes.Black
+                        };
+                        button.Click += DetectedRectangleObject_Click; // Sub to event.
+                        button.PreviewMouseUp += Button_MouseUp;
+
+                        Canvas.SetLeft(button, item.X / GetCurrentWidthRatio());
+                        Canvas.SetTop(button, item.Y / GetCurrentHeightRatio());
+
+                        if (ViewModelImage_Canvas != null && ViewModelImage_Canvas.Children != null)
+                            ViewModelImage_Canvas.Children.Add(button);
+
+                        _detectedRectangles.Add(item);
+                        break;
+                    case DrawingShape.Line:
+                        _detectedLines.Add(item);
+                        break;
+                    case DrawingShape.ReferenceLine:
+                        _detectedReferenceLine = item;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -240,16 +276,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         }
 
         /// <summary>
-        /// Fires when the user clicks onto a line.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DrawnLine_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var line = (Line)sender;
-        }
-
-        /// <summary>
         /// Switches the opacity of the viewmodel canvas
         /// </summary>
         /// <param name="sender"></param>
@@ -273,26 +299,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 textBox.Text = string.Empty;
             }
         }
-
-        /// <summary>
-        /// Starts the process of exporting the analysis as pdf
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ExportAsPdf_Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Inform the viewmodle about the current height width ratio according to the size of the canvas and the image.
-            ((ImageAnalysisMenuViewModel)DataContext).WidthHeightRatio = new Point(GetCurrentWidthRatio(), GetCurrentHeightRatio());
-
-            // Gather all the drawable ui elements in a list and pass them to the viewmode to export.
-            var uiElements = new List<FrameworkElement>();
-
-            foreach (var child in ViewModelImage_Canvas.Children)
-                if (child is FrameworkElement el)
-                    uiElements.Add(el);
-
-            ((ImageAnalysisMenuViewModel)DataContext).ExportReportAsPdfCommand?.Execute(uiElements);
-        }
         #endregion
 
         #region Methods
@@ -300,13 +306,15 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         /// Gets the current width ratio between canvas and model.image
         /// </summary>
         /// <returns></returns>
-        private double GetCurrentWidthRatio() => _viewModel.Image.PixelWidth / (ViewModelImage_Canvas.ActualWidth);
+        private double GetCurrentWidthRatio() => 
+            _viewModel.Image.PixelWidth / (ViewModelImage_Canvas.ActualWidth == 0 ? _viewModel.Image.PixelWidth : ViewModelImage_Canvas.ActualWidth);
 
         /// <summary>
         /// Gets the current height ratio between canvas and model.image
         /// </summary>
         /// <returns></returns>
-        private double GetCurrentHeightRatio() => _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight);
+        private double GetCurrentHeightRatio() => 
+            _viewModel.Image.PixelHeight / (ViewModelImage_Canvas.ActualHeight == 0 ? _viewModel.Image.Height : ViewModelImage_Canvas.ActualHeight);
 
         /// <summary>
         /// Hides and deanalyses the given item
@@ -372,6 +380,18 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         }
 
         /// <summary>
+        /// Analyses the given rectangle and draws all the ref values
+        /// </summary>
+        public void AnalyseDetectedObject(DetectedItemViewModel corrDetectedObject)
+        {
+            CleanupDestroyableObjects();
+            DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
+            DrawWidthAndHeightOfButton(corrDetectedObject);
+            DrawAllAnglesOfLine();
+            DrawDistanceOfObjects();
+        }
+
+        /// <summary>
         /// Cleans up the objects that must always be destroyed upon analysing or deanalysing
         /// </summary>
         private void CleanupDestroyableObjects()
@@ -417,7 +437,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                             var actualLength = distance * _lengthOfOneCoordinateStep;
 
                             // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
-                            var margin = (30 * GetCurrentHeightRatio()) * index; // 35 is customisable.
+                            var margin = (30 * GetCurrentHeightRatio()) * index; // 30 is customisable.
 
                             var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());
@@ -429,29 +449,48 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                             DrawLine(startPoint, endPoint, "Always_Destroy_Distance", Brushes.Yellow, false);
 
                             // Now draw the 2 vertical connection lines from the just drawn lines to the edges of the objects.
-                            var endPointForVerticalLine = new Point(
+                            var endPointForVerticalLine1 = new Point(
                                         (corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                         (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
-                            DrawLine(startPoint, endPointForVerticalLine, "Always_Destroy_Distance", Brushes.Yellow);
+                            DrawLine(startPoint, endPointForVerticalLine1, "Always_Destroy_Distance", Brushes.LightYellow);
 
-                            endPointForVerticalLine = new Point(
+                            var endPointForVerticalLine2 = new Point(
                                 corrRectangleObject2.X / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
-                            DrawLine(endPoint, endPointForVerticalLine, "Always_Destroy_Distance", Brushes.Yellow);
+                            DrawLine(endPoint, endPointForVerticalLine2, "Always_Destroy_Distance", Brushes.LightYellow);
 
-                            // Draw the textblock with the length
+                            // Draw the textblocks with the length foreach line
+                            // Horizontal
                             var centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPoint);
                             centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
                             centerOfLine.Y = centerOfLine.Y * GetCurrentHeightRatio();
                             DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Yellow, centerOfLine);
+
+                            #region Draw vertical line lengths as well (Obsolete for now)
+                            // Vertical 1
+                            //distance = GeometryHelper.Distance(startPoint, endPointForVerticalLine1);
+                            //actualLength = distance * _lengthOfOneCoordinateStep;
+                            //centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPointForVerticalLine1);
+                            //centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
+                            //centerOfLine.Y = centerOfLine.Y * GetCurrentHeightRatio();
+                            //DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Yellow, centerOfLine);
+                            // Vertical 2
+                            //distance = GeometryHelper.Distance(endPoint, endPointForVerticalLine2);
+                            //actualLength = distance * _lengthOfOneCoordinateStep;
+                            //centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPointForVerticalLine2);
+                            //centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
+                            //centerOfLine.Y = centerOfLine.Y * GetCurrentHeightRatio();
+                            //DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Yellow, centerOfLine);
+                            #endregion
                         }
-                        index += 0.5f;
+                        index += 0.75f;
                     }
                 }
             }
         }
 
         /// <summary>
+        /// 
         /// Calculates and draws all angles foreach ref line
         /// </summary>
         private void DrawAllAnglesOfLine()
@@ -618,6 +657,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 new Point(correspondingLine.Width / GetCurrentWidthRatio(), correspondingLine.Height / GetCurrentHeightRatio()),
                 correspondingLine.Id, Brushes.Red);
 
+            var test = GetCurrentHeightRatio();
+            var test2 = GetCurrentWidthRatio();
             corrRefLineObject = correspondingLine;
             // Track the current connection between rect and line
             _detectedRectanglesToLines.Add(corrDetectedObject.Id, correspondingLine.Id);
@@ -700,7 +741,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 line.StrokeDashOffset = 2;
                 line.StrokeDashArray = new DoubleCollection() { 4 };
             }
-            line.MouseDown += DrawnLine_MouseDown;
 
             ViewModelImage_Canvas.Children.Add(line);
 
@@ -715,7 +755,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         {
             var nameTextblock = new TextBlock();
             nameTextblock.Text = value;
-            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth * _fontSizeMultiplier;
+            nameTextblock.FontSize = ViewModelImage_Canvas.ActualWidth != 0 
+                ? ViewModelImage_Canvas.ActualWidth * _fontSizeMultiplier
+                : 13;
             nameTextblock.Foreground = brush;
             nameTextblock.HorizontalAlignment = HorizontalAlignment.Left;
             nameTextblock.Tag = tag;

@@ -14,6 +14,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     public abstract class ManagementViewModelBase : BindableBase, IDisposable
     {
         private bool _isLoading;
+
         public ModelBase Model { get; set; }
         public ViewModelBase ViewModel { get; set; }
         public bool IsLoading
@@ -23,7 +24,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
         public DelegateCommand NavigateHomeCommand => new DelegateCommand(NavigateHome);
         private void NavigateHome() => ServiceContainer.GetService<ViewService>().Show<HomeView, HomeViewModel>();
-        public abstract void Initiliaze();
+        public abstract void Initiliaze(object[] parameters);
         public abstract void Dispose();
     }
 }

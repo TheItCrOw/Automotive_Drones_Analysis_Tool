@@ -310,7 +310,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
                 var detectedItem = new DetectedItemModel()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = detectedItemArgs.Id,
                     AnalysableImageModelId = Id,
                     Name = "Reference-line",
                     X = (int)(detectedItemArgs.X * widthRatio),

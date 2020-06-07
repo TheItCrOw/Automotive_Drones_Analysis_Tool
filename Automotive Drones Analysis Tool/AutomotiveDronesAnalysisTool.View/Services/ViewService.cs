@@ -40,7 +40,10 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TU"></typeparam>
-        public void Show<T, TU>(ModelBase model = null, ViewModelBase viewmodel = null) where T : UserControl where TU : ManagementViewModelBase
+        public void Show<T, TU>(
+            ModelBase model = null,
+            ViewModelBase viewmodel = null,
+            object[] parameters = null) where T : UserControl where TU : ManagementViewModelBase
         {
             // Always handle UI stuff in the renderer thread.
             Application.Current?.Dispatcher.Invoke(() =>
@@ -57,7 +60,7 @@ namespace AutomotiveDronesAnalysisTool.View.Services
                 if (viewmodel != null)
                     viewModel.ViewModel = viewmodel;
 
-                viewModel.Initiliaze();
+                viewModel.Initiliaze(parameters);
 
                 // Dispose the last view before switching
                 if (_lastView != null)
@@ -82,6 +85,37 @@ namespace AutomotiveDronesAnalysisTool.View.Services
             await Task.Run(() =>
             {
                 Show<T, TU>(model);
+            });
+        }
+
+        /// <summary>
+        /// Shows and opens the given window
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TU"></typeparam>
+        /// <param name="viewModel"></param>
+        public void OpenWindow<T, TU>(
+            ModelBase model = null,
+            ViewModelBase viewmodel = null,
+            object[] parameters = null) where T : Window where TU : ManagementViewModelBase
+        {
+            // Always handle UI stuff in the renderer thread.
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                // Reflection is slow, but works fine for small operations like these.
+                var viewModel = (TU)Activator.CreateInstance(typeof(TU));
+                var view = (T)Activator.CreateInstance(typeof(T));
+
+                view.DataContext = viewModel;
+
+                if (model != null)
+                    viewModel.Model = model;
+
+                if (viewmodel != null)
+                    viewModel.ViewModel = viewmodel;
+
+                viewModel.Initiliaze(parameters);
+                view.Show();
             });
         }
     }

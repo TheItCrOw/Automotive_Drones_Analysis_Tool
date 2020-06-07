@@ -38,7 +38,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         #endregion
 
         #region Methods
-        public override void Initiliaze()
+        public override void Initiliaze(object[] parameters = null)
         {
         }
 

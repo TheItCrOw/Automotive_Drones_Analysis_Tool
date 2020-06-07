@@ -108,6 +108,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                     var rectangle = DrawRectangle(_startPoint, _currentPoint, id, out x, out y);
                     height = rectangle.Height;
                     width = rectangle.Width;
+                    if (_lastlyDrawnRectangle != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnRectangle);
                     break;
                 case DrawingShape.Line:
                     var line = DrawLine(_startPoint, _currentPoint, id);
@@ -115,6 +116,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                     y = line.Y1;
                     height = line.Y2;
                     width = line.X2;
+                    if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
                     break;
                 case DrawingShape.ReferenceLine:
                     var refLine = DrawLine(_startPoint, _currentPoint, id, true);
@@ -122,6 +124,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                     y = refLine.Y1;
                     height = refLine.Y2;
                     width = refLine.X2;
+                    if (_lastlyDrawnLine != null) ViewModelImage_Canvas.Children.Remove(_lastlyDrawnLine);
                     break;
                 default:
                     break;

@@ -29,7 +29,11 @@
                         ToolTip="Home" Height="35" Command="{Binding NavigateHomeCommand}" Cursor="Hand">
                     <materialDesign:PackIcon Kind="Home" Height="25" Width="25"/>
                 </Button>
-
+                <!--export sequence as pdf-->
+                <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Width="75" Margin="10 0 0 0"
+                        ToolTip="Export every prepared report as PDF" Height="35" Command="{Binding ExportSequenceAsPdfCommand}">
+                    <materialDesign:PackIcon Kind="FilePdfOutline" Height="25" Width="25"/>
+                </Button>
                 <!--Current location-->
                 <TextBlock Text="{Binding Model.Projectname}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"
                            Style="{StaticResource TextTitleTextblockStyle}"/>
@@ -80,7 +84,7 @@
                                             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
                                                     Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteAnalysabeImageCommand}"
                                                     CommandParameter="{Binding Id}"
-                                                    ToolTip="Delete" Cursor="Hand" Width="25" Height="25" Margin="1 0 0 0" HorizontalAlignment="Left" Background="White" BorderBrush="Transparent">
+                                                    ToolTip="Delete" Width="25" Height="25" Margin="1 0 0 0" HorizontalAlignment="Left" Background="White" BorderBrush="Transparent">
                                                 <materialDesign:PackIcon Kind="Delete" Foreground="Black" Height="15" Width="15"/>
                                             </Button>
                                             <!--title-->

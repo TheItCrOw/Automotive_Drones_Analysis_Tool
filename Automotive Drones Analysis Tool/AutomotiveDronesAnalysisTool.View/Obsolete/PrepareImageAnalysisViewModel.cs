@@ -55,7 +55,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             set => SetProperty(ref _imageEditModeActivated, value);
         }
 
-        public async override void Initiliaze()
+        public async override void Initiliaze(object[] parameters = null)
         {
             try
             {

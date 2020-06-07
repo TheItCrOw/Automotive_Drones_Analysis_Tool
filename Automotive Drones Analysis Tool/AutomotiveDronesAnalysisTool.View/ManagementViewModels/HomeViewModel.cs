@@ -19,7 +19,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <summary>
         /// Init gets called when the view is shown.
         /// </summary>
-        public override void Initiliaze()
+        public override void Initiliaze(object[] parameters = null)
         {
         }
 

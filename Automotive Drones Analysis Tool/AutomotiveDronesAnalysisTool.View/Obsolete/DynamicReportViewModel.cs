@@ -80,7 +80,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             DetetectedRectangleObjects.Clear();
         }
 
-        public override void Initiliaze()
+        public override void Initiliaze(object[] parameters = null)
         {
             ViewModel = (AnalysableImageViewModel)base.ViewModel;
             // Comments are currently only addable in the dynamic report view
