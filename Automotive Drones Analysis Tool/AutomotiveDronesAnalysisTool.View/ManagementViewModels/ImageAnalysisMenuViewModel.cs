@@ -186,19 +186,38 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             // drawnItem
             try
             {
-                // First get the arguments of the report from the current view.
-                var drawnItems = new List<FrameworkElement>();
-                Tuple<double, double> widthHeightRatio = null;
-
                 // FraemContent should hold the currently selected view of the ViewModel
                 if (FrameContent is ReducedDynamicReportView reducedDynamicReportView)
                 {
                     var reportArgs = reducedDynamicReportView.GetPdfReportArguments();
-                    foreach (var item in reportArgs.DrawnObjects)
-                        if (item is FrameworkElement el)
-                            drawnItems.Add(el);
 
-                    widthHeightRatio = reportArgs.WidthHeightRatio;
+                    using (var document = new PdfDocument())
+                    {
+                        //Add a page to the document
+                        PdfPage page = document.Pages.Add();
+
+                        var pair = new KeyValuePair<AnalysableImageViewModel, ExportReportAsPdfArguments>(ViewModel, reportArgs);
+                        ServiceContainer.GetService<PdfService>().DrawSingleOntoPage(page, pair);
+
+                        var saveFileDialog = new SaveFileDialog()
+                        {
+                            Filter = "PDF Document |*.pdf",
+                            Title = "Save a pdf",
+                        };
+                        saveFileDialog.ShowDialog();
+
+                        if (saveFileDialog.FileName != string.Empty)
+                        {
+                            document.Save($"{saveFileDialog.FileName}");
+
+                            var p = new Process();
+                            p.StartInfo = new ProcessStartInfo(saveFileDialog.FileName)
+                            {
+                                UseShellExecute = true
+                            };
+                            p.Start();
+                        }
+                    }
                 }
                 else
                 {
@@ -206,8 +225,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         .InformUser("Info", $"Can't export as pdf. There is no report currently selected.");
                     return;
                 }
-
-                DrawPdf(drawnItems, widthHeightRatio);
             }
             catch (Exception ex)
             {
@@ -216,151 +233,76 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// Draws the pdf with the passed items and parameters.
-        /// </summary>
-        /// <param name="drawnItems"></param>
-        /// <param name="widthHeightRatio"></param>
-        private void DrawPdf(List<FrameworkElement> drawnItems, Tuple<double, double> widthHeightRatio)
-        {
-            // Then draw these items onto the image.
-            var analysedImage = BitmapHelper.DrawFrameworkElementsOntoBitmap(
-                drawnItems,
-                BitmapHelper.BitmapImage2Bitmap(ViewModel.CleanImageCopy),
-                widthHeightRatio.Item1,
-                widthHeightRatio.Item2);
-
-            using (PdfDocument document = new PdfDocument())
-            {
-                // Draw Image ============================================================================================================
-                #region Setup and draw image
-                //Add a page to the document
-                PdfPage page = document.Pages.Add();
-                //Create PDF graphics for a page
-                PdfGraphics graphics = page.Graphics;
-
-                //Draw the analysed image
-                PdfBitmap pdfImage = new PdfBitmap(analysedImage);
-                // Scale the picture right so its not uneven
-                double widthHeightRate = (double)analysedImage.Width / (double)analysedImage.Height;
-                float height = (float)(520 / widthHeightRate);
-                graphics.DrawImage(pdfImage, 0, 0, 520, (int)height); // max width of pdf: 520! Adjust the height accordingly.
-                #endregion
-
-                // Draw Comments =========================================================================================================
-                #region Draw comments
-                // Draw the comments ====================================================================================
-                // table
-                var pdfGrid = new PdfGrid();
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("Comments");
-
-                foreach (var comment in ViewModel.Comments)
-                    dataTable.Rows.Add(comment);
-
-                pdfGrid.DataSource = dataTable;
-                pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
-                pdfGrid.Style.Font = new PdfStandardFont(PdfFontFamily.Courier, 10);
-
-                // pdfGridLayout contains x,y,widht and height coordiantes of the drawn datatable!
-                var pdfGridLayout = pdfGrid.Draw(page, new PointF(0, height + 10));
-                height += pdfGridLayout.Bounds.Height;
-                #endregion
-
-                //Draw the metadata as a table ===========================================================================================
-                #region Draw metadata
-                // title first
-                var subheaderFont = new PdfStandardFont(PdfFontFamily.Courier, 14);
-                var subheader = "Metadata";
-                var subheaderFontSize = subheaderFont.MeasureString(subheader);
-                height += 10;
-                graphics.DrawString(subheader, subheaderFont, PdfBrushes.Black, new PointF(260 - subheaderFontSize.Width / 2, height));
-
-                // then table
-                pdfGrid = new PdfGrid();
-                dataTable = new DataTable();
-                dataTable.Columns.Add("Name");
-                dataTable.Columns.Add("Value");
-
-                foreach (var pair in ViewModel.Metadata)
-                    dataTable.Rows.Add(pair.Key, pair.Value);
-
-                pdfGrid.DataSource = dataTable;
-                pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
-                pdfGrid.Style.Font = new PdfStandardFont(PdfFontFamily.Courier, 10);
-
-                // Keep track of the currently used height
-                height += subheaderFontSize.Height + 10;
-                // pdfGridLayout contains x,y,widht and height coordiantes of the drawn datatable!
-                pdfGridLayout = pdfGrid.Draw(page, new PointF(0, height));
-                #endregion
-
-                //Draw the additonal information as a table ==============================================================================
-                #region Draw Additional Information
-                // title
-                var pdfTextElement = new PdfTextElement("Additonal Information", new PdfStandardFont(PdfFontFamily.Courier, 14));
-                subheaderFontSize = subheaderFont.MeasureString(pdfTextElement.Text);
-                pdfTextElement.Draw(pdfGridLayout.Page, new PointF(260 - subheaderFontSize.Width / 2, pdfGridLayout.Bounds.Height + 10));
-
-                dataTable = new DataTable();
-                dataTable.Columns.Add("Name");
-                dataTable.Columns.Add("Value");
-                foreach (var tuple in ViewModel.AdditionalInformation)
-                    dataTable.Rows.Add(tuple.Item1, tuple.Item2);
-
-                pdfGrid.DataSource = dataTable;
-                pdfGrid.Headers[0].Style = new PdfGridCellStyle() { BackgroundBrush = PdfBrushes.LightBlue };
-                // Keep track of the currently used height
-                pdfGridLayout = pdfGrid.Draw(pdfGridLayout.Page, new PointF(0, pdfGridLayout.Bounds.Height + 30));
-                #endregion
-
-                //Save the document ======================================================================================================
-                #region Save doc
-                var saveFileDialog = new SaveFileDialog()
-                {
-                    Filter = "PDF Document |*.pdf",
-                    Title = "Save a pdf",
-                };
-                saveFileDialog.ShowDialog();
-
-                if (saveFileDialog.FileName != string.Empty)
-                {
-                    document.Save($"{saveFileDialog.FileName}");
-
-                    var p = new Process();
-                    p.StartInfo = new ProcessStartInfo(saveFileDialog.FileName)
-                    {
-                        UseShellExecute = true
-                    };
-                    p.Start();
-                }
-                #endregion
-            }
-        }
-
-        /// <summary>
         /// Exports all prepared images from the sequence as pdf
         /// </summary>
-        private void ExportSequenceAsPdf()
+        private async void ExportSequenceAsPdf()
         {
-            var exportableVms = new List<AnalysableImageViewModel>();
-            // First we need the viewmodels that have been prepared to be exported, which means that they at least
-            // must contain a reference line.
-            foreach (var pair in _analysableViewModelIdToPrepareImageView)
+            try
             {
-                var currentVm = AnalysableImageViewModels.FirstOrDefault(v => v.Id == pair.Key);
+                IsLoading = true;
+                await Task.Run(() =>
+                {
+                    var exportableVmsToArgs = new Dictionary<AnalysableImageViewModel, ExportReportAsPdfArguments>();
+                    // First we need the viewmodels that have been prepared to be exported, which means that they at least
+                    // must contain a reference line.
+                    foreach (var pair in _analysableViewModelIdToDynamicReportView)
+                    {
+                        var currentVm = AnalysableImageViewModels.FirstOrDefault(v => v.Id == pair.Key);
 
-                if (currentVm == null) continue;
+                        if (currentVm == null) continue;
 
-                // If the vm has no reference line, we cannot export it. Well, we dont want to at least.
-                if (currentVm.DetectedObjects.Any(o => o.Shape == DrawingShape.ReferenceLine))
-                    exportableVms.Add(currentVm);
+                        // Check if the object is exportable
+                        if (!currentVm.PdfExportable) continue;
+
+                        // Get the drawn objects of the view. // Marshal it to the dispatcher.
+                        System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+                        {
+                            var exportArgs = pair.Value.GetPdfReportArguments();
+                            exportableVmsToArgs.Add(currentVm, exportArgs);
+                        });
+                    }
+
+                    if (exportableVmsToArgs.Count == 0)
+                    {
+                        ServiceContainer.GetService<DialogService>()
+                            .InformUser("Info", $"No item was marked as exportable.");
+                        return;
+                    }
+
+                    using (var document = new PdfDocument())
+                    {
+                        ServiceContainer.GetService<PdfService>().DrawManyAsPdf(document, exportableVmsToArgs);
+
+                        var savePath = string.Empty;
+                        // Marshal it back...
+                        System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+                        {
+                            var saveFileDialog = new SaveFileDialog()
+                            {
+                                Filter = "PDF Document |*.pdf",
+                                Title = "Save a pdf",
+                            };
+                            saveFileDialog.ShowDialog();
+
+                            if (saveFileDialog.FileName != string.Empty)
+                                savePath = saveFileDialog.FileName;
+                        });
+
+                        document.Save(savePath);
+
+                        var p = new Process();
+                        p.StartInfo = new ProcessStartInfo(savePath)
+                        {
+                            UseShellExecute = true
+                        };
+                        p.Start();
+                    }
+                });
+                IsLoading = false;
             }
-
-            if (exportableVms.Count == 0)
+            catch (Exception ex)
             {
-                ServiceContainer.GetService<DialogService>()
-                    .InformUser("Info", $"No correctly prepared item was found. An exportable item must at least contain a drawn reference line.");
-                return;
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't generate Pdf-Report: {ex}");
             }
         }
 

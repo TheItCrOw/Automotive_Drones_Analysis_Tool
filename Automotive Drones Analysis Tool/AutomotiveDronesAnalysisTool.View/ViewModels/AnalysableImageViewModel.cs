@@ -14,6 +14,7 @@ using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -145,7 +146,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DetectedObjects_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void DetectedObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             IsDirty = true;
         }
@@ -159,7 +160,14 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// Deletes the given item from the detectedItemslist and from the image
         /// </summary>
         /// <param name="key"></param>
-        public void DeleteDetectedItem(object id) => DetectedObjects.Remove(DetectedObjects.FirstOrDefault(i => i.Id.Equals(id)));
+        public void DeleteDetectedItem(object id)
+        {
+            var deletableItem = DetectedObjects.FirstOrDefault(i => i.Id.Equals(id));
+            if (deletableItem.Shape == DrawingShape.ReferenceLine)
+                PdfExportable = false;
+            DetectedObjects.Remove(deletableItem);
+        }
+
         /// <summary>
         /// Detects object and analyses the image with the YOLOService.
         /// </summary>

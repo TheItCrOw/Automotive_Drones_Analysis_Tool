@@ -32,12 +32,14 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var globalEnviromentService = new GlobalEnviromentService();
             var yoloCommunicationService = new YOLOCommunicationService();
             var dialogService = new DialogService();
+            var pdfService = new PdfService();
 
             ServiceContainer.CreateContainer();
             ServiceContainer.RegisterService<ViewService>(viewService);
             ServiceContainer.RegisterService<GlobalEnviromentService>(globalEnviromentService);
             ServiceContainer.RegisterService<YOLOCommunicationService>(yoloCommunicationService);
             ServiceContainer.RegisterService<DialogService>(dialogService);
+            ServiceContainer.RegisterService<PdfService>(pdfService);
 
             viewService.Show<HomeView, HomeViewModel>();
         }

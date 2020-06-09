@@ -42,66 +42,69 @@ namespace AutomotiveDronesAnalysisTool.Utility
         /// </summary>
         /// <param name="frameworkElements"></param>
         /// <returns></returns>
-        public static Bitmap DrawFrameworkElementsOntoBitmap(List<FrameworkElement> frameworkElements, 
+        public static Bitmap DrawFrameworkElementsOntoBitmap(List<FrameworkElement> frameworkElements,
             Bitmap image,
-            double widthRatio = 1, 
+            double widthRatio = 1,
             double heightRatio = 1)
         {
-            var penWidth = image.Width * 0.0014f;
-            var fontSize = image.Width * 0.01f;
-            var pen = new Pen(Color.White, penWidth);
-            pen.DashStyle = DashStyle.Dash;
-
-            using (var g = Graphics.FromImage(image))
+            Application.Current?.Dispatcher?.Invoke(() =>
             {
-                foreach (var item in frameworkElements)
+                var penWidth = image.Width * 0.0014f;
+                var fontSize = image.Width * 0.01f;
+                var pen = new Pen(Color.White, penWidth);
+                pen.DashStyle = DashStyle.Dash;
+
+                using (var g = Graphics.FromImage(image))
                 {
-                    var x = Canvas.GetLeft(item) * widthRatio;
-                    var y = Canvas.GetTop(item) * heightRatio;
-                    var width = item.Width * widthRatio;
-                    var height = item.Height * heightRatio;
-
-                    if (item is Line line)
+                    foreach (var item in frameworkElements)
                     {
-                        pen.Color = ConvertBrushToColor(line.Stroke);
-                        pen.DashStyle = line.StrokeDashArray.Count == 0 ? DashStyle.Solid : DashStyle.Dash;
+                        var x = Canvas.GetLeft(item) * widthRatio;
+                        var y = Canvas.GetTop(item) * heightRatio;
+                        var width = item.Width * widthRatio;
+                        var height = item.Height * heightRatio;
 
-                        g.DrawLine(pen,
-                            (int)(line.X1 * widthRatio),
-                            (int)(line.Y1 * heightRatio),
-                            (int)(line.X2 * widthRatio),
-                            (int)(line.Y2 * heightRatio));
-                    }
-                    else if (item is TextBlock textBlock)
-                    {
-                        var font = new Font(FontFamily.GenericSansSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-                        pen.Color = ConvertBrushToColor(textBlock.Background);
+                        if (item is Line line)
+                        {
+                            pen.Color = ConvertBrushToColor(line.Stroke);
+                            pen.DashStyle = line.StrokeDashArray.Count == 0 ? DashStyle.Solid : DashStyle.Dash;
 
-                        g.FillRectangle(
-                            Brushes.DarkSlateGray,
-                            (int)(Canvas.GetLeft(textBlock) * widthRatio),
-                            (int)(Canvas.GetTop(textBlock) * heightRatio),
-                            (int)(textBlock.ActualWidth * widthRatio),
-                            (int)(textBlock.ActualHeight * heightRatio));
+                            g.DrawLine(pen,
+                                (int)(line.X1 * widthRatio),
+                                (int)(line.Y1 * heightRatio),
+                                (int)(line.X2 * widthRatio),
+                                (int)(line.Y2 * heightRatio));
+                        }
+                        else if (item is TextBlock textBlock)
+                        {
+                            var font = new Font(FontFamily.GenericSansSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
+                            pen.Color = ConvertBrushToColor(textBlock.Background);
 
-                        g.DrawString(textBlock.Text,
-                            font,
-                            Brushes.White,
-                            new PointF((int)(Canvas.GetLeft(textBlock) * widthRatio),
-                                       (int)(Canvas.GetTop(textBlock) * heightRatio)));
-                    }
-                    else if (item is Button button)
-                    {
-                        pen.Color = ConvertBrushToColor(button.BorderBrush);
+                            g.FillRectangle(
+                                Brushes.DarkSlateGray,
+                                (int)(Canvas.GetLeft(textBlock) * widthRatio),
+                                (int)(Canvas.GetTop(textBlock) * heightRatio),
+                                (int)(textBlock.ActualWidth * widthRatio),
+                                (int)(textBlock.ActualHeight * heightRatio));
 
-                        g.DrawRectangle(pen,
-                            (int)(Canvas.GetLeft(button) * widthRatio),
-                            (int)(Canvas.GetTop(button) * heightRatio),
-                            (int)(button.ActualWidth * widthRatio),
-                            (int)(button.ActualHeight * heightRatio));
+                            g.DrawString(textBlock.Text,
+                                font,
+                                Brushes.White,
+                                new PointF((int)(Canvas.GetLeft(textBlock) * widthRatio),
+                                           (int)(Canvas.GetTop(textBlock) * heightRatio)));
+                        }
+                        else if (item is Button button)
+                        {
+                            pen.Color = ConvertBrushToColor(button.BorderBrush);
+
+                            g.DrawRectangle(pen,
+                                (int)(Canvas.GetLeft(button) * widthRatio),
+                                (int)(Canvas.GetTop(button) * heightRatio),
+                                (int)(button.ActualWidth * widthRatio),
+                                (int)(button.ActualHeight * heightRatio));
+                        }
                     }
                 }
-            }
+            });
             return image;
         }
 
