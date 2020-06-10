@@ -20,7 +20,7 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         /// </summary>
         /// <param name="drawnItems"></param>
         /// <param name="widthHeightRatio"></param>
-        public PdfPage DrawSingleOntoPage(PdfPage page, KeyValuePair<AnalysableImageViewModel, ExportReportAsPdfArguments> exportableVmToArgs)
+        public void DrawSingleOntoPage(PdfPage page, KeyValuePair<AnalysableImageViewModel, ExportReportAsPdfArguments> exportableVmToArgs)
         {
             // Setup data.
             var viewModel = exportableVmToArgs.Key;
@@ -123,15 +123,13 @@ namespace AutomotiveDronesAnalysisTool.View.Services
             // Keep track of the currently used height
             pdfGridLayout = pdfGrid.Draw(pdfGridLayout.Page, new PointF(0, pdfGridLayout.Bounds.Height + 30));
             #endregion
-
-            return page;
         }
 
         /// <summary>
         /// Draws the given viewmodels along with its exportArgs as one Pdf document.
         /// </summary>
         /// <param name="exportableVmsToArgs"></param>
-        public void DrawManyAsPdf(PdfDocument document, Dictionary<AnalysableImageViewModel, ExportReportAsPdfArguments> exportableVmsToArgs)
+        public void DrawManyOntoDocument(PdfDocument document, Dictionary<AnalysableImageViewModel, ExportReportAsPdfArguments> exportableVmsToArgs)
         {
             foreach (var pair in exportableVmsToArgs)
             {

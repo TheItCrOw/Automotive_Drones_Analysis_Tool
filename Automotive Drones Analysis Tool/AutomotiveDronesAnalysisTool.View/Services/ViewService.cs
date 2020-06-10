@@ -63,8 +63,11 @@ namespace AutomotiveDronesAnalysisTool.View.Services
                 viewModel.Initiliaze(parameters);
 
                 // Dispose the last view before switching
-                //if (_lastView != null)
-                //    _lastView.Item2.Dispose();
+                if (_lastView != null)
+                {
+                    _lastView.Item2.Dispose();
+                    _lastView = null;
+                }
 
                 // Super important to handle navigation of Frame right! Delete the history,
                 // otherwise we stack up references of images of the views which cluster the memory.

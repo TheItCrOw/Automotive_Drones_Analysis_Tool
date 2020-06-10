@@ -429,7 +429,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                             var actualLength = distance * _lengthOfOneCoordinateStep;
 
                             // we dont want the lines to stack up on them themselves, so move them a bit downwards foreach line
-                            var margin = (30 * GetCurrentHeightRatio()) * index; // 35 is customisable.
+                            var margin = (30 * GetCurrentHeightRatio()) * index; // 30 is customisable. It's just a value that indicates the margin down
 
                             var startPoint = new Point((corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height + margin) / GetCurrentHeightRatio());

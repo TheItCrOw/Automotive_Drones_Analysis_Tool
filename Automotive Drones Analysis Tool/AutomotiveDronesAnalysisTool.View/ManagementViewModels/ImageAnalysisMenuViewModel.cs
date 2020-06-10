@@ -41,6 +41,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         // The dictionary that contains Framecontent to each analysabeModel.
         private Dictionary<Guid, ReducedPrepareImageAnalysisView> _analysableViewModelIdToPrepareImageView;
         private Dictionary<Guid, ReducedDynamicReportView> _analysableViewModelIdToDynamicReportView;
+        private bool _sequenceLoaded;
 
         public DelegateCommand<AnalysableImageViewModel> SelectViewModelCommand => new DelegateCommand<AnalysableImageViewModel>(SelectViewModel);
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
@@ -75,6 +76,15 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
+        /// True if the laoding of all viewmodels finished.
+        /// </summary>
+        public bool SequenceLoaded
+        {
+            get => _sequenceLoaded;
+            set => SetProperty(ref _sequenceLoaded, value);
+        }
+
+        /// <summary>
         /// Collection containing all viewmodel of the given sequence model
         /// </summary>
         public ObservableCollection<AnalysableImageViewModel> AnalysableImageViewModels { get; set; }
@@ -82,9 +92,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         public override void Dispose()
         {
             _stopAllTasks = true;
+
             // Dispose the ressources and images.
             for (int i = 0; i < AnalysableImageViewModels.Count; i++)
             {
+                AnalysableImageViewModels[i].FinishedAnalysing -= AnalysableViewModel_FinishedAnalysing;
                 AnalysableImageViewModels[i].Dispose();
                 AnalysableImageViewModels[i] = null;
             }
@@ -97,6 +109,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     sequenceAnalysableImageModel.AnalysableImageModels[i].Image = null;
                     sequenceAnalysableImageModel.AnalysableImageModels[i] = null;
                 }
+
+            AnalysableImageViewModels.Clear();
         }
 
         /// <summary>
@@ -113,6 +127,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                 if (Model != null && Model is SequenceAnalysableImageModel sequenceAnalysableImageModel)
                 {
+                    // Firstly load all viewmodels, then analye them.
                     await Task.Run(() =>
                     {
                         foreach (var analysableModel in sequenceAnalysableImageModel.AnalysableImageModels)
@@ -122,18 +137,73 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                             var analysableViewModel = new AnalysableImageViewModel(analysableModel);
                             System.Windows.Application.Current?.Dispatcher?.Invoke(() => AnalysableImageViewModels.Add(analysableViewModel));
+                            analysableViewModel.FinishedAnalysing += AnalysableViewModel_FinishedAnalysing;
                         }
+                        IsLoading = false;
+                    }).ContinueWith(analyseViewModels =>
+                    {
+                        AnalyseViewModels();
                     });
 
                     // Images tend to occupy a lot ressources. After we created the viewmodels, we dont need the model anymore.
                     sequenceAnalysableImageModel.AnalysableImageModels.Clear();
                     sequenceAnalysableImageModel = null;
                 }
-                IsLoading = false;
+                SequenceLoaded = true;
             }
             catch (Exception ex)
             {
                 ServiceContainer.GetService<DialogService>().InformUser("Info", "Cancelled new project creation.");
+            }
+        }
+
+        /// <summary>
+        /// Fires when a viewmodel has been analysed via YOLO. We need to update the view accordiningly.
+        /// </summary>
+        /// <param name="detectedItemArgs"></param>
+        private void AnalysableViewModel_FinishedAnalysing(AnalysableImageViewModel sender, List<DetectedItemArguments> detectedItemArgs)
+        {
+            // If the user has already selected the objects once, then a view exists for it. Get it from the dictioanry
+            if (_analysableViewModelIdToPrepareImageView.TryGetValue(sender.Id, out var reducedPrepareImageAnalysisView))
+                reducedPrepareImageAnalysisView.UpdateDetectedItemsFromViewModel(detectedItemArgs); // Tell the view to upate its canvas
+            // If the viewmodel was selected the first time => Create a new view for it and add it to the dictionary.
+            else
+            {
+                var reducedPrepareImageView = new ReducedPrepareImageAnalysisView();
+                reducedPrepareImageView.DataContext = this;
+                _analysableViewModelIdToPrepareImageView.Add(sender.Id, reducedPrepareImageView);
+                // Tell the view to upate its canvas
+                reducedPrepareImageView.UpdateDetectedItemsFromViewModel(detectedItemArgs);
+            }
+        }
+
+        /// <summary>
+        /// Analyses all viewmodels with the object detection of YOLO.
+        /// </summary>
+        private void AnalyseViewModels()
+        {
+            try
+            {
+                if (ServiceContainer.GetService<DialogService>()
+                    .InformUser("Continue with the object detection of YOLO's neural network?",
+                    "CAUTION:\nThis function is only in a test state. Since there was not enough learning data to solidate the " +
+                    "neural network's model, I downloaded pretrained weights and expanded them with the given input data. However, " +
+                    "it takes around 100 records to really make the object detection reliable. Also be aware that this process requires " +
+                    "time, CPU and RAM, depending on the image size.\n" +
+                    "You can adjust the detection by yourself afterwards."))
+                {
+                    foreach (var analysableImageViewModel in AnalysableImageViewModels)
+                    {
+                        if (_stopAllTasks)
+                            return;
+
+                        analysableImageViewModel.AnalyseImageCommand?.Execute();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't analyse images: {ex}");
             }
         }
 
@@ -271,7 +341,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                     using (var document = new PdfDocument())
                     {
-                        ServiceContainer.GetService<PdfService>().DrawManyAsPdf(document, exportableVmsToArgs);
+                        ServiceContainer.GetService<PdfService>().DrawManyOntoDocument(document, exportableVmsToArgs);
 
                         var savePath = string.Empty;
                         // Marshal it back...

@@ -9,7 +9,7 @@ namespace AutomotiveDronesAnalysisTool.Utility
         /// <summary>
         /// The maximum value the YOLO warpper may use for an image.
         /// </summary>
-        public static KeyValuePair<int,int> MaxWidthHeightToAltitude = new KeyValuePair<int, int>(1504, 470);
+        public static KeyValuePair<int,int> MaxWidthHeightToAltitude = new KeyValuePair<int, int>(1216, 470);
 
         /// <summary>
         /// The min value the YOLO Wrapper must use for an image.

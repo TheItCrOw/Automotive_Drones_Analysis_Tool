@@ -33,7 +33,7 @@
         <Border Grid.Row="0" BorderBrush="Black" VerticalAlignment="Top" Margin="10 10 10 5"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
-            <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+            <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1" Loaded="ViewModelImage_Canvas_Loaded"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas"

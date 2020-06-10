@@ -28,6 +28,13 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 {
     public class AnalysableImageViewModel : ViewModelBase
     {
+        /// <summary>
+        /// Indicates when the viewmodel has been analysed with the YOLO Wrapper.
+        /// </summary>
+        /// <param name="viewModel"></param>
+        public delegate void FinishedAnalysingEvent(AnalysableImageViewModel sender, List<DetectedItemArguments> detectedItemArgs);
+        public event FinishedAnalysingEvent FinishedAnalysing;
+
         private string _projectName;
         private BitmapImage _image;
         private BitmapImage _cleaImageCopy;
@@ -37,6 +44,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private bool _isSelected;
         private bool _isDirty;
         private bool _pdfExportable;
+        private bool _isBeingAnalysed;
 
         public DelegateCommand AddInformationCommand => new DelegateCommand(AddInformation);
         public DelegateCommand<string> EditInformationCommand => new DelegateCommand<string>(EditInformation);
@@ -94,6 +102,24 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             get => _isDirty;
             set => SetProperty(ref _isDirty, value);
+        }
+
+        /// <summary>
+        /// True if this viewmodel is currently being yolo wrapper analyed.
+        /// </summary>
+        public bool IsBeingAnalysed
+        {
+            get => _isBeingAnalysed;
+            set => SetProperty(ref _isBeingAnalysed, value);
+        }
+
+        /// <summary>
+        /// True if this viewmodel has been analysed.
+        /// </summary>
+        public bool AlreadyAnalysed
+        {
+            get => _alreadyAnalysed;
+            set => SetProperty(ref _alreadyAnalysed, value);
         }
 
         /// <summary>
@@ -173,17 +199,20 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public void AnalyseImage()
         {
-            if (_alreadyAnalysed)
-                return;
+            //if (_alreadyAnalysed)
+            //    return;
 
-            // Clear the list.
-            Application.Current?.Dispatcher?.Invoke(() => DetectedObjects.Clear());
+            IsBeingAnalysed = true;
 
+            SetupYOLOConfig();
+
+            var detectedItemsArgs = new List<DetectedItemArguments>();
             // First detect all the opjects in the image.
             foreach (var item in ServiceContainer.GetService<YOLOCommunicationService>().DetectItemsInBitmap(Model.Image))
             {
                 var detectedItemArgs = new DetectedItemArguments()
                 {
+                    Id = Guid.NewGuid(),
                     X = item.X,
                     Y = item.Y,
                     Width = item.Width,
@@ -191,12 +220,13 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     CanvasSize = new System.Drawing.Point(Model.Image.Width, Model.Image.Height)
                 };
 
+                detectedItemsArgs.Add(detectedItemArgs);
                 AddDetectedItem(detectedItemArgs);
             }
 
-            var drawnImage = DrawObjectsOntoImage(DetectedObjects, (Bitmap)Model.Image.Clone());
-            Image = BitmapHelper.ConvertBitmapToBitmapImage(drawnImage);
-            _alreadyAnalysed = true;
+            Application.Current?.Dispatcher?.Invoke(() => FinishedAnalysing?.Invoke(this, detectedItemsArgs));
+            AlreadyAnalysed = true;
+            IsBeingAnalysed = false;
         }
 
         /// <summary>
@@ -232,7 +262,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             {
                 if (ServiceContainer.GetService<DialogService>()
                     .AskForInteger(
-                    "Missing altitude",
+                    $"Missing altitude in {ImageName}",
                     "We couldn't find the absolute altitude in the metadata of the image from where the picture was taken. " +
                     "If you do know the altitude of the given picture, please add the value of it now and press the confirm button. This helps analysing the image. " +
                     "Please only enter a value if you can ensure the correctness. Typically it varies from 450 to 470. " +
@@ -240,14 +270,23 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     out var result))
                 {
                     // Add the result as "AdditionalInformation"
-                    AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString()));
+                    Application.Current?.Dispatcher?.Invoke(() => AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString())));
                     yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, result);
+                    // If its still zero, cause the user entered a not usable value - take default.
+                    if(yoloWidthHeight == 0)
+                        yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453); // 453 is a default value.
                 }
                 else
                 {
                     // if the user does not input the altitude, we assume the deafult altitude
                     yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453); // 453 is a default value.
                 }
+            }
+            // If the value is somehow lower than the minum or greater than the max => choose the default value.
+            else if (yoloWidthHeight > AltitudeToWidthHeightHelper.MaxWidthHeightToAltitude.Key ||
+                yoloWidthHeight < AltitudeToWidthHeightHelper.MinWidthHeightToAltitude.Key)
+            {
+                yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453); // 453 is a default value.
             }
 
             // Update the YOLO config with the given widthHeight
@@ -380,7 +419,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             {
                 using (var g = Graphics.FromImage(image))
                 {
-                    // TODO: Place that into a user config? 
                     var penWidth = image.Width * 0.0025f;
                     var fontSize = image.Width * 0.02f;
                     var pen = new Pen(Color.White, penWidth);
@@ -481,7 +519,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 // Now we calculate the widht and height to the altitude. 
                 while (currAltitude < maxHeighWidthToAltitude.Value)
                 {
-                    currentWidthHeight -= 75; // 70 = 1 altitude less. This is the step size
+                    currentWidthHeight -= 75; // 75 = 1 altitude less. This is the step size
                     currAltitude++;
                 }
 

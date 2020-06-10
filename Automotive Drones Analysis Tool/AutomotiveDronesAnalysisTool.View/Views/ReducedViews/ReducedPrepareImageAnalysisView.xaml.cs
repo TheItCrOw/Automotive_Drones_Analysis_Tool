@@ -26,10 +26,12 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         Point _currentPoint = new Point();
         Point _startPoint = new Point();
         DrawingShape _currentShape = DrawingShape.Rectangle;
-        Rectangle _lastlyDrawnRectangle = new Rectangle();
-        Line _lastlyDrawnLine = new Line();
+        Rectangle _lastlyDrawnRectangle;
+        Line _lastlyDrawnLine;
         Brush _switchShapesButtonBrush;
         Button[] _palletButtons;
+        List<DetectedItemArguments> _analyedItemsOfViewModel;
+        private bool _hasUndrawnAnalysedItems;
 
         public ReducedPrepareImageAnalysisView()
         {
@@ -42,6 +44,75 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             };
             _switchShapesButtonBrush = ChooseRectangle_Button.Background;
             ChooseRectangle_Button_Click(ChooseRectangle_Button, new RoutedEventArgs());
+        }
+
+        /// <summary>
+        /// Fires when the viewmodel has been analysed by the YOLOWrapper. We need to then update the canvas
+        /// </summary>
+        /// <param name="detectedItems"></param>
+        public void UpdateDetectedItemsFromViewModel(List<DetectedItemArguments> detectedItems)
+        {
+            _hasUndrawnAnalysedItems = true;
+            CleanupDetectedObjectsFromViewModel();
+            _analyedItemsOfViewModel = new List<DetectedItemArguments>(detectedItems);
+            DrawDetectedObjectsOfViewModel();
+        }
+
+        /// <summary>
+        /// Deletes the old detected objects of the viewmodels YOLO wrapper.
+        /// </summary>
+        private void CleanupDetectedObjectsFromViewModel()
+        {
+            if (_analyedItemsOfViewModel == null) return;
+
+            // Delete every drawn item on the canvas which originates from the old detected list.
+            foreach (var detectedItem in _analyedItemsOfViewModel)
+            {
+                FrameworkElement foundItem = null;
+                foreach (var drawnElement in ViewModelImage_Canvas.Children)
+                {
+                    if (drawnElement is FrameworkElement frameworkEl && frameworkEl.Tag.Equals(detectedItem.Id))
+                        foundItem = frameworkEl;
+                }
+                ViewModelImage_Canvas.Children.Remove(foundItem);
+            }
+        }
+
+        /// <summary>
+        /// Draws the items of the <see cref="_analyedItemsOfViewModel"/> list onto the canvas.
+        /// </summary>
+        private void DrawDetectedObjectsOfViewModel()
+        {
+            // If the canvas has no width, it is not laoded. We cant draw onto it properly if its not laoded.
+            if (ViewModelImage_Canvas.ActualWidth == 0) return;
+
+            // If there are no undrawn items, we dont need to redraw them.
+            if (!_hasUndrawnAnalysedItems) return;
+
+            // Actually draw the items of the viewmodel onto the canvas. We have to recalulcate from the images width to the canvas witdth.
+            foreach (var detectedItemArgs in _analyedItemsOfViewModel)
+            {
+                if (detectedItemArgs.Shape == DrawingShape.Rectangle)
+                {
+                    var widthRatio = (double)detectedItemArgs.CanvasSize.X / ViewModelImage_Canvas.ActualWidth;
+                    var heightRatio = (double)detectedItemArgs.CanvasSize.Y / ViewModelImage_Canvas.ActualHeight;
+
+                    var xy = new Point((double)detectedItemArgs.X / widthRatio, detectedItemArgs.Y / heightRatio);
+                    var widthHeight = new Point((double)detectedItemArgs.Width / widthRatio, detectedItemArgs.Height / heightRatio);
+                    DrawRectangle(xy, widthHeight, detectedItemArgs.Id);
+                }
+            }
+            _hasUndrawnAnalysedItems = false;
+        }
+
+        /// <summary>
+        /// Fires when the canvas has been fully loaded.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ViewModelImage_Canvas_Loaded(object sender, RoutedEventArgs e)
+        {
+            DrawDetectedObjectsOfViewModel();
             HandleWindowResize();
         }
 
@@ -210,6 +281,23 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             return rectangle;
         }
 
+        private Rectangle DrawRectangle(Point xy, Point widthHeight, Guid tag)
+        {
+            var rectangle = new Rectangle();
+            rectangle.Stroke = Brushes.Red;
+            rectangle.StrokeThickness = 3;
+            rectangle.Height = widthHeight.Y;
+            rectangle.Width = widthHeight.X;
+            rectangle.IsHitTestVisible = false;
+            rectangle.Tag = tag;
+
+            Canvas.SetLeft(rectangle, xy.X);
+            Canvas.SetTop(rectangle, xy.Y);
+
+            ViewModelImage_Canvas.Children.Add(rectangle);
+            return rectangle;
+        }
+
         private void ChooseRectangle_Button_Click(object sender, RoutedEventArgs e)
         {
             _currentShape = DrawingShape.Rectangle;
@@ -238,7 +326,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             if (sender is FrameworkElement el)
             {
                 var detectedItemId = ((DetectedItemViewModel)(el.DataContext)).Id;
-                
+
                 FrameworkElement foundItem = null;
                 foreach (var drawnElement in ViewModelImage_Canvas.Children)
                     if (drawnElement is FrameworkElement frameworkEl && frameworkEl.Tag.Equals(detectedItemId))
@@ -276,34 +364,35 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             {
                 //Since this is running on a background thread you need to marshal it back to the UI thread.
                 Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var newSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
+                var oldSizeWidth = _lastCanvasSize.Width == 0 ? 1 : _lastCanvasSize.Width;
+                var oldSizeHeight = _lastCanvasSize.Height == 0 ? 1 : _lastCanvasSize.Height;
+
+                var newXRatio = newSize.Width / oldSizeWidth;
+                var newYRatio = newSize.Height / oldSizeHeight;
+
+                foreach (var child in ViewModelImage_Canvas.Children)
                 {
-                    var newSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
-                    var oldSize = _lastCanvasSize;
-
-                    var newXRatio = newSize.Width / oldSize.Width;
-                    var newYRatio = newSize.Height / oldSize.Height;
-
-                    foreach (var child in ViewModelImage_Canvas.Children)
+                    if (child is Rectangle rectangle)
                     {
-                        if (child is Rectangle rectangle)
-                        {
-                            rectangle.Width = rectangle.Width * newXRatio;
-                            rectangle.Height = rectangle.Height * newYRatio;
+                        rectangle.Width = rectangle.Width * newXRatio;
+                        rectangle.Height = rectangle.Height * newYRatio;
 
-                            Canvas.SetLeft(rectangle, Canvas.GetLeft(rectangle) * newXRatio);
-                            Canvas.SetTop(rectangle, Canvas.GetTop(rectangle) * newYRatio);
-                        }
-                        else if (child is Line line)
-                        {
-                            line.X1 = line.X1 * newXRatio;
-                            line.X2 = line.X2 * newXRatio;
-                            line.Y1 = line.Y1 * newYRatio;
-                            line.Y2 = line.Y2 * newYRatio;
-                        }
+                        Canvas.SetLeft(rectangle, Canvas.GetLeft(rectangle) * newXRatio);
+                        Canvas.SetTop(rectangle, Canvas.GetTop(rectangle) * newYRatio);
                     }
-                    _lastCanvasSize = newSize;
+                    else if (child is Line line)
+                    {
+                        line.X1 = line.X1 * newXRatio;
+                        line.X2 = line.X2 * newXRatio;
+                        line.Y1 = line.Y1 * newYRatio;
+                        line.Y2 = line.Y2 * newYRatio;
+                    }
+                }
+                _lastCanvasSize = newSize;
 
-                }));
+            }));
             };
 
             ViewModelImage_Canvas.SizeChanged += (o, e) =>
@@ -313,6 +402,5 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 _resizeTimer.Start();
             };
         }
-
     }
 }

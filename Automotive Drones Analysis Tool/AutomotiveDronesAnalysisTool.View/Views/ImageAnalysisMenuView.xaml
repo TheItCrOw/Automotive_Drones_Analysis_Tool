@@ -79,6 +79,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <!--delete button-->
                                             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" 
@@ -91,6 +92,21 @@
                                             <TextBlock Text="{Binding ImageName}" Style="{StaticResource TextTextblockStyle}" Margin="5" VerticalAlignment="Top"/>
                                             <!--margin -1 cause there is always a small white stripe clipping for some reason...-->
                                             <Image Source="{Binding Image}" Stretch="Uniform" Margin="0 -1 0 0" Grid.Row="1"/>
+                                            <!--progress bar if being analysed-->
+                                            <ProgressBar Grid.Row="2" Height="5" IsIndeterminate="{Binding IsBeingAnalysed}" Foreground="#FF0288D1">
+                                                <ProgressBar.Style>
+                                                    <Style TargetType="ProgressBar">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding AlreadyAnalysed}" Value="True">
+                                                                <Setter Property="Value" Value="100"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding AlreadyAnalysed}" Value="False">
+                                                                <Setter Property="Value" Value="0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ProgressBar.Style>
+                                            </ProgressBar>
                                         </Grid>
                                     </materialDesign:Card>
 
