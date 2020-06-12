@@ -69,7 +69,10 @@ namespace AutomotiveDronesAnalysisTool.Utility
             // And finally, the minor angle
             double angle = Math.Min(diff, Math.Abs(180 - diff));
 
-            return angle;
+            // The actual angle in degrees
+            double resultAngleInDegrees = angle * (180 / Math.PI);
+
+            return resultAngleInDegrees;
         }
 
         public static double GetAngleBetweenTwoLines(Point p1, Point p2, Point p3, Point p4)

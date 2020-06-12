@@ -77,10 +77,15 @@ namespace AutomotiveDronesAnalysisTool.Utility
                         else if (item is TextBlock textBlock)
                         {
                             var font = new Font(FontFamily.GenericSansSerif, fontSize, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-                            pen.Color = ConvertBrushToColor(textBlock.Background);
+                            // Convert media.color to drawing.color.
+                            // Then convert drawing.color to drawing.brush.
+                            var backgroundColor = ConvertBrushToColor(textBlock.Background);
+                            var foregroundColor = ConvertBrushToColor(textBlock.Foreground);
+                            System.Drawing.Brush foreground = new SolidBrush(foregroundColor);
+                            System.Drawing.Brush background = new SolidBrush(backgroundColor);
 
                             g.FillRectangle(
-                                Brushes.DarkSlateGray,
+                                background,
                                 (int)(Canvas.GetLeft(textBlock) * widthRatio),
                                 (int)(Canvas.GetTop(textBlock) * heightRatio),
                                 (int)(textBlock.ActualWidth * widthRatio),
@@ -88,7 +93,7 @@ namespace AutomotiveDronesAnalysisTool.Utility
 
                             g.DrawString(textBlock.Text,
                                 font,
-                                Brushes.White,
+                                foreground,
                                 new PointF((int)(Canvas.GetLeft(textBlock) * widthRatio),
                                            (int)(Canvas.GetTop(textBlock) * heightRatio)));
                         }

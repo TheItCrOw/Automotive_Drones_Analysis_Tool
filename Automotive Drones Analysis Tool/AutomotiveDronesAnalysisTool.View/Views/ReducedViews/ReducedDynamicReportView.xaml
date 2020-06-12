@@ -16,42 +16,40 @@
              d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window"
              >
     <Grid>
-        <ScrollViewer>
-            <Grid x:Name="Main_Grid">
-                <Grid.Style>
-                    <!--highlight the grid green if its marked as exporatble.-->
-                    <Style TargetType="Grid">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="True">
-                                <Setter Property="Background" Value="LimeGreen"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
-                                <Setter Property="Background" Value="Transparent"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                
-                <!--image here-->
-                <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
-                    <Image Source="{Binding ViewModel.CleanImageCopy}" x:Name="ViewModel_Image"/>
-                </materialDesign:Card>
-                <!--drawing canvas right here-->
-                <Border BorderBrush="White" BorderThickness="0" Margin="10" VerticalAlignment="Top"
+        <Grid x:Name="Main_Grid">
+            <Grid.Style>
+                <!--highlight the grid green if its marked as exporatble.-->
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="True">
+                            <Setter Property="Background" Value="LimeGreen"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
+            <!--image here-->
+            <materialDesign:Card Margin="10" materialDesign:ShadowAssist.ShadowDepth="Depth4" HorizontalAlignment="Center">
+                <Image Source="{Binding ViewModel.CleanImageCopy}" x:Name="ViewModel_Image" Stretch="Uniform"/>
+            </materialDesign:Card>
+            <!--drawing canvas right here-->
+            <Border BorderBrush="White" BorderThickness="0" Margin="10" VerticalAlignment="Top"
                     Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                     Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}">
-                    <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
+                <Canvas  VerticalAlignment="Stretch" Panel.ZIndex="1"
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas" Loaded="ViewModelImage_Canvas_Loaded" >
-                        <Canvas.Background>
-                            <SolidColorBrush Color="Black" Opacity="0.85"/>
-                        </Canvas.Background>
-                    </Canvas>
-                </Border>
-            </Grid>
-        </ScrollViewer>
-
+                    <Canvas.Background>
+                        <SolidColorBrush Color="Black" Opacity="0.85"/>
+                    </Canvas.Background>
+                </Canvas>
+            </Border>
+        </Grid>
+        
         <!--Ready for export checkbox-->
         <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Command="{Binding MarkAsPdfExportableCommand}" Background="White"
                 ToolTip="Check for export" Height="85" Width="85" Margin="15" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="Black">

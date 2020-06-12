@@ -10,6 +10,7 @@ using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Extensions;
 using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.Views.Modal;
+using OpenCvSharp;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
@@ -199,12 +200,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public void AnalyseImage()
         {
-            //if (_alreadyAnalysed)
-            //    return;
-
             IsBeingAnalysed = true;
 
-            SetupYOLOConfig();
+            // Maybe add it later.
+            //SetupYOLOConfig();
 
             var detectedItemsArgs = new List<DetectedItemArguments>();
             // First detect all the opjects in the image.
@@ -273,7 +272,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     Application.Current?.Dispatcher?.Invoke(() => AdditionalInformation.Add(Tuple.Create("AbsoluteAltitude", result.ToString())));
                     yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, result);
                     // If its still zero, cause the user entered a not usable value - take default.
-                    if(yoloWidthHeight == 0)
+                    if (yoloWidthHeight == 0)
                         yoloWidthHeight = CalculateYoloWidthHeightFromImageModel(Model, 453); // 453 is a default value.
                 }
                 else

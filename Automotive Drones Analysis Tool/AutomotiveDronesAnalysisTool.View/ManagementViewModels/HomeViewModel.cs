@@ -4,6 +4,7 @@ using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AutomotiveDronesAnalysisTool.View.Views.Test;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
@@ -21,6 +22,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// </summary>
         public override void Initiliaze(object[] parameters = null)
         {
+            // TODO: Delete testing here
+            var testView = new TestView();
+            testView.ShowDialog();
         }
 
         public override void Dispose()

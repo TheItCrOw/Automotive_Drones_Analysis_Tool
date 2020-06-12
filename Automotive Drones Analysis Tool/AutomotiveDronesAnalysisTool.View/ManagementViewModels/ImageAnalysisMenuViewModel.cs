@@ -142,6 +142,9 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         IsLoading = false;
                     }).ContinueWith(analyseViewModels =>
                     {
+                        if (_stopAllTasks)
+                            return;
+
                         AnalyseViewModels();
                     });
 
@@ -213,7 +216,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void MarkAsPdfExportable()
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't mark as exportable.");
+                return;
+            }
 
             try
             {
@@ -232,13 +238,21 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         {
             try
             {
+                // If any viewodel si currently being analysed, we dont want to modify the ViewModelList.
+                if (AnalysableImageViewModels.Any(vm => vm.IsBeingAnalysed))
+                {
+                    ServiceContainer.GetService<DialogService>().InformUser("Info",
+                        "The list is currently being analysed by the machine learning model. Please wait until this task is complete.");
+                    return;
+                }
+
                 if (ServiceContainer.GetService<DialogService>()
                     .InformUser("Delete?", "Continue deleting the selected analysable image from the project?"))
                 {
                     AnalysableImageViewModels.Remove(AnalysableImageViewModels.FirstOrDefault(i => i.Id.Equals(id)));
                 }
-                // If the list is empty, there is no point in staying in the current view.
-                if (AnalysableImageViewModels.Count == 0)
+                // If the list is empty and fully loaded, there is no point in staying in the current view.
+                if (AnalysableImageViewModels.Count == 0 && SequenceLoaded)
                     ServiceContainer.GetService<ViewService>().Show<HomeView, HomeViewModel>();
             }
             catch (Exception ex)
@@ -426,7 +440,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void DeleteComment(string comment)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't delete comment.");
+                return;
+            }
 
             try
             {
@@ -445,7 +462,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void AddComment(string comment)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't add comment.");
+                return;
+            }
 
             try
             {
@@ -463,7 +483,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void AddDetectedItemFromCanvas(DetectedItemArguments newItem)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't add item.");
+                return;
+            }
 
             try
             {
@@ -481,7 +504,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void DeleteDetectedItem(object id)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't delete item.");
+                return;
+            }
 
             try
             {
@@ -499,7 +525,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void AddInformation()
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't add information.");
+                return;
+            }
 
             try
             {
@@ -518,7 +547,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void EditInformation(string key)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't edit information.");
+                return;
+            }
 
             try
             {
@@ -537,7 +569,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         private void DeleteInformation(string key)
         {
             if (ViewModel == null)
+            {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Couldn't delete information.");
+                return;
+            }
 
             try
             {
