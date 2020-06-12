@@ -46,12 +46,21 @@
             <materialDesign:Card VerticalAlignment="Center" HorizontalAlignment="Center" materialDesign:ShadowAssist.ShadowDepth="Depth5">
                 <Image Source="{Binding ViewModel.CurrentFrameBitmap}" Margin="-1 0 0 0"/>
             </materialDesign:Card>
+
             <StackPanel Grid.Row="1" Margin="20 10">
                 <!--slider for frames-->
                 <Slider x:Name="Frame_Slider" PreviewMouseUp="Frame_Slider_PreviewMouseUp"
                         Value="{Binding ViewModel.CurrentFrameIndex}" Minimum="1" Maximum="{Binding ViewModel.TotalFrames}"/>
                 <!--current frame textblock-->
-                <TextBlock Text="{Binding ViewModel.CurrentFrameIndex}" Style="{StaticResource TextTitleTextblockStyle}" Foreground="Black"/>
+                <!--play button-->
+                <DockPanel Margin="20 0 0 0" LastChildFill="False" HorizontalAlignment="Center">
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
+                                 Cursor="Hand" Width="70" Height="70" BorderBrush="Transparent" Command="{Binding PlayCommand}">
+                        <materialDesign:PackIcon Kind="Play" Height="60" Width="60" Foreground="Black"/>
+                    </Button>
+                    <TextBlock Margin="10 0 0 0" VerticalAlignment="Center" Text="{Binding ViewModel.CurrentFrameIndex}" 
+                               Style="{StaticResource TextTitleTextblockStyle}" Foreground="Black"/>
+                </DockPanel>
             </StackPanel>
         </Grid>
         

@@ -31,10 +31,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         /// <param name="e"></param>
         private void Frame_Slider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-            if(sender is Slider slider)
-            {
-                ((VideoAnalysisMenuViewModel)DataContext).ViewModel.AnalyseActiveFrame();
-            }
+            //if(sender is Slider slider)
+            //{
+            //    ((VideoAnalysisMenuViewModel)DataContext).ViewModel.AnalyseActiveFrame();
+            //}
         }
     }
 }

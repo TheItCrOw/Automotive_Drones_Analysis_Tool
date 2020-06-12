@@ -1,6 +1,7 @@
 ﻿using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.View.Services;
 using AutomotiveDronesAnalysisTool.View.ViewModels;
+using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
     {
         private AnalysableVideoViewModel _viewModel;
         private AnalysableVideoModel _model;
+
+        public DelegateCommand PlayCommand => new DelegateCommand(Play);
 
         /// <summary>
         /// Currently active Video ViewModel
@@ -35,11 +38,34 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                 _model = (AnalysableVideoModel)Model;
                 ViewModel = new AnalysableVideoViewModel(_model);
+                // TODO: Draw ref line first!
                 ViewModel.SetFirstFrame();
+                ViewModel.SetupVideo();
             }
             catch (Exception ex)
             {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't load videos data: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Plays the video analysed
+        /// </summary>
+        private void Play()
+        {
+            if (ViewModel == null)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"ViewModel is null. Can't play.");
+                return;
+            }
+
+            try
+            {
+                ViewModel.PlayCommand?.Execute();
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't play: {ex}");
             }
         }
     }

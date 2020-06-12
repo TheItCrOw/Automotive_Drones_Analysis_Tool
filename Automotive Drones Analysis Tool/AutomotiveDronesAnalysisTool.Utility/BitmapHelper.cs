@@ -38,6 +38,22 @@ namespace AutomotiveDronesAnalysisTool.Utility
         }
 
         /// <summary>
+        /// Compresses the image
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="quality"></param>
+        /// <param name="codec"></param>
+        public static MemoryStream CompressBitmap(System.Drawing.Image img, long quality, ImageCodecInfo codec)
+        {
+            EncoderParameters parameters = new EncoderParameters(1);
+            parameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+
+            var ms = new MemoryStream();
+            img.Save(ms, codec, parameters);
+            return ms;
+        }
+
+        /// <summary>
         /// Takes in a list of framework elemtns and draws them onto the given bitmap 
         /// </summary>
         /// <param name="frameworkElements"></param>

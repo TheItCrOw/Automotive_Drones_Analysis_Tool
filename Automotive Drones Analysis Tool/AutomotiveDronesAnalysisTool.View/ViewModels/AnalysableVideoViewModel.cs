@@ -4,10 +4,12 @@ using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Services;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using Prism.Commands;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -38,6 +40,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private Dictionary<int, string> _indexToImageTempPath;
         private ConcurrentQueue<Tuple<Bitmap, string>> _imageQueue;
         bool _keepRunning;
+        private bool _isPlaying;
+        object _locked = new object();
+
+        public DelegateCommand PlayCommand => new DelegateCommand(Play);
 
         /// <summary>
         /// Name of the project
@@ -89,6 +95,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// True if the user us currently letting the video run by pressing the play button
+        /// </summary>
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            set => SetProperty(ref _isPlaying, value);
+        }
+
+        /// <summary>
         /// The total amount of frames of the given video.
         /// </summary>
         public int TotalFrames
@@ -106,7 +121,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             VideoName = analysableVideoModel.VideoName;
             VideoPath = analysableVideoModel.VideoPath;
             IndexChanged += AnalysableVideoViewModel_IndexChanged;
-            SetupVideo();
         }
 
         public void Dispose()
@@ -114,28 +128,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             // Dispose the iamges in the temp folder!
             foreach (var pair in _indexToImageTempPath)
                 File.Delete(pair.Value);
-        }
-
-        /// <summary>
-        /// Fires when the current active index changes. We need to adjust the frame bitmap then.
-        /// </summary>
-        /// <param name="index"></param>
-        private void AnalysableVideoViewModel_IndexChanged(int index)
-        {
-            if (_indexToImageTempPath.TryGetValue(index, out var imagePath))
-            {
-                // read a single frame and convert the frame into a byte array
-                var imageBytes = File.ReadAllBytes(imagePath);
-
-                var imageOriginal = Mat.FromImageData(imageBytes);
-                var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(WIDTH * SCALE, HEIGHT * SCALE));
-
-                // display the detection result
-                Application.Current?.Dispatcher?.Invoke(() =>
-                {
-                    CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
-                });
-            }
         }
 
         /// <summary>
@@ -148,12 +140,12 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             _indexToImageTempPath.Clear();
             _keepRunning = true;
 
-            // We start around 15 queue worker, which should do the job in a good amount of time.
-            for(int i = 0; i < 15; i++)
+            // Start the queue worker which take bitmaps of the queue and save them
+            for (int i = 0; i < 10; i++)
             {
                 StartQueueWorker();
-                i++;
             }
+
             // Read a video file and get each frame
             using (var videocapture = new VideoCapture(VideoPath))
             {
@@ -163,7 +155,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     {
                         // read a single frame and convert the frame into a bitmap
                         videocapture.Read(imageOriginal);
-                        var bitmap = BitmapConverter.ToBitmap(imageOriginal);
+                        var analysedImageOriginal = AnalyseActiveFrame(imageOriginal);
+                        var bitmap = BitmapConverter.ToBitmap(analysedImageOriginal);
                         var imagePath = Path.Combine(
                             ServiceContainer.GetService<GlobalEnviromentService>().Cv2TempVideoLocation,
                             $"temp_{i}.png");
@@ -178,44 +171,21 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
-        /// Starts a queue worker that grabs a bitmap from the imagequeue and saves it into the temop folder.
-        /// </summary>
-        private void StartQueueWorker()
-        {
-            Task.Run(() =>
-            {
-                while(_keepRunning || _imageQueue.Count > 0)
-                {
-                    if(_imageQueue.TryDequeue(out var tuple))
-                    {
-                        tuple.Item1.Save(tuple.Item2);
-                        tuple.Item1.Dispose();
-                    }
-                }
-            });
-        }
-
-        /// <summary>
         /// analyses the active frame.
         /// </summary>
-        public void AnalyseActiveFrame()
+        public Mat AnalyseActiveFrame(Mat imageOriginal)
         {
             // YOLO setting
             int yoloWidth = WIDTH, yoloHeight = HEIGHT;
             var configurationDetector = new ConfigurationDetector();
             var config = configurationDetector.Detect();
-            var yoloWrapper = new YoloWrapper(config);
-
-            // OpenCV & WPF setting
-            Mat image = new Mat();
-            WriteableBitmap wb = new WriteableBitmap(yoloWidth, yoloHeight, 96, 96, System.Windows.Media.PixelFormats.Bgr24, null);
-
-            byte[] imageInBytes = new byte[(int)(yoloWidth * yoloHeight * image.Channels())];
-
-            if (_indexToImageTempPath.TryGetValue(CurrentFrameIndex, out var imagePath))
+            using (var yoloWrapper = new YoloWrapper(config))
             {
-                var imageBytes = File.ReadAllBytes(imagePath);
-                var imageOriginal = Mat.FromImageData(imageBytes);
+                // OpenCV & WPF setting
+                Mat image = new Mat();
+                WriteableBitmap wb = new WriteableBitmap(yoloWidth, yoloHeight, 96, 96, System.Windows.Media.PixelFormats.Bgr24, null);
+
+                byte[] imageInBytes = new byte[(int)(yoloWidth * yoloHeight * image.Channels())];
 
                 image = imageOriginal.Resize(new OpenCvSharp.Size(yoloWidth, yoloHeight));
                 imageInBytes = image.ToBytes();
@@ -255,6 +225,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         0.5f,
                         Scalar.Red);
                 }
+                return uiImage;
+
 
                 // display the detection result
                 Application.Current?.Dispatcher?.Invoke(() =>
@@ -262,68 +234,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
                 });
             }
-
-            //// Read a video file and run object detection over it!
-            //using (videocapture = new VideoCapture(VideoPath))
-            //{
-            //    for (int i = 0; i < videocapture.FrameCount; i++)
-            //    {
-            //        using (Mat imageOriginal = new Mat())
-            //        {
-            //            // read a single frame and convert the frame into a byte array
-            //            videocapture.Read(imageOriginal);
-
-            //            if (i == CurrentFrameIndex)
-            //            {
-            //                image = imageOriginal.Resize(new OpenCvSharp.Size(yoloWidth, yoloHeight));
-            //                imageInBytes = image.ToBytes();
-
-            //                // conduct object detection and display the result
-            //                var items = yoloWrapper.Detect(imageInBytes);
-            //                // We use the image to detect the objects in a very small size - then we draw them onto the
-            //                // uiImage and scale it up!
-            //                var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(yoloWidth * SCALE, yoloHeight * SCALE));
-
-            //                foreach (var item in items)
-            //                {
-            //                    var x = item.X * SCALE;
-            //                    var y = item.Y * SCALE;
-            //                    var width = item.Width * SCALE;
-            //                    var height = item.Height * SCALE;
-            //                    var type = item.Type;  // class name of the object
-
-            //                    // draw a bounding box for the detected object
-            //                    // you can set different colors for different classes
-            //                    Cv2.Rectangle(uiImage, new OpenCvSharp.Rect(x, y, width, height), Scalar.Green, 3);
-
-            //                    // Draw a connection line to each other object.
-            //                    foreach (var item2 in items)
-            //                        if (item2 != item)
-            //                        {
-            //                            Cv2.Line(uiImage,
-            //                                new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE),
-            //                                new OpenCvSharp.Point(item2.Center().X * SCALE, item2.Center().Y * SCALE),
-            //                                Scalar.Red);
-            //                        }
-
-            //                    Cv2.PutText(uiImage,
-            //                        "Center",
-            //                        new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE),
-            //                        HersheyFonts.HersheyComplex,
-            //                        0.5f,
-            //                        Scalar.Red);
-            //                }
-
-            //                // display the detection result
-            //                Application.Current?.Dispatcher?.Invoke(() =>
-            //                {
-            //                    CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
-            //                });
-            //            }
-            //        }
-            //        i++;
-            //    }
-            //}
         }
 
         /// <summary>
@@ -354,7 +264,83 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             }
         }
 
+        /// <summary>
+        /// Fires when the current active index changes. We need to adjust the frame bitmap then.
+        /// </summary>
+        /// <param name="index"></param>
+        private void AnalysableVideoViewModel_IndexChanged(int index)
+        {
+            // We dont want to change the images when the user lets the video play on its own. Instead, we are analysing them one by one
+            if (IsPlaying) return;
 
+            if (_indexToImageTempPath.TryGetValue(index, out var imagePath))
+            {
+                // read a single frame and convert the frame into a byte array
+                var imageBytes = File.ReadAllBytes(imagePath);
+
+                var imageOriginal = Mat.FromImageData(imageBytes);
+                var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(WIDTH * SCALE, HEIGHT * SCALE));
+
+                // display the detection result
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
+                });
+            }
+        }
+
+        /// <summary>
+        /// Starts a queue worker that grabs a bitmap from the imagequeue and saves it into the temop folder.
+        /// </summary>
+        private void StartQueueWorker()
+        {
+            Task.Run(() =>
+            {
+                lock (_locked)
+                {
+                    while (_keepRunning || _imageQueue.Count > 0)
+                    {
+                        if (_imageQueue.TryDequeue(out var tuple))
+                        {
+                            // Deque the bitmap and write it to disc.
+                            // Lower the quality to save ressources.
+                            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+                            ImageCodecInfo ici = null;
+
+                            foreach (ImageCodecInfo codec in codecs)
+                            {
+                                if (codec.MimeType == "image/jpeg")
+                                    ici = codec;
+                            }
+
+                            var encoderParameters = new EncoderParameters();
+                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)20);
+
+                            tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
+                            tuple.Item1.Dispose();
+                        }
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Lets the video play on its own and analyse each frame.
+        /// </summary>
+        private async void Play()
+        {
+            //IsPlaying = true;
+            await Task.Run(() =>
+            {
+                for (int i = CurrentFrameIndex; i < TotalFrames; i++)
+                {
+                    //AnalyseActiveFrame();
+                    i++;
+                    CurrentFrameIndex++;
+                }
+            });
+            //IsPlaying = false;
+        }
 
     }
 }
