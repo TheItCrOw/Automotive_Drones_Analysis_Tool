@@ -22,9 +22,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// </summary>
         public override void Initiliaze(object[] parameters = null)
         {
-            // TODO: Delete testing here
-            var testView = new TestView();
-            testView.ShowDialog();
         }
 
         public override void Dispose()

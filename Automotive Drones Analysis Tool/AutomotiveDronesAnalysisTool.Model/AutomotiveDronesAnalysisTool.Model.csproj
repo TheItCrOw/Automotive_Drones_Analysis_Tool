@@ -8,4 +8,10 @@
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="PresentationCore">
+      <HintPath>..\Libraries\PresentationCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

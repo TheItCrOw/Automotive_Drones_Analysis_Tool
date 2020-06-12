@@ -137,14 +137,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
         private void ViewModelImage_Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            // We dont want to draw while the viewmodel si being analyed.
-            if (((ImageAnalysisMenuViewModel)DataContext).ViewModel.IsBeingAnalysed)
-            {
-                ServiceContainer.GetService<DialogService>().InformUser("Info",
-                   "The selected item is currently being analysed by the machine learning model. Please wait until this task is complete.");
-                return;
-            }
-
             // We want to draw a rectangle every time the mouse is moved so the user knows what hes drawing.
             // However, we delete the created rectangle right after.
             if (e.LeftButton == MouseButtonState.Pressed)

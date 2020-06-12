@@ -25,6 +25,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
         public DelegateCommand UploadImageCommand => new DelegateCommand(UploadImage);
         public DelegateCommand UploadSequenceCommand => new DelegateCommand(UploadSequence);
+        public DelegateCommand UploadVideoCommand => new DelegateCommand(UploadVideo);
 
         /// <summary>
         /// Name of the newly created project
@@ -171,7 +172,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         if (imageAnalyseModel == null)
                             return;
 
-                        var sequenceModel = new SequenceAnalysableImageModel(new List<AnalysableImageModel>() {imageAnalyseModel});
+                        var sequenceModel = new SequenceAnalysableImageModel(new List<AnalysableImageModel>() { imageAnalyseModel });
 
                         // Switch the views.
                         ServiceContainer.GetService<ViewService>()
@@ -182,6 +183,36 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             catch (Exception ex)
             {
                 ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't upload images: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Upload a video analysis
+        /// </summary>
+        private void UploadVideo()
+        {
+            if (string.IsNullOrEmpty(ProjectName))
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Missing name", "Please enter a name for the project.");
+                return;
+            }
+
+            var op = new Microsoft.Win32.OpenFileDialog();
+            op.Title = "Choose an image";
+            op.Filter = "Media Files|*.mpg;*.avi;*.wma;*.mov;*.wav;*.mp4;|All Files|*.*";
+
+            if (op.ShowDialog() == true)
+            {
+                var videoModel = new AnalysableVideoModel()
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectName = ProjectName,
+                    VideoPath = op.FileName,
+                    VideoName = op.FileName.Split('\\').Last()
+                };
+
+                // Switch the views.
+                ServiceContainer.GetService<ViewService>().Show<VideoAnalysisMenuView, VideoAnalysisMenuViewModel>(videoModel);
             }
         }
 

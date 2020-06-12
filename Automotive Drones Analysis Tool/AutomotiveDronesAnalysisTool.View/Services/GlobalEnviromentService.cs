@@ -21,5 +21,10 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         /// Returns the full path of the YOLONames
         /// </summary>
         public string YOLONamesLocation => Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "coco.names");
+
+        /// <summary>
+        /// Returns the temporary path of the cv2 images from the video.
+        /// </summary>
+        public string Cv2TempVideoLocation => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ADAT\\Temp");
     }
 }

@@ -25,7 +25,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.Test
         public TestView()
         {
             InitializeComponent();
-            //TestVideoDetection();
+            TestVideoDetection();
         }
 
         private void TestVideoDetection()

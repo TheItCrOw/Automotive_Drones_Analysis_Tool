@@ -2,6 +2,7 @@
 using AutomotiveDronesAnalysisTool.View.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,6 +43,15 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ServiceContainer.RegisterService<PdfService>(pdfService);
 
             viewService.Show<HomeView, HomeViewModel>();
+
+            // Create the temp folder or clean it up
+            if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
+                Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
+            else
+            {
+                foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
+                    File.Delete(file);
+            }
         }
     }
 }

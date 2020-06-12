@@ -356,7 +356,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
             // Cleanup objects, draw angles and distances again.
             CleanupDestroyableObjects();
-            DrawAngleOfImageRefLine();
+            DrawAngleAndDistanceOfImageRefLine();
             DrawRefLineTriangles();
             DrawDistanceOfObjects();
         }
@@ -372,7 +372,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             CleanupDestroyableObjects();
             DrawReferenceLineOfObject(corrDetectedObject, out var corrRefLineObject);
             DrawWidthAndHeightOfButton(corrDetectedObject);
-            DrawAngleOfImageRefLine();
+            DrawAngleAndDistanceOfImageRefLine();
             DrawRefLineTriangles();
             DrawDistanceOfObjects();
         }
@@ -427,22 +427,35 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 // Draw the distance of the line's startPoint to its nearest other point
                 // Get the nearst point
                 var nearestPoint = new Point(0, 0);
+                var nearestDistance = double.PositiveInfinity;
 
                 // We take the starting point and scan the x axis to the left until we find the nearest point
-                int x = (int)line.X;
-                bool searching = true;
-                while (x > 0 && searching)
+                foreach(var point in allPointsOfOtherLines)
                 {
-                    var possNearestPoint = allPointsOfOtherLines.FirstOrDefault(p => (int)p.X == x);
-
-                    if (possNearestPoint == default(Point)) 
-                        x--;
-                    else
+                    var dist = GeometryHelper.Distance(lineStartPoint, point);
+                    if (dist < nearestDistance)
                     {
-                        nearestPoint = possNearestPoint;
-                        searching = false;
+                        nearestDistance = dist;
+                        nearestPoint = point;
                     }
                 }
+
+                #region Different way of getting the next point (Obsolete for now)
+                //int x = (int)line.X;
+                //bool searching = true;
+                //while (x > 0 && searching)
+                //{
+                //    var possNearestPoint = allPointsOfOtherLines.FirstOrDefault(p => (int)p.X == x);
+
+                //    if (possNearestPoint == default(Point)) 
+                //        x--;
+                //    else
+                //    {
+                //        nearestPoint = possNearestPoint;
+                //        searching = false;
+                //    }
+                //}
+                #endregion
 
                 // If there was no ref line left to this ref line, continue.
                 if (nearestPoint == default(Point))
@@ -467,24 +480,23 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 // Get the angles between:
                 // horizontal1 to connectionline.
                 var minorAngle = GeometryHelper.GetAngleBetweenTwoLines(horizontalLine1, connectionLine);
+                minorAngle = 360 - minorAngle < minorAngle ? 360 - minorAngle : minorAngle;
                 // We want to palce the textblock at the left end of the horizontaLine
-                // Ill be honest, I dont understand why O have to adjust the ratio here again... but I have to.
-                var tbPoint = new Point(horizontalLine1.X2 * GetCurrentWidthRatio(), horizontalLine1.Y2 * GetCurrentHeightRatio());
+                var tbPoint = new Point(horizontalLine1.X2, horizontalLine1.Y2);
                 DrawTextblock($"{(int)minorAngle}°", "Always_Destroy_Distance", Brushes.IndianRed, tbPoint);
 
                 // And the vertical1 to connectionLine
                 minorAngle = GeometryHelper.GetAngleBetweenTwoLines(verticalLine1, connectionLine);
-                tbPoint = new Point(verticalLine1.X1 * GetCurrentWidthRatio(), verticalLine1.Y1 * GetCurrentHeightRatio());
+                // We want the minor / smallest angle
+                minorAngle = 360 - minorAngle < minorAngle ? 360 - minorAngle : minorAngle;
+                tbPoint = new Point(verticalLine1.X1, verticalLine1.Y1);
                 DrawTextblock($"{(int)minorAngle}°", "Always_Destroy_Distance", Brushes.IndianRed, tbPoint);
 
                 // Draw the actual length of conenctionLine as textblock
-                // To calcaulte the distance, we need the actual distances of the image, not canvas!!
-                lineStartPoint.X = lineStartPoint.X * GetCurrentWidthRatio();
-                lineStartPoint.Y = lineStartPoint.Y * GetCurrentHeightRatio();
-                nearestPoint.X = nearestPoint.X * GetCurrentWidthRatio();
-                nearestPoint.Y = nearestPoint.Y * GetCurrentHeightRatio();
+                var distance = GeometryHelper.Distance(
+                    new Point(lineStartPoint.X * GetCurrentWidthRatio(), lineStartPoint.Y * GetCurrentHeightRatio()),
+                    new Point(nearestPoint.X * GetCurrentWidthRatio(), nearestPoint.Y * GetCurrentHeightRatio()));
 
-                var distance = GeometryHelper.Distance(lineStartPoint, nearestPoint);
                 var actualLength = distance * _lengthOfOneCoordinateStep;
                 var centerOfLine = GeometryHelper.GetCenterOfLine(lineStartPoint, nearestPoint);
                 DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Blue, centerOfLine);
@@ -536,18 +548,16 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                             var endPointForVerticalLine1 = new Point(
                                         (corrRectangleObject.X + corrRectangleObject.Width) / GetCurrentWidthRatio(),
                                         (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
-                            DrawLine(startPoint, endPointForVerticalLine1, "Always_Destroy_Distance", Brushes.LightYellow);
+                            DrawLine(startPoint, endPointForVerticalLine1, "Always_Destroy_Distance", Brushes.LightYellow, true, true);
 
                             var endPointForVerticalLine2 = new Point(
                                 corrRectangleObject2.X / GetCurrentWidthRatio(),
                                 (corrRectangleObject.Y + corrRectangleObject.Height) / GetCurrentHeightRatio());
-                            DrawLine(endPoint, endPointForVerticalLine2, "Always_Destroy_Distance", Brushes.LightYellow);
+                            DrawLine(endPoint, endPointForVerticalLine2, "Always_Destroy_Distance", Brushes.LightYellow, true, true);
 
                             // Draw the textblocks with the length foreach line
                             // Horizontal
                             var centerOfLine = GeometryHelper.GetCenterOfLine(startPoint, endPoint);
-                            centerOfLine.X = centerOfLine.X * GetCurrentWidthRatio();
-                            centerOfLine.Y = centerOfLine.Y * GetCurrentHeightRatio();
                             DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Yellow, centerOfLine);
                         }
                         index += 0.75f;
@@ -559,7 +569,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         /// <summary>
         /// Calculates and draws all angles foreach ref line to the image ref line.
         /// </summary>
-        private void DrawAngleOfImageRefLine()
+        private void DrawAngleAndDistanceOfImageRefLine()
         {
             // Gather all currently active ref lines.
             var allActiveRefLines = new List<DetectedItemViewModel>();
@@ -574,18 +584,59 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 var sb = new StringBuilder();
 
                 // Angle to the image ref line.
-                double minorAngle2 = GeometryHelper.GetAngleBetweenTwoLines(
+                double minorAngle = GeometryHelper.GetAngleBetweenTwoLines(
                     new Point(lineObject1.X, lineObject1.Y),
                     new Point(lineObject1.Width, lineObject1.Height),
                     new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y),
                     new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
 
-                double majorAngle2 = 360 - minorAngle2;
-                sb.Append($"{_detectedReferenceLine.CodeName}: {(int)minorAngle2}° | {(int)majorAngle2}°");
+                double majorAngle = 360 - minorAngle;
+                sb.Append($"{_detectedReferenceLine.CodeName}: {(int)minorAngle}° | {(int)majorAngle}°");
+
+                // Distance 1 of objects ref line to image refernce line
+                var dist1 = GeometryHelper.GetDistanceFromPointToLine(
+                    new Point(lineObject1.X, lineObject1.Y),
+                    new Line() 
+                    {
+                        X1 = _detectedReferenceLine.X, 
+                        Y1 = _detectedReferenceLine.Y,
+                        X2 = _detectedReferenceLine.Width,
+                        Y2 = _detectedReferenceLine.Height
+                    },
+                    out var closestPoint1);
+
+                // Distance 1 of objects ref line to image refernce line
+                var dist2 = GeometryHelper.GetDistanceFromPointToLine(
+                    new Point(lineObject1.Width, lineObject1.Height),
+                    new Line()
+                    {
+                        X1 = _detectedReferenceLine.X,
+                        Y1 = _detectedReferenceLine.Y,
+                        X2 = _detectedReferenceLine.Width,
+                        Y2 = _detectedReferenceLine.Height
+                    },
+                    out var closestPoint2);
+
+                // Get the closes of the 2 possible closes points
+                // Dont forget to apply the correct canvas / image ratio.
+                var closestPointOnImageRefLine = dist1 < dist2 ? closestPoint1 : closestPoint2;
+                closestPointOnImageRefLine.X = closestPointOnImageRefLine.X / GetCurrentWidthRatio();
+                closestPointOnImageRefLine.Y = closestPointOnImageRefLine.Y / GetCurrentHeightRatio();
+
+                var closesPointOfReferenceLine = new Point(
+                    dist1 < dist2 ? lineObject1.X / GetCurrentWidthRatio() : lineObject1.Width / GetCurrentWidthRatio(),
+                    dist1 < dist2 ? lineObject1.Y / GetCurrentHeightRatio() : lineObject1.Height / GetCurrentHeightRatio());
+
+                // Draw the line.
+                DrawLine(closesPointOfReferenceLine, closestPointOnImageRefLine, lineObject1.Id, Brushes.Lime, false);
+
+                // Calculate the actual length of that line.
+                var actualLength = dist1 < dist2 ? dist1 * _lengthOfOneCoordinateStep : dist2 * _lengthOfOneCoordinateStep;
+                sb.Append($"{Environment.NewLine}Re: {string.Format("{0:0.00}", actualLength)}m");
 
                 var tbPoint = new Point(lineObject1.X, lineObject1.Y);
                 // Angles are recalculated on analysing and deanalysing. So we must mark them as always destroyable.
-                DrawTextblock(sb.ToString(), "Always_Destroy", Brushes.Lime, tbPoint);
+                DrawTextblock(sb.ToString(), "Always_Destroy", Brushes.Lime, closesPointOfReferenceLine);
             }
         }
 
@@ -619,12 +670,12 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
             // Now get the center of each lines where the textblock will be placed. We have to ignore the image Ratio for that though...
             var centerOfHeight = GeometryHelper.GetCenterOfLine(
-                new Point(verticalHeightLineP1.X * GetCurrentWidthRatio(), verticalHeightLineP1.Y * GetCurrentHeightRatio()),
-                new Point(verticalHeightLineP2.X * GetCurrentWidthRatio(), verticalHeightLineP2.Y * GetCurrentHeightRatio()));
+                new Point(verticalHeightLineP1.X, verticalHeightLineP1.Y),
+                new Point(verticalHeightLineP2.X, verticalHeightLineP2.Y));
 
             var centerOfWidth = GeometryHelper.GetCenterOfLine(
-                new Point(horizontalWidthLineP1.X * GetCurrentWidthRatio(), horizontalWidthLineP1.Y * GetCurrentHeightRatio()),
-                new Point(horizontalWidthLineP2.X * GetCurrentWidthRatio(), horizontalWidthLineP2.Y * GetCurrentHeightRatio()));
+                new Point(horizontalWidthLineP1.X, horizontalWidthLineP1.Y),
+                new Point(horizontalWidthLineP2.X, horizontalWidthLineP2.Y));
 
             DrawTextblock($"{string.Format("{0:0.00}", actualLengthOfHeight)}m", corrDetectedObject.Id, Brushes.White, centerOfHeight);
             DrawTextblock($"{string.Format("{0:0.00}", actualLengthOfWidth)}m", corrDetectedObject.Id, Brushes.White, centerOfWidth);
@@ -649,7 +700,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             }
 
             var centerPointOfLine = GeometryHelper.GetCenterOfLine(
-                new Point(_detectedReferenceLine.X, _detectedReferenceLine.Y), new Point(_detectedReferenceLine.Width, _detectedReferenceLine.Height));
+                new Point(_detectedReferenceLine.X / GetCurrentWidthRatio(), _detectedReferenceLine.Y / GetCurrentHeightRatio()),
+                new Point(_detectedReferenceLine.Width / GetCurrentWidthRatio(), _detectedReferenceLine.Height / GetCurrentHeightRatio()));
 
             DrawLine(startPoint, endPoint, _detectedReferenceLine.Id, Brushes.LimeGreen, true);
             DrawTextblock($"{actualLength.ToString()}m", _detectedReferenceLine.Id, Brushes.LimeGreen, centerPointOfLine);
@@ -694,7 +746,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                                      new Point(correspondingLine.Width, correspondingLine.Height));
 
                 var centerPointOfLine = GeometryHelper.GetCenterOfLine(
-                        new Point(correspondingLine.X, correspondingLine.Y), new Point(correspondingLine.Width, correspondingLine.Height));
+                        new Point(correspondingLine.X / GetCurrentWidthRatio(), correspondingLine.Y / GetCurrentHeightRatio()),
+                        new Point(correspondingLine.Width / GetCurrentWidthRatio(), correspondingLine.Height / GetCurrentHeightRatio()));
 
                 var actualLength = actualDistance * _lengthOfOneCoordinateStep;
                 DrawTextblock($"{correspondingLine.CodeName}: {string.Format("{0:0.00}", actualLength)}m",
@@ -773,7 +826,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         /// <param name="startPoint"></param>
         /// <param name="endPoint"></param>
         /// <returns></returns>
-        private Line DrawLine(Point startPoint, Point endPoint, object tag, Brush brush, bool dashed = true)
+        private Line DrawLine(Point startPoint, Point endPoint, object tag, Brush brush, bool dashed = true, bool extraThin = false)
         {
             var line = new Line();
             line.Stroke = brush;
@@ -787,6 +840,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             {
                 line.StrokeDashOffset = 2;
                 line.StrokeDashArray = new DoubleCollection() { 4 };
+            }
+            if (extraThin)
+            {
+                line.StrokeThickness = 1.0;
             }
 
             ViewModelImage_Canvas.Children.Add(line);
@@ -813,8 +870,8 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
             // Textblocks should always be on top.
             Canvas.SetZIndex(nameTextblock, 1);
-            Canvas.SetLeft(nameTextblock, location.X / GetCurrentWidthRatio());
-            Canvas.SetTop(nameTextblock, location.Y / GetCurrentHeightRatio());
+            Canvas.SetLeft(nameTextblock, location.X);
+            Canvas.SetTop(nameTextblock, location.Y);
 
             ViewModelImage_Canvas.Children.Add(nameTextblock);
         }
