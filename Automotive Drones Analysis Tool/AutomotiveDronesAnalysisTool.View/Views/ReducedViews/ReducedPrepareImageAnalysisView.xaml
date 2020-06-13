@@ -37,7 +37,7 @@
                          Width="{Binding ElementName=ViewModel_Image, Path=ActualWidth}"
                          Height="{Binding ElementName=ViewModel_Image, Path=ActualHeight}"
                          x:Name="ViewModelImage_Canvas"
-                         MouseDown="ViewModelImage_Canvas_MouseDown" MouseMove="ViewModelImage_Canvas_MouseMove" MouseUp="ViewModelImage_Canvas_MouseUp">
+                         MouseDown="ViewModelImage_Canvas_MouseDown" MouseMove="ViewModelImage_Canvas_MouseMove" MouseUp="ViewModelImage_Canvas_MouseUp" Cursor="Hand">
                 <Canvas.Background>
                     <SolidColorBrush Color="White" Opacity="0"/>
                 </Canvas.Background>

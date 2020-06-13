@@ -468,7 +468,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 nearestPoint.Y = nearestPoint.Y / GetCurrentHeightRatio();
 
                 // Draw the connection line.
-                var connectionLine = DrawLine(lineStartPoint, nearestPoint, "Always_Destroy_Distance", Brushes.Blue, false);
+                var connectionLine = DrawLine(lineStartPoint, nearestPoint, "Always_Destroy_Distance", Brushes.LightBlue, false);
 
                 // Draw the vertical line of the lineStartPoints object
                 var currPoint1 = lineStartPoint;
@@ -499,7 +499,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 
                 var actualLength = distance * _lengthOfOneCoordinateStep;
                 var centerOfLine = GeometryHelper.GetCenterOfLine(lineStartPoint, nearestPoint);
-                DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.Blue, centerOfLine);
+                DrawTextblock($"{string.Format("{0:0.00}", actualLength)}m", "Always_Destroy_Distance", Brushes.LightBlue, centerOfLine);
             }
         }
 

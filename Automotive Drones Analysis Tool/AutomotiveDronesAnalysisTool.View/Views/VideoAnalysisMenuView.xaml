@@ -15,7 +15,6 @@
              FontFamily="{DynamicResource MaterialDesignFont}"
              d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window">
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -59,7 +58,7 @@
                             Height="{Binding ElementName=CurrentFrame_Image, Path=ActualHeight}"
                             Loaded="CurrentFrame_Canvas_Loaded" MouseMove="CurrentFrame_Canvas_MouseMove" MouseDown="CurrentFrame_Canvas_MouseDown"
                             MouseUp="CurrentFrame_Canvas_MouseUp" Background="Transparent"/>
-                    <Image Source="{Binding ViewModel.CurrentFrameBitmap}" Margin="-1 0 0 0" x:Name="CurrentFrame_Image"/>
+                    <Image Source="{Binding ViewModel.CurrentFrameBitmap}" x:Name="CurrentFrame_Image"/>
                 </Grid>
             </materialDesign:Card>
 
@@ -101,9 +100,10 @@
             
             <!--analyse/setup video. Show only if video has not been setup.-->
             <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
-                    Width="70" Height="70" BorderBrush="Transparent" Command="{Binding SetupVideoCommand}" Grid.Row="1" ToolTip="Analyse video"
+                    Width="70" Height="70" BorderBrush="Transparent" Command="{Binding SetupVideoCommand}" 
+                    Grid.Row="1" ToolTip="Analyse video" x:Name="SetupVideo_Button" Click="SetupVideo_Button_Click"
                     Visibility="{Binding ViewModel.IsSetup, Converter={StaticResource InverseBoolToVisConverter}}">
-                <materialDesign:PackIcon Kind="ArrowRight" Height="60" Width="60" Foreground="Black"/>
+                <materialDesign:PackIcon Kind="ArrowRightBold" Height="60" Width="60" Foreground="Black"/>
             </Button>
             
         </Grid>

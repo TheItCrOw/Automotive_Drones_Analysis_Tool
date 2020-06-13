@@ -34,6 +34,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var yoloCommunicationService = new YOLOCommunicationService();
             var dialogService = new DialogService();
             var pdfService = new PdfService();
+            var cv2Service = new Cv2Service();
 
             ServiceContainer.CreateContainer();
             ServiceContainer.RegisterService<ViewService>(viewService);
@@ -41,6 +42,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ServiceContainer.RegisterService<YOLOCommunicationService>(yoloCommunicationService);
             ServiceContainer.RegisterService<DialogService>(dialogService);
             ServiceContainer.RegisterService<PdfService>(pdfService);
+            ServiceContainer.RegisterService<Cv2Service>(cv2Service);
 
             viewService.Show<HomeView, HomeViewModel>();
 

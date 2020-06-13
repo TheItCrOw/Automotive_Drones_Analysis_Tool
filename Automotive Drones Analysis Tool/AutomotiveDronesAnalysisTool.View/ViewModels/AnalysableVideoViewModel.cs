@@ -36,9 +36,9 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private string _videoPath;
         private int _totalFrames;
         private int _currentFrameIndex;
-        private const int SCALE = 10;
-        private const int WIDTH = 175;
-        private const int HEIGHT = 102;
+        private int SCALE = ServiceContainer.GetService<Cv2Service>().SCALE;
+        private int WIDTH = ServiceContainer.GetService<Cv2Service>().WIDTH;
+        private int HEIGHT = ServiceContainer.GetService<Cv2Service>().HEIGHT;
         private Dictionary<int, string> _indexToImageTempPath;
         private ConcurrentQueue<Tuple<Bitmap, string>> _imageQueue;
         bool _keepRunning;
@@ -229,13 +229,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 // We use the image to detect the objects in a very small size - then we draw them onto the
                 // uiImage and scale it up!
                 var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(yoloWidth * SCALE, yoloHeight * SCALE));
+                var cv2Service = ServiceContainer.GetService<Cv2Service>();
 
-                // Draw the image ref line onto a every frame!
-                var widthRatio = (double)uiImage.Width / (double)_referenceLineArgs.CanvasSize.X;
-                var heightRatio = (double)uiImage.Height / (double)_referenceLineArgs.CanvasSize.Y;
-                var refPoint1 = new OpenCvSharp.Point(_referenceLineArgs.X * widthRatio, _referenceLineArgs.Y * heightRatio);
-                var refPoint2 = new OpenCvSharp.Point(_referenceLineArgs.Width * widthRatio, _referenceLineArgs.Height * heightRatio);
-                Cv2.Line(uiImage,refPoint1, refPoint2, Scalar.Lime, 2);
+                // Draw the image ref line onto a every frame and get the length of a coordiante step!
+                cv2Service.DrawReferenceLine(uiImage, _referenceLineArgs, out double coordinateLength);
 
                 // Now drwa the yolo items.
                 foreach (var item in items)
@@ -249,24 +246,17 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     // draw a bounding box for the detected object
                     // you can set different colors for different classes
                     Cv2.Rectangle(uiImage, new OpenCvSharp.Rect(x, y, width, height), Scalar.White, 3);
+                    // Draw the disatnce and angle of this object to the reference line.
+                    cv2Service.DrawDistanceAndAngleToReferenceLine(uiImage, 
+                        new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y *SCALE));
 
                     // Draw a connection line to each other object.
                     foreach (var item2 in items)
                         if (item2 != item)
                         {
-                            // Draw the line
-                            Cv2.Line(uiImage,
-                                new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE),
-                                new OpenCvSharp.Point(item2.Center().X * SCALE, item2.Center().Y * SCALE),
-                                Scalar.Red, 2);
+                            // Draws the line and lenght of the two items.
+                            cv2Service.DrawLineFromItemToItem(uiImage, item, item2, out Line line);
                         }
-
-                    Cv2.PutText(uiImage,
-                        "Center",
-                        new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE),
-                        HersheyFonts.HersheyComplex,
-                        0.5f,
-                        Scalar.Red);
                 }
                 return uiImage;
             }
@@ -361,7 +351,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                             }
 
                             var encoderParameters = new EncoderParameters();
-                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)45);
+                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)70);
 
                             tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
                             tuple.Item1.Dispose();
@@ -417,6 +407,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         break;
 
                     CurrentFrameIndex++;
+                    Thread.Sleep(25);
                 }
                 IsPlaying = false;
             }, _token);

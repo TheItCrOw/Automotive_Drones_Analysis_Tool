@@ -155,27 +155,32 @@ namespace AutomotiveDronesAnalysisTool.View.Views
         private void CurrentFrame_Canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // First check if a ref line exists. We only want one!
-            if(ReferenceLineExists())
+            if (ReferenceLineExists())
             {
                 ServiceContainer.GetService<DialogService>().InformUser(
                     "Info", "There may only exist one reference line! Delete the current reference line first.");
                 return;
             }
 
-            CleanupChildren();
-            var line = DrawLine(_startPoint, _currentPoint, Guid.Empty, true);
-
-            var refLineArgs = new DetectedItemArguments()
+            if (ServiceContainer.GetService<DialogService>()
+                .AskForFloat("Actual length", "Please enter the actual length of the reference line in meters.", out var actualLength))
             {
-                Id = Guid.Empty,
-                X = (int)line.X1,
-                Y = (int)line.Y1,
-                Width = (int)line.X2,
-                Height = (int)line.Y2,
-                CanvasSize = new System.Drawing.Point((int)CurrentFrame_Canvas.Width, (int)CurrentFrame_Canvas.Height)
-            };
+                var line = DrawLine(_startPoint, _currentPoint, Guid.Empty, true);
 
-            ((VideoAnalysisMenuViewModel)DataContext).AddVideoReferenceLineCommand?.Execute(refLineArgs);
+                var refLineArgs = new DetectedItemArguments()
+                {
+                    Id = Guid.Empty,
+                    X = (int)line.X1,
+                    Y = (int)line.Y1,
+                    Width = (int)line.X2,
+                    Height = (int)line.Y2,
+                    CanvasSize = new System.Drawing.Point((int)CurrentFrame_Canvas.Width, (int)CurrentFrame_Canvas.Height),
+                    ActualLength = actualLength
+                };
+
+                ((VideoAnalysisMenuViewModel)DataContext).AddVideoReferenceLineCommand?.Execute(refLineArgs);
+            }
+            CleanupChildren();
         }
 
         /// <summary>
@@ -221,6 +226,12 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                     refLine = line;
 
             CurrentFrame_Canvas.Children.Remove(refLine);
+        }
+
+        private void SetupVideo_Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Delete the ref line once we setup video
+            DeleteRefLine_Button_Click(null, null);
         }
     }
 }
