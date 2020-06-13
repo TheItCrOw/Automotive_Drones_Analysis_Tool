@@ -41,7 +41,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private int HEIGHT = ServiceContainer.GetService<Cv2Service>().HEIGHT;
         private Dictionary<int, string> _indexToImageTempPath;
         private ConcurrentQueue<Tuple<Bitmap, string>> _imageQueue;
-        bool _keepRunning;
         private bool _isPlaying;
         private Task _playTask;
         private CancellationTokenSource _tokenSource;
@@ -49,6 +48,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         object _locked = new object();
         private DetectedItemArguments _referenceLineArgs;
         private bool _isSetup;
+        private bool _isRendering;
+        private int _renderingProgress;
 
         public DelegateCommand PlayCommand => new DelegateCommand(Play);
         public DelegateCommand PauseCommand => new DelegateCommand(Pause);
@@ -83,6 +84,24 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             get => _videoName;
             set => SetProperty(ref _videoName, value);
+        }
+
+        /// <summary>
+        /// True if the video is currently being rendered.
+        /// </summary>
+        public bool IsRendering
+        {
+            get => _isRendering;
+            set => SetProperty(ref _isRendering, value);
+        }
+
+        /// <summary>
+        /// Current frame that is being rendered.
+        /// </summary>
+        public int RenderingProgress
+        {
+            get => _renderingProgress;
+            set => SetProperty(ref _renderingProgress, value);
         }
 
         /// <summary>
@@ -158,7 +177,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// Since this would blow up the RAM, the images are written into a temp folder on the disc.
         /// The speed is inhanced by using multiple threads and "powering" through the images in the concurrent queue.
         /// </summary>
-        public void SetupVideo()
+        public async void SetupVideo()
         {
             if (_referenceLineArgs == null)
             {
@@ -169,7 +188,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             }
 
             _indexToImageTempPath.Clear();
-            _keepRunning = true;
+            IsRendering = true;
 
             // Start the queue worker which take bitmaps of the queue and save them
             for (int i = 0; i < 5; i++)
@@ -177,31 +196,41 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 StartQueueWorker();
             }
 
-            // Read a video file and get each frame
-            using (var videocapture = new VideoCapture(VideoPath))
+            await Task.Run(() =>
             {
-                for (int i = 0; i < videocapture.FrameCount; i++)
+                // Read a video file and get each frame
+                using (var videocapture = new VideoCapture(VideoPath))
                 {
-                    using (Mat imageOriginal = new Mat())
+                    for (int i = 0; i < videocapture.FrameCount; i++)
                     {
-                        // read a single frame and convert the frame into a bitmap
-                        videocapture.Read(imageOriginal);
-                        var analysedImageOriginal = AnalyseFrame(imageOriginal);
-                        // TODO: Put analyedImageOriginal back and decomment this above!
-                        var bitmap = BitmapConverter.ToBitmap(analysedImageOriginal);
-                        var imagePath = System.IO.Path.Combine(
-                            ServiceContainer.GetService<GlobalEnviromentService>().Cv2TempVideoLocation,
-                            $"temp_{i}.png");
+                        using (Mat imageOriginal = new Mat())
+                        {
+                            RenderingProgress = i;
 
-                        // Enqueue the path and the bitmap into the queue so the workers can save it.
-                        _indexToImageTempPath.Add(i, imagePath);
-                        _imageQueue.Enqueue(Tuple.Create(bitmap, imagePath));
+                            // read a single frame and convert the frame into a bitmap
+                            videocapture.Read(imageOriginal);
+                            var analysedImageOriginal = new Mat();
+                            Application.Current?.Dispatcher.Invoke(() =>
+                            {
+                                analysedImageOriginal = AnalyseFrame(imageOriginal);
+                            });
+
+                            // TODO: Put analyedImageOriginal back and decomment this above!
+                            var bitmap = BitmapConverter.ToBitmap(analysedImageOriginal);
+                            var imagePath = System.IO.Path.Combine(
+                                ServiceContainer.GetService<GlobalEnviromentService>().Cv2TempVideoLocation,
+                                $"temp_{i}.png");
+
+                            // Enqueue the path and the bitmap into the queue so the workers can save it.
+                            _indexToImageTempPath.Add(i, imagePath);
+                            _imageQueue.Enqueue(Tuple.Create(bitmap, imagePath));
+                        }
                     }
                 }
-            }
+            });
 
             IsSetup = true;
-            _keepRunning = false;
+            IsRendering = false;
         }
 
         /// <summary>
@@ -341,7 +370,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             Task.Run(() =>
             {
                 // If we do anything else then saving bitmaps, think about locking.
-                while (_keepRunning || _imageQueue.Count > 0)
+                while (IsRendering || _imageQueue.Count > 0)
                 {
                     if (_imageQueue.TryDequeue(out var tuple))
                     {

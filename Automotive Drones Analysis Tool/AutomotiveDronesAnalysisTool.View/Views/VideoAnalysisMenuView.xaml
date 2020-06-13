@@ -15,6 +15,15 @@
              FontFamily="{DynamicResource MaterialDesignFont}"
              d:DesignHeight="900" d:DesignWidth="1100" x:Name="Current_Window">
     <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ViewModel.IsRendering}" Value="True">
+                        <Setter Property="Background" Value="#303538"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -36,7 +45,8 @@
             </DockPanel>
         </materialDesign:Card>
 
-        <Grid Grid.Row="1" Margin="10">
+        <!--main content if the video will be prepared or has been rendered-->
+        <Grid Grid.Row="1" Margin="10" Visibility="{Binding ViewModel.IsRendering, Converter={StaticResource InverseBoolToVisConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -108,5 +118,28 @@
             
         </Grid>
         
+        <!--show this if the video is currently being rendered-->
+        <materialDesign:Card Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" materialDesign:ShadowAssist.ShadowDepth="Depth5"
+                             Visibility="{Binding ViewModel.IsRendering, Converter={StaticResource BoolToVisConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!--current fraem textblock-->
+                <TextBlock Style="{StaticResource TitleSubHeaderTextblockStyle}" Margin="10">
+                <Run Text="{Binding ViewModel.RenderingProgress}"/>
+                <Run Text=" | "/>
+                <Run Text="{Binding ViewModel.TotalFrames}"/>
+                </TextBlock>
+
+                <!--Rendering progress-->
+                <ProgressBar Height="50" Width="550" Grid.Row="1" Minimum="1" BorderThickness="1" BorderBrush="Black" Background="Transparent"
+                         Maximum="{Binding ViewModel.TotalFrames}" Value="{Binding ViewModel.RenderingProgress}" Margin="30"/>
+
+            </Grid>
+        </materialDesign:Card>
+
     </Grid>
 </UserControl>
