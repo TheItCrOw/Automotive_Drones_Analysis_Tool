@@ -191,10 +191,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             IsRendering = true;
 
             // Start the queue worker which take bitmaps of the queue and save them
-            for (int i = 0; i < 5; i++)
-            {
-                StartQueueWorker();
-            }
+            StartQueueWorker();
 
             await Task.Run(() =>
             {

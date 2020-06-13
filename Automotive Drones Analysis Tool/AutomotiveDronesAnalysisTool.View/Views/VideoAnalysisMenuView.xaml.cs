@@ -174,7 +174,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                     Y = (int)line.Y1,
                     Width = (int)line.X2,
                     Height = (int)line.Y2,
-                    CanvasSize = new System.Drawing.Point((int)CurrentFrame_Canvas.Width, (int)CurrentFrame_Canvas.Height),
+                    CanvasSize = new System.Drawing.Point((int)CurrentFrame_Canvas.ActualWidth, (int)CurrentFrame_Canvas.ActualHeight),
                     ActualLength = actualLength
                 };
 
