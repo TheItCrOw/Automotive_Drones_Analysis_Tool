@@ -44,14 +44,15 @@ namespace AutomotiveDronesAnalysisTool.View.Views
 
             viewService.Show<HomeView, HomeViewModel>();
 
+            // TODO: Enable this!
             // Create the temp folder or clean it up
-            if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
-                Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
-            else
-            {
-                foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
-                    File.Delete(file);
-            }
+            //if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
+            //    Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
+            //else
+            //{
+            //    foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
+            //        File.Delete(file);
+            //}
         }
     }
 }

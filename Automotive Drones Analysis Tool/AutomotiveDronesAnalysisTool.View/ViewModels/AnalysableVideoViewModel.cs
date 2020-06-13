@@ -1,4 +1,5 @@
 ﻿using Alturos.Yolo;
+using AutomotiveDronesAnalysisTool.Model.Arguments;
 using AutomotiveDronesAnalysisTool.Model.Models;
 using AutomotiveDronesAnalysisTool.Utility;
 using AutomotiveDronesAnalysisTool.View.Services;
@@ -16,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.View.ViewModels
 {
@@ -41,9 +43,20 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         private ConcurrentQueue<Tuple<Bitmap, string>> _imageQueue;
         bool _keepRunning;
         private bool _isPlaying;
+        private Task _playTask;
+        private CancellationTokenSource _tokenSource;
+        private CancellationToken _token;
         object _locked = new object();
+        private DetectedItemArguments _referenceLineArgs;
+        private bool _isSetup;
 
         public DelegateCommand PlayCommand => new DelegateCommand(Play);
+        public DelegateCommand PauseCommand => new DelegateCommand(Pause);
+        public DelegateCommand FastForwardCommand => new DelegateCommand(FastForward);
+        public DelegateCommand RewindCommand => new DelegateCommand(Rewind);
+        public DelegateCommand<DetectedItemArguments> AddVideoReferenceLineCommand => new DelegateCommand<DetectedItemArguments>(AddVideoReferenceLine);
+        public DelegateCommand DeleteVideoReferenceLineCommand => new DelegateCommand(DeleteVideoReferenceLine);
+        public DelegateCommand SetupVideoCommand => new DelegateCommand(SetupVideo);
 
         /// <summary>
         /// Name of the project
@@ -70,6 +83,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             get => _videoName;
             set => SetProperty(ref _videoName, value);
+        }
+
+        /// <summary>
+        /// True if this video ahs been setup and analysed.
+        /// </summary>
+        public bool IsSetup
+        {
+            get => _isSetup;
+            set => SetProperty(ref _isSetup, value);
         }
 
         /// <summary>
@@ -125,9 +147,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
         public void Dispose()
         {
+            // TODO: Enable dispose!
             // Dispose the iamges in the temp folder!
-            foreach (var pair in _indexToImageTempPath)
-                File.Delete(pair.Value);
+            //foreach (var pair in _indexToImageTempPath)
+            //    File.Delete(pair.Value);
         }
 
         /// <summary>
@@ -137,6 +160,14 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public void SetupVideo()
         {
+            if(_referenceLineArgs == null)
+            {
+                ServiceContainer.GetService<DialogService>()
+                    .InformUser("Reference line missing", "Please add a reference line to the image first! " +
+                    "You can do so by simply drawing onto the image with your mouse.");
+                return;
+            }
+
             _indexToImageTempPath.Clear();
             _keepRunning = true;
 
@@ -155,9 +186,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     {
                         // read a single frame and convert the frame into a bitmap
                         videocapture.Read(imageOriginal);
-                        var analysedImageOriginal = AnalyseActiveFrame(imageOriginal);
+                        var analysedImageOriginal = AnalyseFrame(imageOriginal);
+                        // TODO: Put analyedImageOriginal back and decomment this above!
                         var bitmap = BitmapConverter.ToBitmap(analysedImageOriginal);
-                        var imagePath = Path.Combine(
+                        var imagePath = System.IO.Path.Combine(
                             ServiceContainer.GetService<GlobalEnviromentService>().Cv2TempVideoLocation,
                             $"temp_{i}.png");
 
@@ -167,13 +199,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     }
                 }
             }
+
+            IsSetup = true;
             _keepRunning = false;
         }
 
         /// <summary>
-        /// analyses the active frame.
+        /// analyses the given frame.
         /// </summary>
-        public Mat AnalyseActiveFrame(Mat imageOriginal)
+        public Mat AnalyseFrame(Mat imageOriginal)
         {
             // YOLO setting
             int yoloWidth = WIDTH, yoloHeight = HEIGHT;
@@ -196,6 +230,14 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                 // uiImage and scale it up!
                 var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(yoloWidth * SCALE, yoloHeight * SCALE));
 
+                // Draw the image ref line onto a every frame!
+                var widthRatio = (double)uiImage.Width / (double)_referenceLineArgs.CanvasSize.X;
+                var heightRatio = (double)uiImage.Height / (double)_referenceLineArgs.CanvasSize.Y;
+                var refPoint1 = new OpenCvSharp.Point(_referenceLineArgs.X * widthRatio, _referenceLineArgs.Y * heightRatio);
+                var refPoint2 = new OpenCvSharp.Point(_referenceLineArgs.Width * widthRatio, _referenceLineArgs.Height * heightRatio);
+                Cv2.Line(uiImage,refPoint1, refPoint2, Scalar.Lime, 2);
+
+                // Now drwa the yolo items.
                 foreach (var item in items)
                 {
                     var x = item.X * SCALE;
@@ -206,16 +248,17 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
                     // draw a bounding box for the detected object
                     // you can set different colors for different classes
-                    Cv2.Rectangle(uiImage, new OpenCvSharp.Rect(x, y, width, height), Scalar.Green, 3);
+                    Cv2.Rectangle(uiImage, new OpenCvSharp.Rect(x, y, width, height), Scalar.White, 3);
 
                     // Draw a connection line to each other object.
                     foreach (var item2 in items)
                         if (item2 != item)
                         {
+                            // Draw the line
                             Cv2.Line(uiImage,
                                 new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE),
                                 new OpenCvSharp.Point(item2.Center().X * SCALE, item2.Center().Y * SCALE),
-                                Scalar.Red);
+                                Scalar.Red, 2);
                         }
 
                     Cv2.PutText(uiImage,
@@ -226,18 +269,11 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         Scalar.Red);
                 }
                 return uiImage;
-
-
-                // display the detection result
-                Application.Current?.Dispatcher?.Invoke(() =>
-                {
-                    CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
-                });
             }
         }
 
         /// <summary>
-        /// Gets the first frame of the video
+        /// Sets the first frame of the video
         /// </summary>
         /// <returns></returns>
         public void SetFirstFrame()
@@ -265,13 +301,24 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Deletes the current reference line.
+        /// </summary>
+        private void DeleteVideoReferenceLine() => _referenceLineArgs = null;
+
+        /// <summary>
+        /// Adds the single reference line to the logic.
+        /// </summary>
+        /// <param name="refLine"></param>
+        private void AddVideoReferenceLine(DetectedItemArguments refLine) => _referenceLineArgs = refLine;
+
+        /// <summary>
         /// Fires when the current active index changes. We need to adjust the frame bitmap then.
         /// </summary>
         /// <param name="index"></param>
         private void AnalysableVideoViewModel_IndexChanged(int index)
         {
-            // We dont want to change the images when the user lets the video play on its own. Instead, we are analysing them one by one
-            if (IsPlaying) return;
+            // If the video is not setup, return
+            if (!IsSetup) return;
 
             if (_indexToImageTempPath.TryGetValue(index, out var imagePath))
             {
@@ -314,7 +361,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                             }
 
                             var encoderParameters = new EncoderParameters();
-                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)20);
+                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)45);
 
                             tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
                             tuple.Item1.Dispose();
@@ -325,22 +372,70 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         }
 
         /// <summary>
+        /// Goes one frame back
+        /// </summary>
+        private void Rewind()
+        {
+            // If the video is not setup, return
+            if (!IsSetup) return;
+
+            if (CurrentFrameIndex > 1)
+                CurrentFrameIndex--;
+        }
+
+        /// <summary>
+        /// Goes one frame forward
+        /// </summary>
+        private void FastForward()
+        {
+            // If the video is not setup, return
+            if (!IsSetup) return;
+
+            if (CurrentFrameIndex < TotalFrames)
+                CurrentFrameIndex++;
+        }
+
+        /// <summary>
         /// Lets the video play on its own and analyse each frame.
         /// </summary>
-        private async void Play()
+        private void Play()
         {
-            //IsPlaying = true;
-            await Task.Run(() =>
+            // If the video is not setup, return
+            if (!IsSetup) return;
+
+            IsPlaying = true;
+
+            // Create a cancellation token to stop the task if needed.
+            _tokenSource = new CancellationTokenSource();
+            _token = _tokenSource.Token;
+
+            _playTask = Task.Run(() =>
             {
                 for (int i = CurrentFrameIndex; i < TotalFrames; i++)
                 {
-                    //AnalyseActiveFrame();
-                    i++;
+                    if (_token.IsCancellationRequested)
+                        break;
+
                     CurrentFrameIndex++;
                 }
-            });
-            //IsPlaying = false;
+                IsPlaying = false;
+            }, _token);
         }
 
+        /// <summary>
+        /// Pauses the video by canceling the <see cref="_playTask"/>        
+        /// </summary>
+        private void Pause()
+        {
+            // If the video is not setup, return
+            if (!IsSetup) return;
+
+            if (_playTask != null)
+            {
+                _tokenSource.Cancel();
+                if(_token.IsCancellationRequested)
+                    IsPlaying = false;
+            }
+        }
     }
 }

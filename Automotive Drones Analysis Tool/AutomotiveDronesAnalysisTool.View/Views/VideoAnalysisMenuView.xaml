@@ -44,24 +44,68 @@
             </Grid.RowDefinitions>
             <!--Currently shown frame-->
             <materialDesign:Card VerticalAlignment="Center" HorizontalAlignment="Center" materialDesign:ShadowAssist.ShadowDepth="Depth5">
-                <Image Source="{Binding ViewModel.CurrentFrameBitmap}" Margin="-1 0 0 0"/>
+                <Grid>
+                    <!--delete ref line button. Show only if video ahs not been setup yet.-->
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Panel.ZIndex="2"
+                            ToolTip="Delete current reference line" x:Name="DeleteRefLine_Button" Click="DeleteRefLine_Button_Click"
+                            Width="50" Height="50" VerticalAlignment="Top" HorizontalAlignment="Right"
+                            Command="{Binding DeleteVideoReferenceLineCommand}" 
+                            Visibility="{Binding ViewModel.IsSetup, Converter={StaticResource InverseBoolToVisConverter}}">
+                        <materialDesign:PackIcon Kind="Delete" Height="30" Width="30"/>
+                    </Button>
+                    <!--canvas and iamge-->
+                    <Canvas x:Name="CurrentFrame_Canvas" Panel.ZIndex="1" VerticalAlignment="Stretch"
+                            Width="{Binding ElementName=CurrentFrame_Image, Path=ActualWidth}"
+                            Height="{Binding ElementName=CurrentFrame_Image, Path=ActualHeight}"
+                            Loaded="CurrentFrame_Canvas_Loaded" MouseMove="CurrentFrame_Canvas_MouseMove" MouseDown="CurrentFrame_Canvas_MouseDown"
+                            MouseUp="CurrentFrame_Canvas_MouseUp" Background="Transparent"/>
+                    <Image Source="{Binding ViewModel.CurrentFrameBitmap}" Margin="-1 0 0 0" x:Name="CurrentFrame_Image"/>
+                </Grid>
             </materialDesign:Card>
 
-            <StackPanel Grid.Row="1" Margin="20 10">
+            <!--Current Frame counter-->
+            <TextBlock Margin="5" VerticalAlignment="Bottom" Text="{Binding ViewModel.CurrentFrameIndex}" 
+                               Style="{StaticResource TitleSubHeaderTextblockStyle}" Foreground="Black"/>
+
+            <!--Bottom play menu-->
+            <!--show only if video is setup-->
+            <StackPanel Grid.Row="1" Margin="20 10" Visibility="{Binding ViewModel.IsSetup, Converter={StaticResource BoolToVisConverter}}">
                 <!--slider for frames-->
-                <Slider x:Name="Frame_Slider" PreviewMouseUp="Frame_Slider_PreviewMouseUp"
-                        Value="{Binding ViewModel.CurrentFrameIndex}" Minimum="1" Maximum="{Binding ViewModel.TotalFrames}"/>
+                <Slider x:Name="Frame_Slider" Value="{Binding ViewModel.CurrentFrameIndex}" Minimum="1" Maximum="{Binding ViewModel.TotalFrames}"/>
                 <!--current frame textblock-->
-                <!--play button-->
-                <DockPanel Margin="20 0 0 0" LastChildFill="False" HorizontalAlignment="Center">
+                <DockPanel LastChildFill="False" HorizontalAlignment="Center">
+                    <!--go back button-->
                     <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
-                                 Cursor="Hand" Width="70" Height="70" BorderBrush="Transparent" Command="{Binding PlayCommand}">
+                            Width="70" Height="70" BorderBrush="Transparent" Command="{Binding RewindCommand}">
+                        <materialDesign:PackIcon Kind="Rewind" Height="60" Width="60" Foreground="Black"/>
+                    </Button>
+                    <!--play button-->
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
+                            Width="70" Height="70" BorderBrush="Transparent" Command="{Binding PlayCommand}"
+                            Visibility="{Binding ViewModel.IsPlaying, Converter={StaticResource InverseBoolToVisConverter}}">
                         <materialDesign:PackIcon Kind="Play" Height="60" Width="60" Foreground="Black"/>
                     </Button>
-                    <TextBlock Margin="10 0 0 0" VerticalAlignment="Center" Text="{Binding ViewModel.CurrentFrameIndex}" 
-                               Style="{StaticResource TextTitleTextblockStyle}" Foreground="Black"/>
+                    <!--Pause button-->
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
+                            Width="70" Height="70" BorderBrush="Transparent" Command="{Binding PauseCommand}"
+                            Visibility="{Binding ViewModel.IsPlaying, Converter={StaticResource BoolToVisConverter}}">
+                        <materialDesign:PackIcon Kind="Pause" Height="60" Width="60" Foreground="Black"/>
+                    </Button>
+                    <!--go forth button-->
+                    <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
+                            Width="70" Height="70" BorderBrush="Transparent" Command="{Binding FastForwardCommand}">
+                        <materialDesign:PackIcon Kind="FastForward" Height="60" Width="60" Foreground="Black"/>
+                    </Button>
                 </DockPanel>
             </StackPanel>
+            
+            <!--analyse/setup video. Show only if video has not been setup.-->
+            <Button Style="{StaticResource MaterialDesignFloatingActionDarkButton}" Margin="5" Background="Transparent" VerticalAlignment="Bottom"
+                    Width="70" Height="70" BorderBrush="Transparent" Command="{Binding SetupVideoCommand}" Grid.Row="1" ToolTip="Analyse video"
+                    Visibility="{Binding ViewModel.IsSetup, Converter={StaticResource InverseBoolToVisConverter}}">
+                <materialDesign:PackIcon Kind="ArrowRight" Height="60" Width="60" Foreground="Black"/>
+            </Button>
+            
         </Grid>
         
     </Grid>

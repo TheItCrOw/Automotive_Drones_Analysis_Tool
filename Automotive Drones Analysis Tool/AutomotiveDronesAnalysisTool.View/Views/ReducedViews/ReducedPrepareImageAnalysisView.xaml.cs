@@ -114,6 +114,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
         private void ViewModelImage_Canvas_Loaded(object sender, RoutedEventArgs e)
         {
             DrawDetectedObjectsOfViewModel();
+            _lastCanvasSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
             HandleWindowResize();
         }
 
@@ -383,11 +384,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
                 Dispatcher.BeginInvoke(new Action(() =>
             {
                 var newSize = new Size(ViewModelImage_Canvas.Width, ViewModelImage_Canvas.Height);
-                var oldSizeWidth = _lastCanvasSize.Width == 0 ? 1 : _lastCanvasSize.Width;
-                var oldSizeHeight = _lastCanvasSize.Height == 0 ? 1 : _lastCanvasSize.Height;
+                var oldSize = _lastCanvasSize;
 
-                var newXRatio = newSize.Width / oldSizeWidth;
-                var newYRatio = newSize.Height / oldSizeHeight;
+                var newXRatio = newSize.Width / oldSize.Width;
+                var newYRatio = newSize.Height / oldSize.Height;
 
                 foreach (var child in ViewModelImage_Canvas.Children)
                 {
