@@ -160,7 +160,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         public void SetupVideo()
         {
-            if(_referenceLineArgs == null)
+            if (_referenceLineArgs == null)
             {
                 ServiceContainer.GetService<DialogService>()
                     .InformUser("Reference line missing", "Please add a reference line to the image first! " +
@@ -172,7 +172,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             _keepRunning = true;
 
             // Start the queue worker which take bitmaps of the queue and save them
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 5; i++)
             {
                 StartQueueWorker();
             }
@@ -247,8 +247,8 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     // you can set different colors for different classes
                     Cv2.Rectangle(uiImage, new OpenCvSharp.Rect(x, y, width, height), Scalar.White, 3);
                     // Draw the disatnce and angle of this object to the reference line.
-                    cv2Service.DrawDistanceAndAngleToReferenceLine(uiImage, 
-                        new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y *SCALE));
+                    cv2Service.DrawDistanceAndAngleToReferenceLine(uiImage,
+                        new OpenCvSharp.Point(item.Center().X * SCALE, item.Center().Y * SCALE));
 
                     // Draw a connection line to each other object.
                     foreach (var item2 in items)
@@ -307,22 +307,29 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// <param name="index"></param>
         private void AnalysableVideoViewModel_IndexChanged(int index)
         {
-            // If the video is not setup, return
-            if (!IsSetup) return;
-
-            if (_indexToImageTempPath.TryGetValue(index, out var imagePath))
+            try
             {
-                // read a single frame and convert the frame into a byte array
-                var imageBytes = File.ReadAllBytes(imagePath);
+                // If the video is not setup, return
+                if (!IsSetup) return;
 
-                var imageOriginal = Mat.FromImageData(imageBytes);
-                var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(WIDTH * SCALE, HEIGHT * SCALE));
-
-                // display the detection result
-                Application.Current?.Dispatcher?.Invoke(() =>
+                if (_indexToImageTempPath.TryGetValue(index, out var imagePath))
                 {
-                    CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
-                });
+                    // read a single frame and convert the frame into a byte array
+                    var imageBytes = File.ReadAllBytes(imagePath);
+
+                    var imageOriginal = Mat.FromImageData(imageBytes);
+                    var uiImage = imageOriginal.Resize(new OpenCvSharp.Size(WIDTH * SCALE, HEIGHT * SCALE));
+
+                    // display the detection result
+                    Application.Current?.Dispatcher?.Invoke(() =>
+                    {
+                        CurrentFrameBitmap = BitmapHelper.BitmapToBitmapSource(BitmapConverter.ToBitmap(uiImage));
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Couldn't update frame: {index}\n{ex}");
             }
         }
 
@@ -333,29 +340,27 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         {
             Task.Run(() =>
             {
-                lock (_locked)
+                // If we do anything else then saving bitmaps, think about locking.
+                while (_keepRunning || _imageQueue.Count > 0)
                 {
-                    while (_keepRunning || _imageQueue.Count > 0)
+                    if (_imageQueue.TryDequeue(out var tuple))
                     {
-                        if (_imageQueue.TryDequeue(out var tuple))
+                        // Deque the bitmap and write it to disc.
+                        // Lower the quality to save ressources.
+                        ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+                        ImageCodecInfo ici = null;
+
+                        foreach (ImageCodecInfo codec in codecs)
                         {
-                            // Deque the bitmap and write it to disc.
-                            // Lower the quality to save ressources.
-                            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-                            ImageCodecInfo ici = null;
-
-                            foreach (ImageCodecInfo codec in codecs)
-                            {
-                                if (codec.MimeType == "image/jpeg")
-                                    ici = codec;
-                            }
-
-                            var encoderParameters = new EncoderParameters();
-                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)70);
-
-                            tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
-                            tuple.Item1.Dispose();
+                            if (codec.MimeType == "image/jpeg")
+                                ici = codec;
                         }
+
+                        var encoderParameters = new EncoderParameters();
+                        encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)45);
+
+                        tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
+                        tuple.Item1.Dispose();
                     }
                 }
             });
@@ -407,7 +412,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         break;
 
                     CurrentFrameIndex++;
-                    Thread.Sleep(25);
                 }
                 IsPlaying = false;
             }, _token);
@@ -424,7 +428,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             if (_playTask != null)
             {
                 _tokenSource.Cancel();
-                if(_token.IsCancellationRequested)
+                if (_token.IsCancellationRequested)
                     IsPlaying = false;
             }
         }

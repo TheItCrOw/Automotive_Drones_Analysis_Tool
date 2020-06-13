@@ -61,7 +61,7 @@
                                 <Setter Property="Kind" Value="Check"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding ViewModel.PdfExportable, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
-                                <Setter Property="Kind" Value="WindowClose"/>
+                                <Setter Property="Kind" Value="RadioButtonUnchecked"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

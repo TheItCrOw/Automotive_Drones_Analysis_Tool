@@ -46,7 +46,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 
                 _model = (AnalysableVideoModel)Model;
                 ViewModel = new AnalysableVideoViewModel(_model);
-                // TODO: Draw ref line first!
                 ViewModel.SetFirstFrame();
             }
             catch (Exception ex)
