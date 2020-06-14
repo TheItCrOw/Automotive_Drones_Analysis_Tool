@@ -66,13 +66,13 @@
                         <!--meta data-->
                         <DockPanel Margin="0 10">
                             <materialDesign:PackIcon Kind="DataUsage" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
-                            <TextBlock Text="Extend the metadata of these by adding more information to them." 
+                            <TextBlock Text="Extend the metadata of it by adding more information to them." 
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         </DockPanel>
                         <!--analyse-->
                         <DockPanel Margin="0 10">
                             <materialDesign:PackIcon Kind="GoogleAnalytics" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
-                            <TextBlock Text="Start the analysis. When finished, a report will be generated." HorizontalAlignment="Stretch"
+                            <TextBlock Text="Start the analysis. When it's finished, a report will be generated." HorizontalAlignment="Stretch"
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
                         </DockPanel>
                         <!--Finish-->

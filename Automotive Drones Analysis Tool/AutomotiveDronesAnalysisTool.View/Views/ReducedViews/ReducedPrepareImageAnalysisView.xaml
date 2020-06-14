@@ -79,9 +79,9 @@
                         <!--mark the top middle of car-->
                         <materialDesign:Card Margin="0 5 0 0">
                             <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
-                            2) Add reference markings to the objects. You can do so by firstly switching from "Rectangle" to "Line" in the shape pallet below.
-                                After that, draw a line by holding down the left mouse button. Every object should have it's own line. The line should cut the object in half.
-                                A car should have a line typically starting at it's emblem (e.g. VW) at the front middle, ending at the windshield wipers in the back.
+                            2) Add reference markings to the objects. You can do so by switching from "Rectangle" to "Line" in the shape pallet below first.
+                                After that, draw a line by pressing down the left mouse button. Every object should have its own line. The line should cut the object in half.
+                                A car should have a line typically starting at its emblem (e.g. VW) at the front middle, ending at the windshield wipers in the back.
                             </TextBlock>
                         </materialDesign:Card>
                         <!--select the image reference mark-->
@@ -89,7 +89,7 @@
                             <TextBlock Margin="5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Left" TextAlignment="Left">
                             3) Lastly, add a single reference line to the image itself. To do so, select the "Reference" shape in the pallet down below. The usage 
                                 is the same as in step 2, but you must enter the actual length of the line in meters after you've drawn it. This reference
-                                line will be used as the primary direction for the analysis. Typically you can use the white reference line in the image
+                                line will be used as the primary direction of the analysis. Typically you can use the white reference line in the image
                                 itself as your reference line.
                             </TextBlock>
                         </materialDesign:Card>

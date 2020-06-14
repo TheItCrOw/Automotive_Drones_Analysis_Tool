@@ -375,35 +375,42 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
         /// </summary>
         private void StartQueueWorker()
         {
-            Task.Run(() =>
+            try
             {
-                // If we do anything else then saving bitmaps, think about locking.
-                while (IsRendering || _imageQueue.Count > 0)
+                Task.Run(() =>
                 {
-                    if (_imageQueue.TryDequeue(out var tuple))
+                    // If we do anything else then saving bitmaps, think about locking.
+                    while (IsRendering || _imageQueue.Count > 0)
                     {
-                        // Deque the bitmap and write it to disc.
-                        // Lower the quality to save ressources.
-                        ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-                        ImageCodecInfo ici = null;
-
-                        if (_token.IsCancellationRequested)
-                            break;
-
-                        foreach (ImageCodecInfo codec in codecs)
+                        if (_imageQueue.TryDequeue(out var tuple))
                         {
-                            if (codec.MimeType == "image/jpeg")
-                                ici = codec;
+                            // Deque the bitmap and write it to disc.
+                            // Lower the quality to save ressources.
+                            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+                            ImageCodecInfo ici = null;
+
+                            if (_token.IsCancellationRequested)
+                                break;
+
+                            foreach (ImageCodecInfo codec in codecs)
+                            {
+                                if (codec.MimeType == "image/jpeg")
+                                    ici = codec;
+                            }
+
+                            var encoderParameters = new EncoderParameters();
+                            encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)45);
+
+                            tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
+                            tuple.Item1.Dispose();
                         }
-
-                        var encoderParameters = new EncoderParameters();
-                        encoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, (long)45);
-
-                        tuple.Item1.Save(tuple.Item2, ici, encoderParameters);
-                        tuple.Item1.Dispose();
                     }
-                }
-            }, _token);
+                }, _token);
+            }
+            catch (Exception ex)
+            {
+                ServiceContainer.GetService<DialogService>().InformUser("Error", $"Cancelled rendering: {ex}");
+            }
         }
 
         /// <summary>

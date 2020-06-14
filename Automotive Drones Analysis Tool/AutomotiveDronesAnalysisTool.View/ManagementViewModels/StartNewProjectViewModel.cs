@@ -75,8 +75,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                     {
                         // Ask whether every image shoudl be loaded in every subdirectoy or not.
                         if (ServiceContainer.GetService<DialogService>()
-                            .InformUser("All directories?", "Load all images in every subdirectory of the chosen directory as well? " +
-                            "Close the dialog otherwise."))
+                            .InformUser("All directories?", "Press 'confirm' to load all images in every subdirectory of the chosen directory as well. " +
+                            "If not, close the dialog."))
                         {
                             // Get all images of subdirectories as well
                             GetImagesFromDirectory(fb.SelectedPath, true);

@@ -158,7 +158,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             if (ReferenceLineExists())
             {
                 ServiceContainer.GetService<DialogService>().InformUser(
-                    "Info", "There may only exist one reference line! Delete the current reference line first.");
+                    "Info", "There must only exist one reference line! Delete the current reference line first.");
                 return;
             }
 

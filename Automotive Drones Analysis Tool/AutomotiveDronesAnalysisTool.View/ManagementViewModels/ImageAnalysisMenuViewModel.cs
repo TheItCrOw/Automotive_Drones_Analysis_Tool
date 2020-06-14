@@ -189,11 +189,11 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             {
                 if (ServiceContainer.GetService<DialogService>()
                     .InformUser("Continue with the object detection of YOLO's neural network?",
-                    "CAUTION:\nThis function is only in a test state. Since there was not enough learning data to solidate the " +
+                    "CAUTION:\nThis function is in a test state. Since there was not enough learning data to solidate the " +
                     "neural network's model, I downloaded pretrained weights and expanded them with the given input data. However, " +
-                    "it takes around 100 records to really make the object detection reliable. Also be aware that this process requires " +
+                    "it takes around 100 records to really make the object detection reliable. Also, be aware that this process requires " +
                     "time, CPU and RAM, depending on the image size.\n" +
-                    "You can adjust the detection by yourself afterwards."))
+                    "You can adjust the detection yourself afterwards."))
                 {
                     foreach (var analysableImageViewModel in AnalysableImageViewModels)
                     {
