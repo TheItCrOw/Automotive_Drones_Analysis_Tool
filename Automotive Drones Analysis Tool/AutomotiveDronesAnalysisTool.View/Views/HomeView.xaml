@@ -38,76 +38,51 @@
             </DockPanel>
         </materialDesign:Card>
 
-        <Grid Grid.Row="1" Margin="10 5 10 10">
+        <Grid Grid.Row="1" Margin="5 5 10 5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-
-            <!--continue last project-->
-            <materialDesign:Card VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5" Margin="0 0 5 0">
-                <StackPanel Margin="5 10">
-                    <!--name-->
-                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" ToolTip="Home" Cursor="Hand">
-                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Resume last analysis"/>
-                    </Button>
-                    <!--<Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>-->
-                    <TextBlock Text="" Style="{StaticResource TextTextblockStyle}"/>
-                </StackPanel>
-            </materialDesign:Card>
-
-            <!--Load project-->
-            <materialDesign:Card Margin="5 0 5 0" Grid.Column="1" VerticalAlignment="Stretch"
-                                 materialDesign:ShadowAssist.ShadowDepth="Depth5">
-                <StackPanel Margin="5 10">
-                    <!--name-->
-                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" ToolTip="Home">
-                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Load analysis"/>
-                    </Button>
-                    <!--<Image Source="pack://application:,,,/Ressources/Situation_1_nah.jpg" Margin="5 10"/>-->
-                    <TextBlock Text="" Style="{StaticResource TextTextblockStyle}"/>
-
-                </StackPanel>
-            </materialDesign:Card>
-
+           
             <!--Create new analysis-->
-            <materialDesign:Card Margin="5 0 0 0" Grid.Column="2" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5">
-                <StackPanel Margin="5 10">
-                    <!--start new project button-->
-                    <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" Command="{Binding StartNewProjectCommand}">
-                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Start new analysis"/>
-                    </Button>
-                    <Image Source="pack://application:,,,/Ressources/Situation_1_nah_analysiert.jpg" Margin="5 10"/>
-                    <Border BorderThickness="0 0 0 01" BorderBrush="SteelBlue">
-                        <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="How it works:"/>
-                    </Border>
-                    <!--upload-->
-                    <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="Upload" Height="45" Width="45" Foreground="SteelBlue"/>
-                        <TextBlock Text="Upload an image, a sequence or a video which needs to be analysed." 
+            <materialDesign:Card Margin="5" Grid.Column="1" VerticalAlignment="Stretch" materialDesign:ShadowAssist.ShadowDepth="Depth5">
+                <ScrollViewer>
+                    <StackPanel Margin="5 10">
+                        <!--start new project button-->
+                        <Button Style="{StaticResource MaterialDesignRaisedDarkButton}" Height="35" Command="{Binding StartNewProjectCommand}" Cursor="Hand">
+                            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Text="Start new analysis"/>
+                        </Button>
+                        <Image Source="pack://application:,,,/Ressources/Analysed_Image.png" Margin="5 10" Stretch="Uniform"/>
+                        <Border BorderThickness="0 0 0 01" BorderBrush="SteelBlue">
+                            <TextBlock Style="{StaticResource TextTitleTextblockStyle}" Margin="5" Text="How it works:"/>
+                        </Border>
+                        <!--upload-->
+                        <DockPanel Margin="0 10">
+                            <materialDesign:PackIcon Kind="Upload" Height="45" Width="45" Foreground="SteelBlue"/>
+                            <TextBlock Text="Upload an image, a sequence or a video which needs to be analysed." 
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-                    </DockPanel>
-                    <!--meta data-->
-                    <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="DataUsage" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
-                        <TextBlock Text="Extend the metadata of these by adding more information to them." 
+                        </DockPanel>
+                        <!--meta data-->
+                        <DockPanel Margin="0 10">
+                            <materialDesign:PackIcon Kind="DataUsage" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                            <TextBlock Text="Extend the metadata of these by adding more information to them." 
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-                    </DockPanel>
-                    <!--analyse-->
-                    <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="GoogleAnalytics" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
-                        <TextBlock Text="Start the analysis. When finished, a report will be generated." HorizontalAlignment="Stretch"
+                        </DockPanel>
+                        <!--analyse-->
+                        <DockPanel Margin="0 10">
+                            <materialDesign:PackIcon Kind="GoogleAnalytics" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                            <TextBlock Text="Start the analysis. When finished, a report will be generated." HorizontalAlignment="Stretch"
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
-                    </DockPanel>
-                    <!--Finish-->
-                    <DockPanel Margin="0 10">
-                        <materialDesign:PackIcon Kind="FileReport" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
-                        <TextBlock Text="Analyse the report, save it and export it." HorizontalAlignment="Stretch"
+                        </DockPanel>
+                        <!--Finish-->
+                        <DockPanel Margin="0 10">
+                            <materialDesign:PackIcon Kind="FileReport" Height="45" Width="45" Margin="0 0 3 0" Foreground="SteelBlue"/>
+                            <TextBlock Text="Analyse the report, save it and export it." HorizontalAlignment="Stretch"
                                Style="{StaticResource TextTextblockStyle}" VerticalAlignment="Center"/>
-                    </DockPanel>
-
-                </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </materialDesign:Card>
 
         </Grid>

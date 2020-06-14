@@ -35,6 +35,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             var dialogService = new DialogService();
             var pdfService = new PdfService();
             var cv2Service = new Cv2Service();
+            var movieService = new MovieService();
 
             ServiceContainer.CreateContainer();
             ServiceContainer.RegisterService<ViewService>(viewService);
@@ -43,18 +44,18 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ServiceContainer.RegisterService<DialogService>(dialogService);
             ServiceContainer.RegisterService<PdfService>(pdfService);
             ServiceContainer.RegisterService<Cv2Service>(cv2Service);
+            ServiceContainer.RegisterService<MovieService>(movieService);
 
             viewService.Show<HomeView, HomeViewModel>();
 
-            // TODO: Enable this!
-            // Create the temp folder or clean it up
-            //if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
-            //    Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
-            //else
-            //{
-            //    foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
-            //        File.Delete(file);
-            //}
+            //Create the temp folder or clean it up
+            if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
+                Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
+            else
+            {
+                foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
+                    File.Delete(file);
+            }
         }
     }
 }

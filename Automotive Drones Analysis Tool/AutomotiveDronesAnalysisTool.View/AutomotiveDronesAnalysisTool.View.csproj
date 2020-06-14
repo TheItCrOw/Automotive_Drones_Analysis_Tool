@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Ressources\Analysed_Image.png" />
+    <None Remove="Ressources\Analysed_Image_2.jpg" />
     <None Remove="Ressources\IAV-Drohne.jpg" />
     <None Remove="Ressources\IAV-Icon.png" />
     <None Remove="Ressources\IAV-Standort-2.jpg" />
@@ -19,6 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="AForge.Video.FFMPEG">
+      <HintPath>..\Libraries\AForge.Video.FFMPEG.dll</HintPath>
+    </Reference>
     <Reference Include="MaterialDesignColors">
       <HintPath>..\Libraries\MaterialDesignColors.dll</HintPath>
     </Reference>
@@ -49,6 +54,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Ressources\Analysed_Image.png" />
+    <Resource Include="Ressources\Analysed_Image_2.jpg" />
     <Resource Include="Ressources\IAV-Drohne.jpg" />
     <Resource Include="Ressources\IAV-Icon.png" />
     <Resource Include="Ressources\IAV-Standort-2.jpg" />

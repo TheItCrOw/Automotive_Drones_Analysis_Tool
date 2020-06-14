@@ -166,10 +166,15 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
 
         public void Dispose()
         {
-            // TODO: Enable dispose!
+            // Cancel running tasks
+            _tokenSource.Cancel();
+
             // Dispose the iamges in the temp folder!
-            //foreach (var pair in _indexToImageTempPath)
-            //    File.Delete(pair.Value);
+            foreach (var pair in _indexToImageTempPath)
+                File.Delete(pair.Value);
+
+            // Clear the image queue
+            _imageQueue.Clear();
         }
 
         /// <summary>
@@ -186,6 +191,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                     "You can do so by simply drawing onto the image with your mouse.");
                 return;
             }
+
+            // Create a cancellation token to stop the task if needed.
+            _tokenSource = new CancellationTokenSource();
+            _token = _tokenSource.Token;
 
             _indexToImageTempPath.Clear();
             IsRendering = true;
@@ -204,6 +213,9 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         {
                             RenderingProgress = i;
 
+                            if (_token.IsCancellationRequested)
+                                break;
+
                             // read a single frame and convert the frame into a bitmap
                             videocapture.Read(imageOriginal);
                             var analysedImageOriginal = new Mat();
@@ -212,7 +224,6 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                                 analysedImageOriginal = AnalyseFrame(imageOriginal);
                             });
 
-                            // TODO: Put analyedImageOriginal back and decomment this above!
                             var bitmap = BitmapConverter.ToBitmap(analysedImageOriginal);
                             var imagePath = System.IO.Path.Combine(
                                 ServiceContainer.GetService<GlobalEnviromentService>().Cv2TempVideoLocation,
@@ -224,7 +235,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         }
                     }
                 }
-            });
+            }, _token);
 
             IsSetup = true;
             IsRendering = false;
@@ -376,6 +387,9 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
                         ImageCodecInfo ici = null;
 
+                        if (_token.IsCancellationRequested)
+                            break;
+
                         foreach (ImageCodecInfo codec in codecs)
                         {
                             if (codec.MimeType == "image/jpeg")
@@ -389,7 +403,7 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
                         tuple.Item1.Dispose();
                     }
                 }
-            });
+            }, _token);
         }
 
         /// <summary>

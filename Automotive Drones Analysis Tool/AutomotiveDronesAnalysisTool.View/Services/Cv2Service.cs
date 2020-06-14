@@ -13,8 +13,8 @@ namespace AutomotiveDronesAnalysisTool.View.Services
     public class Cv2Service : ServiceBase
     {
         public readonly int SCALE = 10;
-        public readonly int WIDTH = 175;
-        public readonly int HEIGHT = 102;
+        public readonly int WIDTH = 200;
+        public readonly int HEIGHT = 118;
         private double coordinateLength;
         private Line _referenceLine;
 
