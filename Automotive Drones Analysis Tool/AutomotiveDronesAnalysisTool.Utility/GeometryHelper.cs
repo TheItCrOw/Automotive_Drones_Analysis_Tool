@@ -11,13 +11,11 @@ using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.Utility
 {
+    /// <summary>
+    /// Helper class for calculating small operations
+    /// </summary>
     public class GeometryHelper
     {
-        private static double Pow2(double x)
-        {
-            return x * x;
-        }
-
         /// <summary>
         /// Gets the distance of 2 points
         /// </summary>
@@ -86,6 +84,7 @@ namespace AutomotiveDronesAnalysisTool.Utility
             return resultAngleInDegrees;
         }
 
+        // overload
         public static double GetAngleBetweenTwoLines(Point p1, Point p2, Point p3, Point p4)
         {
             // Calulate angle of each segment
@@ -157,7 +156,7 @@ namespace AutomotiveDronesAnalysisTool.Utility
         }
 
         /// <summary>
-        ///  Returns Point of intersection if do intersect otherwise default Point (null)
+        ///  Returns Point of intersection if do intersect - otherwise default Point (null)
         /// </summary>
         /// <param name="lineA"></param>
         /// <param name="lineB"></param>
@@ -278,7 +277,13 @@ namespace AutomotiveDronesAnalysisTool.Utility
             return default(Point);
         }
 
-        // Returns true if given point(x,y) is inside the given line segment
+        /// <summary>
+        ///Returns true if given point(x, y) is inside the given line segment
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public static bool IsInsideLine(Line line, double x, double y)
         {
             return (x >= line.X1 && x <= line.X2

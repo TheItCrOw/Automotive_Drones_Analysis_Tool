@@ -4,6 +4,9 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.Utility
 {
+    /// <summary>
+    /// Helper class for the YOLO Service
+    /// </summary>
     public class AltitudeToWidthHeightHelper
     {
         /// <summary>

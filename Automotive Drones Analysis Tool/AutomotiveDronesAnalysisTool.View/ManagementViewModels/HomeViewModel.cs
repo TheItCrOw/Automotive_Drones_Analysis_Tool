@@ -8,12 +8,14 @@ using AutomotiveDronesAnalysisTool.View.Views.Test;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    /// <summary>
+    /// Viewmodel that handles the HomeView
+    /// </summary>
     public class HomeViewModel : ManagementViewModelBase
     {
         /// <summary>
         /// Command that starts a new analysing project.
         /// </summary>
-        /// 
         public DelegateCommand StartNewProjectCommand => new DelegateCommand(StartNewProject);
         public DelegateCommand LogoutCommand => new DelegateCommand(Logout);
 
@@ -28,7 +30,14 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         {
         }
 
+        /// <summary>
+        /// Switches to the <see cref="StartNewProject"/> view
+        /// </summary>
         private void StartNewProject() => ServiceContainer.GetService<ViewService>().Show<StartNewProjectView, StartNewProjectViewModel>();
+
+        /// <summary>
+        /// Logs the user out
+        /// </summary>
         private void Logout() => ServiceContainer.GetService<ViewService>().Logout();
     }
 }

@@ -277,9 +277,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             rectangle.IsHitTestVisible = false;
             rectangle.Tag = tag;
 
-            x = 0;
-            y = 0;
-
             if (startPoint.X > endPoint.X)
                 x = endPoint.X;
             else
@@ -299,6 +296,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             return rectangle;
         }
 
+        // overload
         private Rectangle DrawRectangle(Point xy, Point widthHeight, Guid tag)
         {
             var rectangle = new Rectangle();
@@ -316,18 +314,33 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             return rectangle;
         }
 
+        /// <summary>
+        /// Chooses the rectangle as the drwaing shape
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChooseRectangle_Button_Click(object sender, RoutedEventArgs e)
         {
             _currentShape = DrawingShape.Rectangle;
             UpdateButtonUI((Button)sender);
         }
 
+        /// <summary>
+        /// Chooses the line as the drwaing shape
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChooseLine_Button_Click(object sender, RoutedEventArgs e)
         {
             _currentShape = DrawingShape.Line;
             UpdateButtonUI((Button)sender);
         }
 
+        /// <summary>
+        /// Chooses the ref line as the drwaing shape
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChooseReferenceLine_Button_Click(object sender, RoutedEventArgs e)
         {
             _currentShape = DrawingShape.ReferenceLine;
@@ -354,6 +367,10 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             }
         }
 
+        /// <summary>
+        /// Updates the pallet button
+        /// </summary>
+        /// <param name="currentButton"></param>
         private void UpdateButtonUI(Button currentButton)
         {
             foreach (var button in _palletButtons)

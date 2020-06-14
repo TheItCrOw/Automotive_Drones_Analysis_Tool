@@ -37,7 +37,7 @@ namespace AutomotiveDronesAnalysisTool.View.Services
         }
 
         /// <summary>
-        /// Shows a modal where the user can enter an float
+        /// Shows a modal where the user can enter a float
         /// </summary>
         public bool AskForFloat(string title, string text, out float result)
         {

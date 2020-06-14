@@ -13,6 +13,9 @@ using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.Utility
 {
+    /// <summary>
+    /// Helepr class for handling bitmaps and images
+    /// </summary>
     public class BitmapHelper
     {
         /// <summary>

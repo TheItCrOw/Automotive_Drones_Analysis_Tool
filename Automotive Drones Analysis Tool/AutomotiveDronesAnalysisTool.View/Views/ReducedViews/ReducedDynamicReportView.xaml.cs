@@ -22,6 +22,7 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
 {
     /// <summary>
     /// Interaktionslogik für ReducedDynamicReportView.xaml
+    /// TODO: Refactor this. It's quiet clustered.
     /// </summary>
     public partial class ReducedDynamicReportView : UserControl
     {
@@ -69,11 +70,20 @@ namespace AutomotiveDronesAnalysisTool.View.Views.ReducedViews
             return exportReportArguments;
         }
 
+        /// <summary>
+        /// Fires when the data context of this view changes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DynamicReportView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             ((ImageAnalysisMenuViewModel)(DataContext)).InitializedViewModel += DynamicReportView_InitializedViewModel;
         }
 
+        /// <summary>
+        /// Fires when the viewmodel of the datacontext has been fully loaded
+        /// </summary>
+        /// <param name="viewModel"></param>
         private void DynamicReportView_InitializedViewModel(AnalysableImageViewModel viewModel)
         {
             _viewModel = viewModel;

@@ -16,7 +16,7 @@ namespace AutomotiveDronesAnalysisTool.Model.Arguments
 
         /// <summary>
         /// the ratio between the canvas that was used to draw the objects and the actual image.
-        /// item1 holds width ratio and item2 height.
+        /// item1 holds width ratio and item2 height ratio.
         /// </summary>
         public Tuple<double, double> WidthHeightRatio { get; set; }
     }

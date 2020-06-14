@@ -6,6 +6,9 @@ using System.Windows.Data;
 
 namespace AutomotiveDronesAnalysisTool.View.Converters
 {
+    /// <summary>
+    /// Converts a boolean to a visibilty value for UI
+    /// </summary>
     public class BooleanToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

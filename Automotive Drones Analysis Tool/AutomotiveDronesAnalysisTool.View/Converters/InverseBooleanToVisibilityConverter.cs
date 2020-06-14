@@ -7,6 +7,9 @@ using System.Windows.Data;
 
 namespace AutomotiveDronesAnalysisTool.View.Converters
 {
+    /// <summary>
+    /// Converts a negative boolean to visibilty for UI
+    /// </summary>
     public class InverseBooleanToVisibiltyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

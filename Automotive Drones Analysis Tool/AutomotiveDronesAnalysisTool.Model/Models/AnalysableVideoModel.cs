@@ -6,6 +6,9 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.Model.Models
 {
+    /// <summary>
+    /// A model representing an analysable video the user has uploaded.
+    /// </summary>
     [DataContract]
     public class AnalysableVideoModel : ModelBase
     {

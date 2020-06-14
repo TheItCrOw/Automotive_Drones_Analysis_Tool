@@ -46,8 +46,6 @@ namespace AutomotiveDronesAnalysisTool.View.Views
             ServiceContainer.RegisterService<Cv2Service>(cv2Service);
             ServiceContainer.RegisterService<MovieService>(movieService);
 
-            viewService.Show<HomeView, HomeViewModel>();
-
             //Create the temp folder or clean it up
             if (!Directory.Exists(globalEnviromentService.Cv2TempVideoLocation))
                 Directory.CreateDirectory(globalEnviromentService.Cv2TempVideoLocation);
@@ -56,6 +54,9 @@ namespace AutomotiveDronesAnalysisTool.View.Views
                 foreach (var file in Directory.GetFiles(globalEnviromentService.Cv2TempVideoLocation))
                     File.Delete(file);
             }
+
+            // Navigate home
+            viewService.Show<HomeView, HomeViewModel>();
         }
     }
 }

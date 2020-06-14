@@ -17,6 +17,9 @@ using System.IO;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    /// <summary>
+    /// Viewmodel that holds the logic of the <see cref="StartNewProjectView"/>
+    /// </summary>
     public class StartNewProjectViewModel : ManagementViewModelBase
     {
         #region Properties

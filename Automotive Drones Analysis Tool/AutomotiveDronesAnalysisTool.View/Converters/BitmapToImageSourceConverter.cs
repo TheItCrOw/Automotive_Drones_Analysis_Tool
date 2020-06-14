@@ -11,6 +11,9 @@ using System.Windows.Media.Imaging;
 
 namespace AutomotiveDronesAnalysisTool.View.Converters
 {
+    /// <summary>
+    /// Converts bitmap to imagesource for binding in UI
+    /// </summary>
     [ValueConversion(typeof(Bitmap), typeof(ImageSource))]
     public class BitmapToImageSourceConverter : IValueConverter
     {

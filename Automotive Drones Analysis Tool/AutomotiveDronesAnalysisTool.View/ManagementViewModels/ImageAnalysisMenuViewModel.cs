@@ -26,6 +26,9 @@ using System.Windows.Forms;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    /// <summary>
+    /// Viewmodel that handles the logic of the <see cref="ImageAnalysisMenuView"/>
+    /// </summary>
     class ImageAnalysisMenuViewModel : ManagementViewModelBase
     {
         /// <summary>
@@ -76,7 +79,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// True if the laoding of all viewmodels finished.
+        /// True if the loading of all viewmodels finished.
         /// </summary>
         public bool SequenceLoaded
         {
@@ -238,7 +241,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         {
             try
             {
-                // If any viewodel si currently being analysed, we dont want to modify the ViewModelList.
+                // If any viewodel is currently being analysed, we dont want to modify the ViewModelList.
                 if (AnalysableImageViewModels.Any(vm => vm.IsBeingAnalysed))
                 {
                     ServiceContainer.GetService<DialogService>().InformUser("Info",
@@ -267,7 +270,6 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         /// <param name="drawnItems"></param>
         private void ExportReportAsPdf()
         {
-            // drawnItem
             try
             {
                 // FraemContent should hold the currently selected view of the ViewModel
@@ -280,6 +282,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         //Add a page to the document
                         PdfPage page = document.Pages.Add();
 
+                        // Let the PdfService print the ViewModel onto the PDF page
                         var pair = new KeyValuePair<AnalysableImageViewModel, ExportReportAsPdfArguments>(ViewModel, reportArgs);
                         ServiceContainer.GetService<PdfService>().DrawSingleOntoPage(page, pair);
 
@@ -338,7 +341,8 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         // Check if the object is exportable
                         if (!currentVm.PdfExportable) continue;
 
-                        // Get the drawn objects of the view. // Marshal it to the dispatcher.
+                        // Get the drawn objects of the view. 
+                        // Marshal it to the dispatcher.
                         System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
                         {
                             var exportArgs = pair.Value.GetPdfReportArguments();
@@ -346,6 +350,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
                         });
                     }
 
+                    // If there are no exportable objects, dont bother. But tell the user.
                     if (exportableVmsToArgs.Count == 0)
                     {
                         ServiceContainer.GetService<DialogService>()

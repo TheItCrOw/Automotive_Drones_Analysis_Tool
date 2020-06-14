@@ -5,6 +5,9 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.View.Services
 {
+    /// <summary>
+    /// Container class that stores all services.
+    /// </summary>
     public class ServiceContainer
     {
 

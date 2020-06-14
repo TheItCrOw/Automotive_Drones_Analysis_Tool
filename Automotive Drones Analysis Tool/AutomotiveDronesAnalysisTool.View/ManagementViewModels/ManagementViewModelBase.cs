@@ -11,10 +11,12 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    /// <summary>
+    /// Abstract class for viewmodels that holds logic of a view.
+    /// </summary>
     public abstract class ManagementViewModelBase : BindableBase, IDisposable
     {
         private bool _isLoading;
-
         public ModelBase Model { get; set; }
         public ViewModelBase ViewModel { get; set; }
         public bool IsLoading

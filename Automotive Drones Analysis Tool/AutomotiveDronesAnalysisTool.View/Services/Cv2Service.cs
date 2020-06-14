@@ -10,6 +10,9 @@ using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.View.Services
 {
+    /// <summary>
+    /// Service that handles Cv2 operations.
+    /// </summary>
     public class Cv2Service : ServiceBase
     {
         public readonly int SCALE = 10;

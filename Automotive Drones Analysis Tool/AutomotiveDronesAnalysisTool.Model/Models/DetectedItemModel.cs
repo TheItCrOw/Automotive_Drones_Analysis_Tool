@@ -8,9 +8,15 @@ using System.Text;
 
 namespace AutomotiveDronesAnalysisTool.Model.Models
 {
+    /// <summary>
+    /// Model that contains data of a detected item from the YOLO model or hand drawn by the user
+    /// </summary>
     [DataContract]
     public class DetectedItemModel : ModelBase
     {
+        /// <summary>
+        /// Foreign ID of the analysable Image model which this model belongs to
+        /// </summary>
         [DataMember]
         public Guid AnalysableImageModelId { get; set; }
         [DataMember]

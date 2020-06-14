@@ -10,6 +10,9 @@ using System.Windows.Shapes;
 
 namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
 {
+    /// <summary>
+    /// Viewmodel that handles the logic of the <see cref="VideoAnalysisMenuView"/>
+    /// </summary>
     public class VideoAnalysisMenuViewModel : ManagementViewModelBase
     {
         private AnalysableVideoViewModel _viewModel;
@@ -37,6 +40,10 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
             ViewModel.Dispose();
         }
 
+        /// <summary>
+        /// Init this viewmodel
+        /// </summary>
+        /// <param name="parameters"></param>
         public override void Initiliaze(object[] parameters)
         {
             try
@@ -76,7 +83,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// Adds a single reference line to the video
+        /// Deletes the single reference line to the video
         /// </summary>
         private void DeleteVideoReferenceLine()
         {
@@ -139,7 +146,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// Plays the video analysed
+        /// Pauses the video analysed
         /// </summary>
         private void Pause()
         {
@@ -160,7 +167,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// Plays the video analysed
+        /// Go one frame forward
         /// </summary>
         private void FastForward()
         {
@@ -181,7 +188,7 @@ namespace AutomotiveDronesAnalysisTool.View.ManagementViewModels
         }
 
         /// <summary>
-        /// Plays the video analysed
+        /// Go one frame back
         /// </summary>
         private void Rewind()
         {

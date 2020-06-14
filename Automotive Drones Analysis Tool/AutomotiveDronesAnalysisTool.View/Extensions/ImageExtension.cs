@@ -9,6 +9,12 @@ namespace AutomotiveDronesAnalysisTool.View.Extensions
 {
     public static class ImageExtension
     {
+        /// <summary>
+        /// Seriliazes the image to a stream
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
         public static Stream ToStream(this Image image, ImageFormat format)
         {
             var stream = new System.IO.MemoryStream();

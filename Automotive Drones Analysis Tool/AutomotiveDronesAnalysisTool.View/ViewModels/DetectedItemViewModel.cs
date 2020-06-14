@@ -9,6 +9,9 @@ using System.Windows.Media.Imaging;
 
 namespace AutomotiveDronesAnalysisTool.View.ViewModels
 {
+    /// <summary>
+    /// ViewModel that handles interaction of the <see cref="DetectedItemModel"/> with the UI
+    /// </summary>
     public class DetectedItemViewModel : ViewModelBase
     {
         #region Properties
@@ -37,6 +40,10 @@ namespace AutomotiveDronesAnalysisTool.View.ViewModels
             get => _name;
             set => SetProperty(ref _name, value);
         }
+
+        /// <summary>
+        /// Codename of this object that consists of the first and last letter of the name.
+        /// </summary>
         public string CodeName
         {
             get => $"{Name.First()}{Name.Last()}";
