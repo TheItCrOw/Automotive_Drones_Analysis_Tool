@@ -23,8 +23,10 @@ ADAT is a tool that loads in drone images of certain traffic scenarios (e.g. par
 
 ![Select Medium](https://user-images.githubusercontent.com/49918134/91315866-7750bc80-e7b8-11ea-942d-39e17ca732ea.png)
 
-To start the analysis, the user must first choose between: Loading in images or single video files.
+To start the analysis, the user must first choose between: Loading in images or video files.
 
 ### Analyse images
 
+After having chosen which images to analyse, the user enters the preparing phase, in which he must add information to the detected objects to analyse them properly. A fully prepared image should look like this:
 
+![Nach YOLO Analyse](https://user-images.githubusercontent.com/49918134/91316613-4d4bca00-e7b9-11ea-88a7-d1d1435546fc.jpg)
