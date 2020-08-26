@@ -45,6 +45,6 @@ Every YOLO object is selectable and can be enabled or disabled, causing all refe
 
 ### Analyse videos
 
-ADAT can also analyse videos of e.g. parking cars using the same formular. Via a small built in video player, the user may then watch the analysed video. You can find an example below, where the left/first image leads to a HD Youtube video of the analysis. 
+ADAT can also analyse videos of e.g. parking cars using the same formular. Via a small built in video player, the user may then watch the analysed video. You can find an example belo.(The first image leads to a Youtube video of the analysis.)
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/PYYqB9F9suM/0.jpg)](https://www.youtube.com/watch?v=PYYqB9F9suM) ![Alt Text](https://media.giphy.com/media/QzBAQUfqRPacTG1zV2/giphy.gif)
