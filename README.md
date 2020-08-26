@@ -39,4 +39,6 @@ From there the user may enter the dynamic report view, which should look like th
 
 ![Dynamic Report View (2)](https://user-images.githubusercontent.com/49918134/91317139-f85c8380-e7b9-11ea-9932-886dc410a53f.jpg)
 
-Every YOLO object is selectable and can be enabled or disabled, causing all reference lines and values of this object to also be visible or non visible. That way, the user can choose which objects he would like to analyse specifically without the screen getting convoluted by to much information.
+Every YOLO object is selectable and can be enabled or disabled, causing all reference lines and values of this object to also be visible or non visible. That way, the user can choose which objects he would like to analyse specifically without the screen being convoluted by to much information. This analysis can also be exported to pdf as seen here:
+
+![PDF-Export](https://user-images.githubusercontent.com/49918134/91318237-4d4cc980-e7bb-11ea-8fd7-c05b3828ebf2.png)
