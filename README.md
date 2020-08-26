@@ -41,4 +41,10 @@ From there the user may enter the dynamic report view, which should look like th
 
 Every YOLO object is selectable and can be enabled or disabled, causing all reference lines and values of this object to also be visible or non visible. That way, the user can choose which objects he would like to analyse specifically without the screen being convoluted by to much information. This analysis can also be exported to pdf as seen here:
 
-![PDF-Export](https://user-images.githubusercontent.com/49918134/91318237-4d4cc980-e7bb-11ea-8fd7-c05b3828ebf2.png)
+![PDF Export 3](https://user-images.githubusercontent.com/49918134/91318650-be8c7c80-e7bb-11ea-9718-9edde572e539.png)
+
+### Analyse videos
+
+ADAT can also analyse videos of e.g. parking cars using the same formular. Via a small built in video player, the user may then watch the analysed video. You can find an example below:
+
+<iframe src="https://giphy.com/embed/QzBAQUfqRPacTG1zV2" width="480" height="252" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/QzBAQUfqRPacTG1zV2">via GIPHY</a></p> 
