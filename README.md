@@ -47,4 +47,4 @@ Every YOLO object is selectable and can be enabled or disabled, causing all refe
 
 ADAT can also analyse videos of e.g. parking cars using the same formular. Via a small built in video player, the user may then watch the analysed video. You can find an example below:
 
-<iframe src="https://giphy.com/embed/QzBAQUfqRPacTG1zV2" width="480" height="252" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/QzBAQUfqRPacTG1zV2">via GIPHY</a></p> 
+![Alt Text](https://media.giphy.com/media/QzBAQUfqRPacTG1zV2/giphy.gif)
