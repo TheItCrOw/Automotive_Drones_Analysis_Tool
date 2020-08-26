@@ -31,6 +31,12 @@ After having chosen which images to analyse, YOLO tries to detect all objects in
 
 ![Nach YOLO Analyse](https://user-images.githubusercontent.com/49918134/91316613-4d4bca00-e7b9-11ea-88a7-d1d1435546fc.jpg)
 
-The user must then add more information to the already found objects to guarantee a meaningful analysis. A step by step guide can be found on the right side of the application named "Checknotes". A fully prepared image may then look like this:
+The user must then add more information to the already found objects to guarantee a meaningful analysis. A step by step guide can be found on the right side of the application named "Checklist". A fully prepared image may then look like this:
+
+![prepariertes image](https://user-images.githubusercontent.com/49918134/91317485-65701900-e7ba-11ea-9c62-a782077ac4df.jpg)
+
+From there the user may enter the dynamic report view, which should look like this after correctly preparing the image:
 
 ![Dynamic Report View (2)](https://user-images.githubusercontent.com/49918134/91317139-f85c8380-e7b9-11ea-9932-886dc410a53f.jpg)
+
+Every YOLO object is selectable and can be enabled or disabled, causing all reference lines and values of this object to also be visible or non visible. That way, the user can choose which objects he would like to analyse specifically without the screen getting convoluted by to much information.
