@@ -1,6 +1,6 @@
 ![Start](https://user-images.githubusercontent.com/49918134/91304500-dce97c80-e7a9-11ea-97fb-88cfe2390f91.jpg)
 
-Automotive Drone Analysis Tool (short: ADAT) is a Windows only, desktop based application, that was developed as a submition for the Code Competition held by IAV GmbH. The application reached first place and therefore won the competition alongside its price. ([See here](https://www.it-talents.de/blog/partnerunternehmen/kevin-holt-den-ersten-platz-bei-der-code-competition-der-iav))
+Automotive Drone Analysis Tool (short: ADAT) is a Windows only, desktop based application, that was developed as a submition for the ([Code Competition]https://www.it-talents.de/foerderung/code-competition/code-competition-05-2020) held by IAV GmbH. The application reached first place and therefore won the competition alongside its price. ([See here](https://www.it-talents.de/blog/partnerunternehmen/kevin-holt-den-ersten-platz-bei-der-code-competition-der-iav))
 
 ## Technologies
 
@@ -48,3 +48,7 @@ Every YOLO object is selectable and can be enabled or disabled, causing all refe
 ADAT can also analyse videos of e.g. parking cars using the same formular. Via a small built in video player, the user may then watch the analysed video. You can find an example belo.(The first image leads to a Youtube video of the analysis.)
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/PYYqB9F9suM/0.jpg)](https://www.youtube.com/watch?v=PYYqB9F9suM) ![Alt Text](https://media.giphy.com/media/QzBAQUfqRPacTG1zV2/giphy.gif)
+
+## Closure
+
+Thank you for visiting this project and also thanks to ([IT-Talents]https://www.it-talents.de/) and ([IAV GmbH]https://www.iav.com/) for hosting the competition!
