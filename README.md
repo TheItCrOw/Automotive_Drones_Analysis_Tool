@@ -52,3 +52,4 @@ ADAT can also analyse videos of e.g. parking cars using the same formular. Via a
 ## Closure
 
 Thank you for visiting this project and also thanks to [IT-Talents](https://www.it-talents.de/) and [IAV GmbH](https://www.iav.com/) for hosting the competition!
+If you have any questions or need help using the application, email me under: keboen@web.de
